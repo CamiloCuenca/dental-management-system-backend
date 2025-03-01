@@ -4,6 +4,7 @@ import edu.uniquindio.dentalmanagementsystembackend.dto.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Usuario;
+import edu.uniquindio.dentalmanagementsystembackend.Enum.RolUsuario;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.UsuarioRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
@@ -26,8 +27,17 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     public void crearCita(CitaDTO citaDTO) {
         Usuario paciente = usuarioRepository.findById(citaDTO.idPaciente())
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+
         Usuario odontologo = usuarioRepository.findById(citaDTO.idDoctor())
                 .orElseThrow(() -> new RuntimeException("Odontólogo no encontrado"));
+
+        // Validación de roles
+        if (!paciente.getRol().equals(RolUsuario.PACIENTE.toString())) {
+            throw new IllegalArgumentException("El usuario con ID " + citaDTO.idPaciente() + " no es un paciente.");
+        }
+        if (!odontologo.getRol().equals(RolUsuario.ODONTOLOGO.toString())) {
+            throw new IllegalArgumentException("El usuario con ID " + citaDTO.idDoctor() + " no es un odontólogo.");
+        }
 
         Instant fechaInstant = citaDTO.fechaHora().toInstant(ZoneOffset.UTC);
 
