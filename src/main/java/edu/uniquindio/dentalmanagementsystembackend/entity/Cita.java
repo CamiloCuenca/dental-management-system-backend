@@ -1,7 +1,10 @@
 package edu.uniquindio.dentalmanagementsystembackend.entity;
 
+import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
@@ -12,6 +15,8 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "citas")
 public class Cita {
     @Id
@@ -32,9 +37,14 @@ public class Cita {
     @Column(name = "fecha_hora", nullable = false)
     private Instant fechaHora;
 
-    @ColumnDefault("'PENDIENTE'")
-    @Lob
-    @Column(name = "estado")
-    private String estado;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false)
+    private EstadoCitas estado;
 
+    public Cita(Usuario paciente, Usuario odontologo, Instant fechaHora, EstadoCitas estado) {
+        this.paciente = paciente;
+        this.odontologo = odontologo;
+        this.fechaHora = fechaHora;
+        this.estado = estado;
+    }
 }
