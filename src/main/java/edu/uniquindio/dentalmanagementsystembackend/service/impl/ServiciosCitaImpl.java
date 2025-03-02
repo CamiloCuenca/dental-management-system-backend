@@ -1,10 +1,11 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.impl;
 
-import edu.uniquindio.dentalmanagementsystembackend.dto.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
+import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
+import edu.uniquindio.dentalmanagementsystembackend.dto.CitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.Account;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
-import edu.uniquindio.dentalmanagementsystembackend.entity.Usuario;
-import edu.uniquindio.dentalmanagementsystembackend.Enum.RolUsuario;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.UsuarioRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
@@ -25,24 +26,28 @@ public class ServiciosCitaImpl implements ServiciosCitas {
 
     @Override
     public void crearCita(CitaDTO citaDTO) {
-        Usuario paciente = usuarioRepository.findById(citaDTO.idPaciente())
+        // Buscar el paciente y el odontólogo en la base de datos
+        User paciente = usuarioRepository.findById(citaDTO.idPaciente())
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
 
-        Usuario odontologo = usuarioRepository.findById(citaDTO.idDoctor())
+        User odontologo = usuarioRepository.findById(citaDTO.idDoctor())
                 .orElseThrow(() -> new RuntimeException("Odontólogo no encontrado"));
 
         // Validación de roles
-        if (!paciente.getRol().equals(RolUsuario.PACIENTE.toString())) {
+        if (paciente.getAccount() == null || paciente.getAccount().getRol() != Rol.PACIENTE) {
             throw new IllegalArgumentException("El usuario con ID " + citaDTO.idPaciente() + " no es un paciente.");
         }
-        if (!odontologo.getRol().equals(RolUsuario.ODONTOLOGO.toString())) {
+        if (odontologo.getAccount() == null || odontologo.getAccount().getRol() != Rol.DOCTOR) {
             throw new IllegalArgumentException("El usuario con ID " + citaDTO.idDoctor() + " no es un odontólogo.");
         }
 
+        // Convertir la fecha a Instant
         Instant fechaInstant = citaDTO.fechaHora().toInstant(ZoneOffset.UTC);
 
+        // Crear la cita con User
         Cita cita = new Cita(paciente, odontologo, fechaInstant, citaDTO.estado());
         citasRepository.save(cita);
+
         System.out.println("Cita creada correctamente.");
     }
 }

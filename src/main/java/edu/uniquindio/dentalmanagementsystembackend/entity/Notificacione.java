@@ -1,5 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.entity;
 
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.Account;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +23,7 @@ public class Notificacione {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    private Account account;
 
     @Lob
     @Column(name = "mensaje", nullable = false)

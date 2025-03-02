@@ -1,13 +1,11 @@
 package edu.uniquindio.dentalmanagementsystembackend.entity;
 
-import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -15,36 +13,37 @@ import java.time.Instant;
 @AllArgsConstructor
 @EqualsAndHashCode
 @Entity
-@Table(name = "citas")
-public class Cita {
+@Table(name = "historiales_medicos")
+public class HistorialMedico {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    // Relación con User para obtener detalles del paciente
+    // Relación con User para almacenar información del paciente
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL)  // Permite mantener historial de citas
+    @OnDelete(action = OnDeleteAction.SET_NULL) // Evita eliminación en cascada
     @JoinColumn(name = "paciente_id", nullable = false)
     private User paciente;
 
-    // Relación con User para obtener detalles del odontólogo
+    // Relación con User para almacenar información del odontólogo
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL)  // Evita eliminación en cascada
+    @OnDelete(action = OnDeleteAction.SET_NULL) // Evita eliminación en cascada
     @JoinColumn(name = "odontologo_id", nullable = false)
     private User odontologo;
 
-    @Column(name = "fecha_hora", nullable = false)
-    private Instant fechaHora;
+    @Column(name = "fecha", nullable = false)
+    private LocalDate fecha;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false)
-    private EstadoCitas estado;
+    @Lob
+    @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
+    private String descripcion;
 
-    public Cita(User paciente, User odontologo, Instant fechaHora, EstadoCitas estado) {
+    public HistorialMedico(User paciente, User odontologo, LocalDate fecha, String descripcion) {
         this.paciente = paciente;
         this.odontologo = odontologo;
-        this.fechaHora = fechaHora;
-        this.estado = estado;
+        this.fecha = fecha;
+        this.descripcion = descripcion;
     }
 }
