@@ -1,6 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.entity;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
+import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -41,10 +42,16 @@ public class Cita {
     @Column(name = "estado", nullable = false)
     private EstadoCitas estado;
 
-    public Cita(User paciente, User odontologo, Instant fechaHora, EstadoCitas estado) {
+    @Enumerated(EnumType.STRING)
+    @Column(name = "TipoCita", nullable = false)
+    private TipoCita tipoCita;
+
+
+    public Cita(User paciente, User odontologo, Instant fechaHora, EstadoCitas estado , TipoCita tipoCita) {
         this.paciente = paciente;
         this.odontologo = odontologo;
         this.fechaHora = fechaHora;
         this.estado = estado;
+        this.tipoCita = tipoCita;
     }
 }
