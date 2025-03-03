@@ -1,13 +1,12 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.impl;
 
-import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 import edu.uniquindio.dentalmanagementsystembackend.dto.CitaDTO;
-import edu.uniquindio.dentalmanagementsystembackend.entity.Account.Account;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
-import edu.uniquindio.dentalmanagementsystembackend.repository.UsuarioRepository;
+import edu.uniquindio.dentalmanagementsystembackend.repository.CuentaRepository;
+import edu.uniquindio.dentalmanagementsystembackend.repository.UserRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,15 +21,18 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     private CitasRepository citasRepository;
 
     @Autowired
-    private UsuarioRepository usuarioRepository; // Para obtener pacientes y doctores
+    private CuentaRepository cuentaRepository; // Para obtener pacientes y doctores
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public void crearCita(CitaDTO citaDTO) {
         // Buscar el paciente y el odontólogo en la base de datos
-        User paciente = usuarioRepository.findById(citaDTO.idPaciente())
+        User paciente = userRepository.findById(citaDTO.idPaciente())
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
 
-        User odontologo = usuarioRepository.findById(citaDTO.idDoctor())
+        User odontologo = userRepository.findById(citaDTO.idDoctor())
                 .orElseThrow(() -> new RuntimeException("Odontólogo no encontrado"));
 
         // Validación de roles

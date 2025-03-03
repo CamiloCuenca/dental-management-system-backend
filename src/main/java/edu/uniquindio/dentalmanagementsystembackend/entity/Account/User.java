@@ -29,4 +29,6 @@ public class User {
     // Relación bidireccional controlada desde Account
     @OneToOne(mappedBy = "user", cascade = CascadeType.MERGE)
     private Account account;
+
+
 }
