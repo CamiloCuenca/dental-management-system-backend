@@ -45,7 +45,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         Instant fechaInstant = citaDTO.fechaHora().toInstant(ZoneOffset.UTC);
 
         // Crear la cita con User
-        Cita cita = new Cita(paciente, odontologo, fechaInstant, citaDTO.estado());
+        Cita cita = new Cita(paciente, odontologo, fechaInstant, citaDTO.estado() , citaDTO.tipoCita());
         citasRepository.save(cita);
 
         System.out.println("Cita creada correctamente.");
