@@ -2,6 +2,7 @@ package edu.uniquindio.dentalmanagementsystembackend.Account;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.AccountStatus;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
+import edu.uniquindio.dentalmanagementsystembackend.dto.ActualizarPerfilDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.CrearCuentaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.Account;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -39,11 +41,28 @@ public class AccountTest {
 
     @Test
     void testGuardarCuentas() throws Exception {
-        CrearCuentaDTO crearCuentaDTO = new CrearCuentaDTO("1234","carlos","315303341","carrera-15#3","brandone.aceve@uqvirtual.edu.co","12345");
+        CrearCuentaDTO crearCuentaDTO = new CrearCuentaDTO(
+                "123",                            // idNumber
+                "Carlos",                           // name
+                "Acevedo",                          // lastName
+                "315303341",                        // phoneNumber
+                "carrera-15#3",                     // address
+                LocalDate.parse("2000-05-20"),      // fechaNacimiento (LocalDate)
+                "brandon.aceve@uqvirtual.edu.co",  // email
+                "securePassword123"                 // password
+        );
         serviciosCuenta.crearCuenta(crearCuentaDTO);
+    }
 
+    @Test
+    void testEliminarCuentas() throws Exception {
+        serviciosCuenta.eliminarCuenta("1234");
+    }
 
-
+    @Test
+    void actualizarUsuario() throws Exception {
+        ActualizarPerfilDTO actualizarPerfilDTO = new ActualizarPerfilDTO("Brandon","montealegre","31530331","Maria-cristina#15");
+        serviciosCuenta.actualizarPerfil("123", actualizarPerfilDTO);
     }
 
 
