@@ -9,11 +9,12 @@ import org.simplejavamail.api.mailer.config.TransportStrategy;
 import org.simplejavamail.email.EmailBuilder;
 import org.simplejavamail.mailer.MailerBuilder;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 
-
+@Service
 public class EmailImpl implements EmailService {
 
-    private final String SMTP_USERNAME = "OdontoLogic@gmail.com";
+    private final String SMTP_USERNAME = "unieventosproyect@gmail.com";
     private final String SMTP_PASSWORD = "fyncswwbtqwubuja";
 
     /**  Envía un email electrónico.
