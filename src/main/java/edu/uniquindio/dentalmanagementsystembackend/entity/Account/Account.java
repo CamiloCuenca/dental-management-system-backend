@@ -32,8 +32,9 @@ public class Account {
     @Column(name = "fecha_registro", nullable = false, updatable = false)
     private LocalDateTime registrationDate;
 
-    @Column(name = "codigo_activacion", length = 10, unique = true)
-    private String registrationValidationCode;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "codigo_activacion_id", referencedColumnName = "id")
+    private ValidationCode registrationValidationCode;
 
     @Column(name = "estado", nullable = false)
     @Enumerated(EnumType.STRING)

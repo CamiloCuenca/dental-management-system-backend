@@ -10,6 +10,8 @@ import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.ValidationCode;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CuentaRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.UserRepository;
+import edu.uniquindio.dentalmanagementsystembackend.repository.validationCodeRepository;
+import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.EmailService;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCuenta;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,12 +31,15 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     private final CuentaRepository accountRepository;
     private final UserRepository userRepository;
+    private final validationCodeRepository validationCodeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
 
 
 
     @Override
+    @Transactional
     public String crearCuenta(CrearCuentaDTO cuenta) throws Exception {
         // Verificar si ya existe una cuenta con el mismo email.
         if (accountRepository.findByEmail(cuenta.email()).isPresent()) {
@@ -46,8 +52,8 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         }
 
         // Encriptar la contraseña
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-        String hashedPassword = bCryptPasswordEncoder.encode(cuenta.password());
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String hashedPassword = passwordEncoder.encode(cuenta.password());
 
         // Crear la cuenta con los datos proporcionados
         Account newAccount = new Account();
@@ -55,26 +61,39 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         newAccount.setPassword(hashedPassword);
         newAccount.setRol(Rol.PACIENTE);
         newAccount.setRegistrationDate(LocalDateTime.now());
-        newAccount.setStatus(AccountStatus.ACTIVE);
-        newAccount.setRegistrationValidationCode(UUID.randomUUID().toString().substring(0,5));
+        newAccount.setStatus(AccountStatus.INACTIVE);
 
-        // Crear y asignar el usuario a la cuenta
+        // Crear y asignar el usuario
         User newUser = new User(
                 cuenta.idNumber(),
                 cuenta.name(),
                 cuenta.lastName(),
                 cuenta.phoneNumber(),
                 cuenta.address(),
-                cuenta.fechaNacimiento(), // Ahora usa LocalDate
+                cuenta.fechaNacimiento(),
                 newAccount
         );
-
         newAccount.setUser(newUser);
 
+        // Generar código de activación
+        newAccount.setRegistrationValidationCode(new ValidationCode(generateValidationCode()));
+
         // Guardar la cuenta en la base de datos
-        Account crearAccount = accountRepository.save(newAccount);
-        return crearAccount.getId().toString();
+        Account createdAccount = accountRepository.save(newAccount);
+
+        // Enviar el código por email
+        emailService.sendCodevalidation(createdAccount.getEmail(), createdAccount.getRegistrationValidationCode().getCode());
+
+        return createdAccount.getId().toString();
     }
+
+    private String generateValidationCode() {
+        return String.format("%05d", new SecureRandom().nextInt(100000));
+    }
+
+
+
+
 
     @Override
     public PerfilDTO obtenerPerfil(String idNumber) throws Exception {
