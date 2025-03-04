@@ -16,11 +16,28 @@ public class EmailImpl implements EmailService {
     private final String SMTP_USERNAME = "OdontoLogic@gmail.com";
     private final String SMTP_PASSWORD = "fyncswwbtqwubuja";
 
-
+    /**  Envía un email electrónico.
+     *
+     * @param emailDTO Data Transfer Object que contiene la información del email electrónico a enviar.
+     * @throws Exception
+     */
     @Override
     @Async
     public void sendMail(EmailDTO emailDTO) throws Exception {
+        Email email = EmailBuilder.startingBlank()
+                .from(SMTP_USERNAME)
+                .to(emailDTO.recipient())
+                .withSubject(emailDTO.issue())
+                .withHTMLText(emailDTO.body())
+                .buildEmail();
 
+        try (Mailer mailer = MailerBuilder
+                .withSMTPServer("smtp.gmail.com", 587, SMTP_USERNAME, SMTP_PASSWORD)
+                .withTransportStrategy(TransportStrategy.SMTP_TLS)
+                .withDebugLogging(true)
+                .buildMailer()) {
+            mailer.sendMail(email);
+        }
     }
 
     /** Envía un código QR por email electrónico.

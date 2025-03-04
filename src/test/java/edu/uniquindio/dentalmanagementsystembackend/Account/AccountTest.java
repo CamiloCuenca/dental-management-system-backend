@@ -42,13 +42,13 @@ public class AccountTest {
     @Test
     void testGuardarCuentas() throws Exception {
         CrearCuentaDTO crearCuentaDTO = new CrearCuentaDTO(
-                "123",                            // idNumber
-                "Carlos",                           // name
-                "Acevedo",                          // lastName
+                "12345",                            // idNumber
+                "Carlos andres",                           // name
+                "Acevedo castañeda",                          // lastName
                 "315303341",                        // phoneNumber
                 "carrera-15#3",                     // address
                 LocalDate.parse("2000-05-20"),      // fechaNacimiento (LocalDate)
-                "brandon.aceve@uqvirtual.edu.co",  // email
+                "brandn.aceve@uqvirtual.edu.co",  // email
                 "securePassword123"                 // password
         );
         serviciosCuenta.crearCuenta(crearCuentaDTO);

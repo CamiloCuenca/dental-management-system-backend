@@ -7,6 +7,7 @@ import edu.uniquindio.dentalmanagementsystembackend.dto.CrearCuentaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.PerfilDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.Account;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.ValidationCode;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CuentaRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.UserRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCuenta;
