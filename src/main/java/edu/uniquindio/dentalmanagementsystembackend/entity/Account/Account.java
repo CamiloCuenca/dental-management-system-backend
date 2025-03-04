@@ -43,7 +43,7 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private Rol rol;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "id_number", unique = true)
     private User user;
 }
