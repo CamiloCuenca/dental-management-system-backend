@@ -1,6 +1,8 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.impl;
 
+import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
+import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.dto.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
@@ -29,6 +31,10 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     @Autowired
     private UserRepository userRepository;
 
+    /**
+     *
+     * @param citaDTO
+     */
     @Override
     public void crearCita(CitaDTO citaDTO) {
         // Buscar el paciente y el odontólogo en la base de datos
@@ -56,7 +62,11 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         System.out.println("Cita creada correctamente.");
     }
 
-
+    /**
+     *
+     * @param idPaciente
+     * @return
+     */
     @Override
     public List<CitaDTO> obtenerCitasPorPaciente(Long idPaciente) {
         return citasRepository.findByPacienteId(String.valueOf(idPaciente)).stream()
@@ -70,5 +80,36 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<CitaDTO> obtenerTodasLasCitas() {
+        return citasRepository.findAll().stream()
+                .map(cita -> new CitaDTO(
+                        Long.parseLong(cita.getPaciente().getIdNumber()),
+                        Long.parseLong(cita.getOdontologo().getIdNumber()),
+                        cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime(),
+                        cita.getEstado(),
+                        cita.getTipoCita()
+                ))
+                .collect(Collectors.toList());
+    }
 
+    @Override
+    public void editarCita(Long idCita, TipoCita nuevoTipoCita) {
+        Cita cita = citasRepository.findById(idCita)
+                .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+
+        cita.setTipoCita(nuevoTipoCita);
+        citasRepository.save(cita);
+        System.out.println("Cita actualizada correctamente.");
+    }
+
+    @Override
+    public void cancelarCita(Long idCita) {
+        Cita cita = citasRepository.findById(idCita)
+                .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
+
+        cita.setEstado(EstadoCitas.CANCELADA);
+        citasRepository.save(cita);
+        System.out.println("Cita cancelada correctamente.");
+    }
 }
