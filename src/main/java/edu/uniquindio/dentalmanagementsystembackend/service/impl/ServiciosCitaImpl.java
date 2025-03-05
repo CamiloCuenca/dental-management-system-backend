@@ -12,7 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ServiciosCitaImpl implements ServiciosCitas {
@@ -52,4 +55,20 @@ public class ServiciosCitaImpl implements ServiciosCitas {
 
         System.out.println("Cita creada correctamente.");
     }
+
+
+    @Override
+    public List<CitaDTO> obtenerCitasPorPaciente(Long idPaciente) {
+        return citasRepository.findByPacienteId(String.valueOf(idPaciente)).stream()
+                .map(cita -> new CitaDTO(
+                        Long.parseLong(cita.getPaciente().getIdNumber()),  // Convertir String a Long
+                        Long.parseLong(cita.getOdontologo().getIdNumber()), // Convertir String a Long
+                        cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime(), // Convertir Instant a LocalDateTime
+                        cita.getEstado(),
+                        cita.getTipoCita()
+                ))
+                .collect(Collectors.toList());
+    }
+
+
 }
