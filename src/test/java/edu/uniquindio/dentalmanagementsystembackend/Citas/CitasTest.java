@@ -2,6 +2,7 @@ package edu.uniquindio.dentalmanagementsystembackend.Citas;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.dto.CitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
 import org.junit.jupiter.api.Test;
@@ -28,14 +29,14 @@ public class CitasTest {
 
     @Test
     void testObtenerTodasLasCitas() {
-        List<CitaDTO> citas = serviciosCitas.obtenerTodasLasCitas();
+        List<ListaCitasDTO> citas = serviciosCitas.obtenerTodasLasCitas();
         System.out.println("Citas encontradas: " + citas.size());
         citas.forEach(System.out::println);
     }
 
     @Test
     void testEditarCita() {
-        Long idCita = 444777666L; // Asegúrate de que exista en la BD
+        Long idCita = 2L; // Asegúrate de que exista en la BD
         TipoCita nuevoTipoCita = TipoCita.ORTODONCIA;
         serviciosCitas.editarCita(idCita, nuevoTipoCita);
         System.out.println("Cita con ID " + idCita + " editada correctamente.");
