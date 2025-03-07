@@ -1,6 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.controller;
 
 import edu.uniquindio.dentalmanagementsystembackend.dto.CitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +24,8 @@ public class CitaController {
         return ResponseEntity.ok("Cita creada exitosamente.");
     }
     @GetMapping("/paciente/{idPaciente}")
-    public ResponseEntity<List<CitaDTO>> obtenerCitasPorPaciente(@PathVariable Long idPaciente) {
-        List<CitaDTO> citas = servicioCita.obtenerCitasPorPaciente(idPaciente);
+    public ResponseEntity<List<ListaCitasDTO>> obtenerCitasPorPaciente(@PathVariable Long idPaciente) {
+        List<ListaCitasDTO> citas = servicioCita.obtenerCitasPorPaciente(idPaciente);
         return ResponseEntity.ok(citas);
     }
 }
