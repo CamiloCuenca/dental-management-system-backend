@@ -4,6 +4,7 @@ import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.dto.CitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
@@ -68,9 +69,10 @@ public class ServiciosCitaImpl implements ServiciosCitas {
      * @return
      */
     @Override
-    public List<CitaDTO> obtenerCitasPorPaciente(Long idPaciente) {
+    public List<ListaCitasDTO> obtenerCitasPorPaciente(Long idPaciente) {
         return citasRepository.findByPacienteId(String.valueOf(idPaciente)).stream()
-                .map(cita -> new CitaDTO(
+                .map(cita -> new ListaCitasDTO(
+                        cita.getId(),
                         Long.parseLong(cita.getPaciente().getIdNumber()),  // Convertir String a Long
                         Long.parseLong(cita.getOdontologo().getIdNumber()), // Convertir String a Long
                         cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime(), // Convertir Instant a LocalDateTime
@@ -81,9 +83,10 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     }
 
     @Override
-    public List<CitaDTO> obtenerTodasLasCitas() {
+    public List<ListaCitasDTO> obtenerTodasLasCitas() {
         return citasRepository.findAll().stream()
-                .map(cita -> new CitaDTO(
+                .map(cita -> new ListaCitasDTO(
+                        cita.getId(),
                         Long.parseLong(cita.getPaciente().getIdNumber()),
                         Long.parseLong(cita.getOdontologo().getIdNumber()),
                         cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime(),

@@ -2,6 +2,7 @@ package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.dto.CitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +23,13 @@ public interface ServiciosCitas {
      * @param idPaciente
      * @return
      */
-    List<CitaDTO> obtenerCitasPorPaciente(Long idPaciente);
+    List<ListaCitasDTO> obtenerCitasPorPaciente(Long idPaciente);
 
     /**
      *
      * @return
      */
-    List<CitaDTO> obtenerTodasLasCitas(); // Obtener todas las citas
+    List<ListaCitasDTO> obtenerTodasLasCitas(); // Obtener todas las citas
 
     /**
      *
