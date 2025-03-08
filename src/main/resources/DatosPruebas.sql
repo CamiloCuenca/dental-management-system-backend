@@ -14,6 +14,12 @@ INSERT INTO cuentas (fecha_registro, codigo_activacion, user_id, email, user_pas
                                                                                                         (NOW(), 'JKL012', '444333222', 'laura.sanchez@hotmail.com', 'password123', 'INACTIVE', 'PACIENTE'),
                                                                                                         (NOW(), 'MNO345', '999888777', 'pedro.lopez@yahoo.com', 'password123', 'ACTIVE', 'PACIENTE');
 
+-- Poblar la tabla citas
+INSERT INTO citas (fecha_hora, odontologo_id, paciente_id, estado) VALUES
+                                                                       ('2025-03-10 09:00:00', '123456789', '555666777', 'CONFIRMADA'),
+                                                                       ('2025-03-12 10:30:00', '987654321', '444333222', 'PENDIENTE'),
+                                                                       ('2025-03-15 14:00:00', '123456789', '999888777', 'CANCELADA'),
+                                                                       ('2025-03-20 16:45:00', '987654321', '555666777', 'COMPLETADA');
 
 -- Poblar la tabla historiales_medicos
 INSERT INTO historiales_medicos (fecha, odontologo_id, paciente_id, descripcion) VALUES

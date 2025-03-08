@@ -1,7 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.impl;
 
 
-import edu.uniquindio.dentalmanagementsystembackend.dto.EmailDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.account.EmailDTO;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.EmailService;
 import org.simplejavamail.api.email.Email;
 import org.simplejavamail.api.mailer.Mailer;

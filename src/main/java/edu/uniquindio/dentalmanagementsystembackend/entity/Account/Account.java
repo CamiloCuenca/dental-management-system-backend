@@ -19,32 +19,25 @@ public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id; // ID único de la cuenta
 
-    @Column(name = "email", nullable = false, length = 100, unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "user_password", nullable = false)
+    @Column(nullable = false)
     private String password;
 
-    @CreationTimestamp
-    @Column(name = "fecha_registro", nullable = false, updatable = false)
-    private LocalDateTime registrationDate;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "codigo_activacion_id", referencedColumnName = "id")
-    private ValidationCode registrationValidationCode;
-
-    @Column(name = "estado", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private AccountStatus status;
-
-    @Column(name = "rol", nullable = false)
     @Enumerated(EnumType.STRING)
     private Rol rol;
+
+    @Enumerated(EnumType.STRING)
+    private AccountStatus status;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "id_number", unique = true)
     private User user;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "validation_code_id")
+    private ValidationCode registrationValidationCode;
 }

@@ -3,7 +3,7 @@ package edu.uniquindio.dentalmanagementsystembackend.service.impl;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
-import edu.uniquindio.dentalmanagementsystembackend.dto.CitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;

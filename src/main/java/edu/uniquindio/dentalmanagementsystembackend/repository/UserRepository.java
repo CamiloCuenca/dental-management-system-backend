@@ -12,6 +12,7 @@ import java.util.List;
 @Repository
 public interface UserRepository extends JpaRepository<User,Long> {
 
+    boolean existsByIdNumber(String s);
     @Query("SELECT u FROM User u WHERE u.account.rol = :rol")
     List<User> findByRol(@Param("rol") Rol rol);
 

@@ -17,26 +17,25 @@ import java.time.LocalDateTime;
 public class User {
 
     @Id
-    @Column(name = "id_number", nullable = false, unique = true, length = 20)
-    private String idNumber;
+    @Column(name = "id_number")
+    private String idNumber; // Cédula como clave primaria
 
-    @Column(name = "nombre", nullable = false, length = 100)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "apellido", nullable = false, length = 100)
+    @Column(nullable = false)
     private String lastName;
 
-    @Column(name = "telefono", length = 20)
+    @Column(nullable = false, unique = true)
     private String phoneNumber;
 
-    @Column(name = "direccion", length = 255)
+    @Column(nullable = false)
     private String address;
 
-    @Column(name = "fecha_nacimiento", nullable = false)
-    private LocalDate birthDate; // Ahora usa LocalDate
+    @Column(nullable = false)
+    private LocalDate birthDate;
 
-    // Relación bidireccional controlada desde Account
-    @OneToOne(mappedBy = "user", cascade = CascadeType.MERGE)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private Account account;
 
 
