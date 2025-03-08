@@ -1,4 +1,4 @@
-package edu.uniquindio.dentalmanagementsystembackend.dto;
+package edu.uniquindio.dentalmanagementsystembackend.dto.account;
 
 public record ActualizarPerfilDTO(
         String name,

@@ -1,6 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
-import edu.uniquindio.dentalmanagementsystembackend.dto.CitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 
 public interface ServiciosCitas {
 

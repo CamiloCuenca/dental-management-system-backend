@@ -1,6 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
-import edu.uniquindio.dentalmanagementsystembackend.dto.EmailDTO;
+
+import edu.uniquindio.dentalmanagementsystembackend.dto.account.EmailDTO;
 
 public interface EmailService {
 
