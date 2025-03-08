@@ -7,6 +7,7 @@ import edu.uniquindio.dentalmanagementsystembackend.dto.account.CrearCuentaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.LoginDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.Account;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
+import edu.uniquindio.dentalmanagementsystembackend.exception.*;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CuentaRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.UserRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCuenta;
@@ -40,7 +41,7 @@ public class AccountTest {
 
 
     @Test
-    void testLogin() throws Exception {
+    void testLogin() throws Exception, UserNotFoundException, InvalidPasswordException, AccountInactiveException {
         LoginDTO  loginDTO = new LoginDTO(
                 "12345",
                 "4321"
@@ -51,7 +52,7 @@ public class AccountTest {
 
 
     @Test
-    void testGuardarCuentas() throws Exception {
+    void testGuardarCuentas() throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException {
         CrearCuentaDTO crearCuentaDTO = new CrearCuentaDTO(
                 "12345",                            // idNumber
                 "Brandon andres",                           // name
@@ -66,12 +67,12 @@ public class AccountTest {
     }
 
     @Test
-    void testEliminarCuentas() throws Exception {
+    void testEliminarCuentas() throws Exception, UserNotFoundException, InvalidIdFormatException {
         serviciosCuenta.eliminarCuenta("1234");
     }
 
     @Test
-    void actualizarUsuario() throws Exception {
+    void actualizarUsuario() throws Exception, UserNotFoundException, InvalidIdFormatException {
         ActualizarPerfilDTO actualizarPerfilDTO = new ActualizarPerfilDTO("Brandon","montealegre","31530331","Maria-cristina#15");
         serviciosCuenta.actualizarPerfil("1234", actualizarPerfilDTO);
     }
