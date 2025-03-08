@@ -14,10 +14,11 @@ import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.Servicios
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,29 +40,60 @@ public class ServiciosCitaImpl implements ServiciosCitas {
      */
     @Override
     public void crearCita(CitaDTO citaDTO) {
-        // Buscar el paciente y el odontólogo en la base de datos
+        // Buscar el paciente en la base de datos
         User paciente = userRepository.findById(citaDTO.idPaciente())
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
 
-        User odontologo = userRepository.findById(citaDTO.idDoctor())
-                .orElseThrow(() -> new RuntimeException("Odontólogo no encontrado"));
-
-        // Validación de roles
         if (paciente.getAccount() == null || paciente.getAccount().getRol() != Rol.PACIENTE) {
             throw new IllegalArgumentException("El usuario con ID " + citaDTO.idPaciente() + " no es un paciente.");
         }
-        if (odontologo.getAccount() == null || odontologo.getAccount().getRol() != Rol.DOCTOR) {
-            throw new IllegalArgumentException("El usuario con ID " + citaDTO.idDoctor() + " no es un odontólogo.");
+
+        // Obtener todos los odontólogos disponibles
+        List<User> odontologos = userRepository.findByRol(Rol.DOCTOR);
+        if (odontologos.isEmpty()) {
+            throw new IllegalArgumentException("No hay odontólogos disponibles.");
         }
 
-        // Convertir la fecha a Instant
-        Instant fechaInstant = citaDTO.fechaHora().toInstant(ZoneOffset.UTC);
+        // Buscar el primer odontólogo con un espacio libre en su agenda
+        User odontologoAsignado = null;
+        LocalDateTime fechaHoraAsignada = null;
+        LocalDate fecha = LocalDate.now(); // Iniciar búsqueda desde hoy
+        LocalTime horaInicio = LocalTime.of(8, 0); // Hora de inicio de atención (ejemplo: 8:00 AM)
+        LocalTime horaFin = LocalTime.of(18, 0); // Hora de fin de atención (ejemplo: 6:00 PM)
 
-        // Crear la cita con User
-        Cita cita = new Cita(paciente, odontologo, fechaInstant, citaDTO.estado(), citaDTO.tipoCita());
+        for (User odontologo : odontologos) {
+            while (odontologoAsignado == null) {
+                List<Cita> citasDelDia = citasRepository.findByOdontologoAndFecha(odontologo, fecha);
+                LocalDateTime posibleHora = LocalDateTime.of(fecha, horaInicio);
+
+                while (posibleHora.toLocalTime().isBefore(horaFin)) {
+                    LocalDateTime finalPosibleHora = posibleHora;
+                    boolean disponible = citasDelDia.stream().noneMatch(cita ->
+                            Math.abs(ChronoUnit.MINUTES.between(cita.getFechaHora().atZone(ZoneOffset.UTC).toLocalDateTime(), finalPosibleHora)) < 40);
+
+                    if (disponible) {
+                        odontologoAsignado = odontologo;
+                        fechaHoraAsignada = posibleHora;
+                        break;
+                    }
+                    posibleHora = posibleHora.plusMinutes(40);
+                }
+                if (odontologoAsignado == null) {
+                    fecha = fecha.plusDays(1); // Si no hay espacio, buscar en el siguiente día
+                }
+            }
+            if (odontologoAsignado != null) break;
+        }
+
+        if (odontologoAsignado == null || fechaHoraAsignada == null) {
+            throw new IllegalArgumentException("No se encontró disponibilidad para programar la cita.");
+        }
+
+        // Crear y guardar la cita
+        Cita cita = new Cita(paciente, odontologoAsignado, fechaHoraAsignada.toInstant(ZoneOffset.UTC), citaDTO.estado(), citaDTO.tipoCita());
         citasRepository.save(cita);
 
-        System.out.println("Cita creada correctamente.");
+        System.out.println("✅ Cita creada correctamente con el odontólogo " + odontologoAsignado.getName() + " en la fecha: " + fechaHoraAsignada);
     }
 
     /**
