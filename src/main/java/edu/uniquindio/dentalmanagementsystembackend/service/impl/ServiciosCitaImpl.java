@@ -33,8 +33,9 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     private UserRepository userRepository;
 
     /**
+     * Crea una nueva cita en el sistema.
      *
-     * @param citaDTO
+     * @param citaDTO Objeto que contiene los datos de la cita a crear.
      */
     @Override
     public void crearCita(CitaDTO citaDTO) {
@@ -57,16 +58,17 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         Instant fechaInstant = citaDTO.fechaHora().toInstant(ZoneOffset.UTC);
 
         // Crear la cita con User
-        Cita cita = new Cita(paciente, odontologo, fechaInstant, citaDTO.estado() , citaDTO.tipoCita());
+        Cita cita = new Cita(paciente, odontologo, fechaInstant, citaDTO.estado(), citaDTO.tipoCita());
         citasRepository.save(cita);
 
         System.out.println("Cita creada correctamente.");
     }
 
     /**
+     * Obtiene todas las citas de un paciente.
      *
-     * @param idPaciente
-     * @return
+     * @param idPaciente ID del paciente.
+     * @return Lista de objetos ListaCitasDTO que contienen las citas del paciente.
      */
     @Override
     public List<ListaCitasDTO> obtenerCitasPorPaciente(Long idPaciente) {
@@ -82,6 +84,11 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Obtiene todas las citas del sistema.
+     *
+     * @return Lista de objetos ListaCitasDTO que contienen todas las citas.
+     */
     @Override
     public List<ListaCitasDTO> obtenerTodasLasCitas() {
         return citasRepository.findAll().stream()
@@ -96,6 +103,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Edita el tipo de una cita existente.
+     *
+     * @param idCita ID de la cita a editar.
+     * @param nuevoTipoCita Nuevo tipo de cita.
+     */
     @Override
     public void editarCita(Long idCita, TipoCita nuevoTipoCita) {
         Cita cita = citasRepository.findById(idCita)
@@ -106,6 +119,11 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         System.out.println("Cita actualizada correctamente.");
     }
 
+    /**
+     * Cancela una cita existente cambiando su estado a CANCELADA.
+     *
+     * @param idCita ID de la cita a cancelar.
+     */
     @Override
     public void cancelarCita(Long idCita) {
         Cita cita = citasRepository.findById(idCita)
