@@ -1,7 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.Citas;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
-import edu.uniquindio.dentalmanagementsystembackend.dto.CitaDTO;
+
 import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;

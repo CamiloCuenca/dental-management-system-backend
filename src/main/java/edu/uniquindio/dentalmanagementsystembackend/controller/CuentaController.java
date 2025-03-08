@@ -41,32 +41,4 @@ public class CuentaController {
         }
     }
 
-    @GetMapping("/perfil/{idNumber}")
-    public ResponseEntity<PerfilDTO> obtenerPerfil(@PathVariable String idNumber) {
-        try {
-            return ResponseEntity.ok(serviciosCuenta.obtenerPerfil(idNumber));
-        } catch (Exception | UserNotFoundException | InvalidIdFormatException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
-    }
-
-    @PutMapping("/perfil/{idNumber}")
-    public ResponseEntity<String> actualizarPerfil(@PathVariable String idNumber, @RequestBody ActualizarPerfilDTO actualizarPerfilDTO) {
-        try {
-            serviciosCuenta.actualizarPerfil(idNumber, actualizarPerfilDTO);
-            return ResponseEntity.ok("Perfil actualizado correctamente.");
-        } catch (Exception | UserNotFoundException | InvalidIdFormatException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @DeleteMapping("/eliminar/{idNumber}")
-    public ResponseEntity<String> eliminarCuenta(@PathVariable String idNumber) {
-        try {
-            serviciosCuenta.eliminarCuenta(idNumber);
-            return ResponseEntity.ok("Cuenta eliminada correctamente.");
-        } catch (Exception | UserNotFoundException | InvalidIdFormatException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
 }
