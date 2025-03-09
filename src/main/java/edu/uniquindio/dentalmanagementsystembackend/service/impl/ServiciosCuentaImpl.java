@@ -48,6 +48,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
                 "rol", account.getRol(),
                 "nombre", account.getUser().getName(),
                 "id", account.getId(),
+                "idUser", account.getUser().getIdNumber(),
                 "email", account.getEmail()
         );
     }
