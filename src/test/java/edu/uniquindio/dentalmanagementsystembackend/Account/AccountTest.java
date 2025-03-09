@@ -39,7 +39,7 @@ public class AccountTest {
     void testLogin() throws Exception, UserNotFoundException, InvalidPasswordException, AccountInactiveException {
         LoginDTO  loginDTO = new LoginDTO(
                 "1001277430",
-                "12"
+                "123"
         );
 
         serviciosCuenta.login(loginDTO);
@@ -91,15 +91,30 @@ public class AccountTest {
         serviciosCuenta.sendActiveCode("ba5808864@gmail.com");
     }
 
+    @Test
+    void testEnviarCodigoRecuperacion() throws Exception, EmailNotFoundException {
+        serviciosCuenta.sendPasswordRecoveryCode("ba5808864@gmail.com");
+    }
+
 
     @Test
-    void testUpdate() throws Exception, PasswordMismatchException, InvalidCurrentPasswordException {
+    void testUpdateCode() throws Exception, PasswordMismatchException, InvalidCurrentPasswordException {
         UpdatePasswordDTO updatePasswordDTO = new UpdatePasswordDTO(
                 "12345",
                 "12",
                 "12"
         );
         serviciosCuenta.updatePassword(4L,updatePasswordDTO);
+    }
+
+    @Test
+    void testChangePasswordCode() throws Exception, PasswordsDoNotMatchException, InvalidValidationCodeException, ValidationCodeExpiredException {
+        ChangePasswordCodeDTO changePasswordCodeDTO = new ChangePasswordCodeDTO(
+                "59473",
+                "123",
+                "123"
+        );
+        serviciosCuenta.changePasswordCode(changePasswordCodeDTO);
     }
 
 

@@ -45,10 +45,11 @@ public interface ServiciosCuenta {
 
     String sendActiveCode(String email) throws Exception, EmailNotFoundException;
 
-    String changePasswordCode(ChangePasswordDTO changePasswordDTO) throws Exception;
+    String changePasswordCode(ChangePasswordCodeDTO changePasswordCodeDTO) throws Exception, InvalidValidationCodeException, ValidationCodeExpiredException, PasswordsDoNotMatchException;
 
     String updatePassword(Long id ,UpdatePasswordDTO updatePasswordDTO) throws Exception, InvalidCurrentPasswordException, PasswordMismatchException;
 
+    String sendPasswordRecoveryCode(String correo) throws Exception, EmailNotFoundException;
 
 
 }

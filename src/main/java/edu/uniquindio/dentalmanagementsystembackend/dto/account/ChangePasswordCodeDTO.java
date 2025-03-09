@@ -1,6 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.dto.account;
 
-public record ChangePasswordDTO(
+public record ChangePasswordCodeDTO(
         String code,
         String newPassword,
         String confirmationPassword

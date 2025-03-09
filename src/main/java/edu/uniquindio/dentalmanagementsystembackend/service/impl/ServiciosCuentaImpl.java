@@ -7,10 +7,12 @@ import edu.uniquindio.dentalmanagementsystembackend.config.JWTUtils;
 import edu.uniquindio.dentalmanagementsystembackend.dto.JWT.TokenDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.*;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.Account;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.RecoveryCode;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.ValidationCode;
 import edu.uniquindio.dentalmanagementsystembackend.exception.*;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CuentaRepository;
+import edu.uniquindio.dentalmanagementsystembackend.repository.RecoveryCodeRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.UserRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.validationCodeRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.EmailService;
@@ -34,9 +36,11 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     private final CuentaRepository accountRepository;
     private final UserRepository userRepository;
     private final validationCodeRepository validationCodeRepository;
+    private final RecoveryCodeRepository recoveryCode;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final JWTUtils jwtUtils;
+    private final RecoveryCodeRepository recoveryCodeRepository;
 
 
     private Map<String, Object> construirClaims(Account account) {
@@ -50,7 +54,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
 
     @Override
-    public TokenDTO login(LoginDTO loginDTO) throws UserNotFoundException, AccountInactiveException, InvalidPasswordException{
+    public TokenDTO login(LoginDTO loginDTO) throws UserNotFoundException, AccountInactiveException, InvalidPasswordException {
         // Buscar la cuenta por el número de identificación (cédula)
         Optional<Account> accountOptional = accountRepository.findByIdUNumber(String.valueOf(loginDTO.idNumber()));
 
@@ -140,9 +144,6 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     }
 
 
-
-
-
     @Override
     public PerfilDTO obtenerPerfil(Long accountId) throws UserNotFoundException {
         // Buscar la cuenta en la base de datos
@@ -201,7 +202,6 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         // Guardar los cambios en el usuario
         userRepository.save(user);
     }
-
 
 
     @Override
@@ -286,8 +286,34 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     }
 
     @Override
-    public String changePasswordCode(ChangePasswordDTO changePasswordDTO) throws Exception {
-        return "";
+    @Transactional
+    public String changePasswordCode(ChangePasswordCodeDTO changePasswordDTO) throws Exception, InvalidValidationCodeException, ValidationCodeExpiredException, PasswordsDoNotMatchException {
+        // Buscar la cuenta del usuario por el código de validación
+        Account account = accountRepository.findByRecoveryCode_Code(changePasswordDTO.code())
+                .orElseThrow(() -> new InvalidValidationCodeException("No se encontró la cuenta."));
+
+        RecoveryCode recoveryCode = account.getRecoveryCode();
+
+        // Verificar si el código de recuperación es nulo o ha expirado
+        if (recoveryCode == null || recoveryCode.isExpired()) {
+            throw new ValidationCodeExpiredException("El código de recuperación ha expirado o no es válido.");
+        }
+
+        // Verificar que las contraseñas coincidan
+        if (!changePasswordDTO.newPassword().equals(changePasswordDTO.confirmationPassword())) {
+            throw new PasswordsDoNotMatchException("Las contraseñas no coinciden.");
+        }
+
+        // Encriptar la nueva contraseña y actualizar la cuenta
+        account.setPassword(passwordEncoder.encode(changePasswordDTO.newPassword()));
+
+        // Eliminar el código de recuperación después de cambiar la contraseña exitosamente
+        recoveryCodeRepository.delete(recoveryCode);
+        account.setRecoveryCode(null);
+        // Guardar la cuenta actualizada en el repositorio
+        accountRepository.save(account);
+
+        return "La contraseña ha sido cambiada exitosamente.";
     }
 
     @Override
@@ -318,6 +344,33 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         accountRepository.save(account);
 
         return "La contraseña ha sido cambiada exitosamente.";
+    }
+
+    @Override
+    @Transactional
+    public String sendPasswordRecoveryCode(String email) throws Exception, EmailNotFoundException {
+        // Buscar la cuenta en la base de datos por email
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new EmailNotFoundException("No se encontró una cuenta asociada al email: " + email));
+
+        // Si ya tiene un código de recuperación previo, eliminarlo
+        RecoveryCode existingCode = account.getRecoveryCode();
+        if (existingCode != null) {
+            recoveryCode.delete(existingCode);
+        }
+
+        // Generar código de activación
+        RecoveryCode recoveryCode = new RecoveryCode();
+        recoveryCode.setCode(generateValidationCode());
+
+        // Asignar el nuevo código a la cuenta
+        account.setRecoveryCode(recoveryCode);
+        accountRepository.save(account); // Guardar los cambios en la cuenta
+
+        // Enviar el código por correo
+        emailService.sendCodevalidation(account.getEmail(), account.getRecoveryCode().getCode());
+
+        return "Código de recuperacion de contraseña enviado al correo: " + account.getEmail();
     }
 
 
