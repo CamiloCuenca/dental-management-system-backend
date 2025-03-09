@@ -110,4 +110,18 @@ public class CuentaController {
         }
     }
 
+    @PutMapping("/update-password/{id}")
+    public ResponseEntity<String> updatePassword(@PathVariable Long id, @RequestBody UpdatePasswordDTO updatePasswordDTO)
+            throws Exception, InvalidCurrentPasswordException, PasswordMismatchException {
+        String response = accountService.updatePassword(id, updatePasswordDTO);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/send-recovery-code")
+    public ResponseEntity<String> sendPasswordRecoveryCode(@RequestParam String email)
+            throws Exception, EmailNotFoundException {
+        String response = accountService.sendPasswordRecoveryCode(email);
+        return ResponseEntity.ok(response);
+    }
+
 }
