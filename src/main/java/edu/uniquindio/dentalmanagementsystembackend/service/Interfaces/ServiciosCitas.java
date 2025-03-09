@@ -1,11 +1,11 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
-import edu.uniquindio.dentalmanagementsystembackend.dto.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
 
 import java.util.ArrayList;
 import java.util.List;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 
 public interface ServiciosCitas {
 

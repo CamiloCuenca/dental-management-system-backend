@@ -11,11 +11,16 @@ import java.util.Optional;
 @Repository
 public interface CuentaRepository extends JpaRepository<Account,Long> {
 
-    @Query("SELECT a FROM Account a WHERE a.user.idNumber = :idNumber")
+    @Query("SELECT a FROM Account a JOIN FETCH a.user WHERE a.user.idNumber = :idNumber")
     Optional<Account> findByIdUNumber(@Param("idNumber") String idNumber);
+
 
     @Query("SELECT a FROM Account a WHERE a.email = :email")
     Optional<Account> findByEmail(@Param("email") String email);
+
+    Optional<Account> findByRegistrationValidationCode_Code(String code);
+    Optional<Account> findByRecoveryCode_Code(String code);
+
 
 
 

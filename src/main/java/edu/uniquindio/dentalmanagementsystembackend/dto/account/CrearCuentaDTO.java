@@ -1,4 +1,4 @@
-package edu.uniquindio.dentalmanagementsystembackend.dto;
+package edu.uniquindio.dentalmanagementsystembackend.dto.account;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
