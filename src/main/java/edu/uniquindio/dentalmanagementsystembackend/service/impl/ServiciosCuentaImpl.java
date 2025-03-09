@@ -442,7 +442,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         accountRepository.save(account); // Guardar los cambios en la cuenta
 
         // Enviar el código por correo
-        emailService.sendCodevalidation(account.getEmail(), account.getRecoveryCode().getCode());
+        emailService.sendRecoveryCode(account.getEmail(), account.getRecoveryCode().getCode());
 
         return "Código de recuperacion de contraseña enviado al correo: " + account.getEmail();
     }
