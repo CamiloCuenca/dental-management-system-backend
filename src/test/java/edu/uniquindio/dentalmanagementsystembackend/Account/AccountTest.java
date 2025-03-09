@@ -35,68 +35,119 @@ public class AccountTest {
 
 
 
+    /**
+     * Test for user login.
+     * @throws Exception if a general error occurs.
+     * @throws UserNotFoundException if the user is not found.
+     * @throws InvalidPasswordException if the password is invalid.
+     * @throws AccountInactiveException if the account is inactive.
+     */
     @Test
     void testLogin() throws Exception, UserNotFoundException, InvalidPasswordException, AccountInactiveException {
-        LoginDTO  loginDTO = new LoginDTO(
+        LoginDTO loginDTO = new LoginDTO(
                 "1001277430",
-                "123"
+                "1234"
         );
 
         serviciosCuenta.login(loginDTO);
     }
 
-
+    /**
+     * Test for creating an account.
+     * @throws Exception if a general error occurs.
+     * @throws EmailAlreadyExistsException if the email already exists.
+     * @throws UserAlreadyExistsException if the user already exists.
+     */
     @Test
     void testGuardarCuentas() throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException {
         CrearCuentaDTO crearCuentaDTO = new CrearCuentaDTO(
                 "1001277430",                            // idNumber
-                "Brandon andres",                           // name
-                "Acevedo castañeda",                          // lastName
-                "3153033412",                        // phoneNumber
-                "carrera-15#3",                     // address
-                LocalDate.parse("2000-05-20"),      // fechaNacimiento (LocalDate)
-                "ba5808864@gmail.com",  // email
-                "1234"                 // password
+                "Brandon andres",                        // name
+                "Acevedo castañeda",                     // lastName
+                "3153033412",                            // phoneNumber
+                "carrera-15#3",                          // address
+                LocalDate.parse("2000-05-20"),           // fechaNacimiento (LocalDate)
+                "ba5808864@gmail.com",                   // email
+                "1234"                                   // password
         );
         serviciosCuenta.crearCuenta(crearCuentaDTO);
     }
 
+    /**
+     * Test for deleting an account.
+     * @throws Exception if a general error occurs.
+     * @throws UserNotFoundException if the user is not found.
+     * @throws InvalidIdFormatException if the ID format is invalid.
+     */
     @Test
     void testEliminarCuentas() throws Exception, UserNotFoundException, InvalidIdFormatException {
         serviciosCuenta.eliminarCuenta(1L);
     }
 
+    /**
+     * Test for updating a user profile.
+     * @throws Exception if a general error occurs.
+     * @throws UserNotFoundException if the user is not found.
+     * @throws InvalidIdFormatException if the ID format is invalid.
+     */
     @Test
     void actualizarUsuario() throws Exception, UserNotFoundException, InvalidIdFormatException {
-        ActualizarPerfilDTO actualizarPerfilDTO = new ActualizarPerfilDTO("morgan","montealegre","31530331","Maria-cristina#15");
+        ActualizarPerfilDTO actualizarPerfilDTO = new ActualizarPerfilDTO("morgan", "montealegre", "31530331", "Maria-cristina#15");
         serviciosCuenta.actualizarPerfil(1L, actualizarPerfilDTO);
     }
 
+    /**
+     * Test for obtaining a user profile.
+     * @throws Exception if a general error occurs.
+     * @throws UserNotFoundException if the user is not found.
+     * @throws InvalidIdFormatException if the ID format is invalid.
+     */
     @Test
     void testObtenerUsuario() throws Exception, UserNotFoundException, InvalidIdFormatException {
         serviciosCuenta.obtenerPerfil(1L);
     }
 
+    /**
+     * Test for activating an account.
+     * @throws Exception if a general error occurs.
+     * @throws AccountAlreadyActiveException if the account is already active.
+     * @throws ValidationCodeExpiredException if the validation code has expired.
+     */
     @Test
     void testActivarCuenta() throws Exception, AccountAlreadyActiveException, ValidationCodeExpiredException {
         ActivateAccountDTO activateAccountDTO = new ActivateAccountDTO(
-                "75266",
+                "04517",
                 "ba5808864@gmail.com"
         );
         serviciosCuenta.activateAccount(activateAccountDTO);
     }
 
+    /**
+     * Test for sending an activation code.
+     * @throws Exception if a general error occurs.
+     * @throws EmailNotFoundException if the email is not found.
+     */
     @Test
     void testEnviarCodigo() throws Exception, EmailNotFoundException {
         serviciosCuenta.sendActiveCode("ba5808864@gmail.com");
     }
 
+    /**
+     * Test for sending a password recovery code.
+     * @throws Exception if a general error occurs.
+     * @throws EmailNotFoundException if the email is not found.
+     */
     @Test
     void testEnviarCodigoRecuperacion() throws Exception, EmailNotFoundException {
         serviciosCuenta.sendPasswordRecoveryCode("ba5808864@gmail.com");
     }
 
-
+    /**
+     * Test for updating the password.
+     * @throws Exception if a general error occurs.
+     * @throws PasswordMismatchException if the passwords do not match.
+     * @throws InvalidCurrentPasswordException if the current password is invalid.
+     */
     @Test
     void testUpdateCode() throws Exception, PasswordMismatchException, InvalidCurrentPasswordException {
         UpdatePasswordDTO updatePasswordDTO = new UpdatePasswordDTO(
@@ -104,9 +155,16 @@ public class AccountTest {
                 "12",
                 "12"
         );
-        serviciosCuenta.updatePassword(4L,updatePasswordDTO);
+        serviciosCuenta.updatePassword(4L, updatePasswordDTO);
     }
 
+    /**
+     * Test for changing the password using a code.
+     * @throws Exception if a general error occurs.
+     * @throws PasswordsDoNotMatchException if the passwords do not match.
+     * @throws InvalidValidationCodeException if the validation code is invalid.
+     * @throws ValidationCodeExpiredException if the validation code has expired.
+     */
     @Test
     void testChangePasswordCode() throws Exception, PasswordsDoNotMatchException, InvalidValidationCodeException, ValidationCodeExpiredException {
         ChangePasswordCodeDTO changePasswordCodeDTO = new ChangePasswordCodeDTO(

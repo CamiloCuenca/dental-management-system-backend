@@ -13,7 +13,7 @@ import java.util.Map;
 @Component
 public class JWTUtils {
     // Método que genera un token JWT basado en el email del usuario y un mapa de claims (reclamaciones).
-    // Las claims pueden ser datos adicionales sobre el usuario o el contexto de autenticación.
+// Las claims pueden ser datos adicionales sobre el usuario o el contexto de autenticación.
     public String generateToken(String email, Map<String, Object> claims) {
 
         // Se obtiene el tiempo actual utilizando la clase Instant de java.time.
@@ -31,7 +31,7 @@ public class JWTUtils {
     }
 
     // Método para analizar (parsear) un token JWT y obtener las claims dentro del token.
-    // Lanza excepciones si el token está expirado, es inválido o tiene problemas de formato.
+// Lanza excepciones si el token está expirado, es inválido o tiene problemas de formato.
     public Jws<Claims> parseJwt(String jwtString) throws ExpiredJwtException, UnsupportedJwtException, MalformedJwtException, IllegalArgumentException {
         // Se crea un JwtParser para validar el token con la clave secreta.
         JwtParser jwtParser = Jwts.parser().verifyWith(getKey()).build();
@@ -41,7 +41,7 @@ public class JWTUtils {
     }
 
     // Método privado que genera y devuelve una clave secreta (SecretKey) para firmar los tokens.
-    // Usa el algoritmo HMAC-SHA basado en una clave de longitud suficiente para garantizar la seguridad.
+// Usa el algoritmo HMAC-SHA basado en una clave de longitud suficiente para garantizar la seguridad.
     private SecretKey getKey() {
         // La clave secreta que se utiliza para firmar y verificar el token.
         // Debe tener al menos 256 bits (32 bytes) para ser válida con HMAC-SHA256.
@@ -53,6 +53,5 @@ public class JWTUtils {
         // Se utiliza la clase Keys de la biblioteca JJWT para crear una clave secreta HMAC-SHA.
         return Keys.hmacShaKeyFor(secretKeyBytes);
     }
-
 
 }

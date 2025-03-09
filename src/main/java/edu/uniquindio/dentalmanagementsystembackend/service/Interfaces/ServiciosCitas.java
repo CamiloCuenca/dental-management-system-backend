@@ -9,38 +9,35 @@ import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 
 public interface ServiciosCitas {
 
-
     /**
-     * Método para crear (agendar) una cita odontológica
-     * @param citaDTO
+     * Método para crear (agendar) una cita odontológica.
+     * @param citaDTO DTO con la información de la cita a crear.
      */
     void crearCita(CitaDTO citaDTO);
 
-
-
     /**
-     * Método para obtener la lista de citas de un paciente
-     * @param idPaciente
-     * @return
+     * Método para obtener la lista de citas de un paciente.
+     * @param idPaciente Número de identificación del paciente.
+     * @return Lista de citas del paciente.
      */
     List<ListaCitasDTO> obtenerCitasPorPaciente(Long idPaciente);
 
     /**
-     *
-     * @return
+     * Método para obtener todas las citas.
+     * @return Lista de todas las citas.
      */
-    List<ListaCitasDTO> obtenerTodasLasCitas(); // Obtener todas las citas
+    List<ListaCitasDTO> obtenerTodasLasCitas();
 
     /**
-     *
-     * @param idCita
-     * @param nuevoTipoCita
+     * Método para editar el tipo de una cita.
+     * @param idCita Número de identificación de la cita.
+     * @param nuevoTipoCita Nuevo tipo de cita.
      */
-    void editarCita(Long idCita, TipoCita nuevoTipoCita); // Editar tipo de cita
+    void editarCita(Long idCita, TipoCita nuevoTipoCita);
 
     /**
-     *
-     * @param idCita
+     * Método para cancelar una cita.
+     * @param idCita Número de identificación de la cita.
      */
-    void cancelarCita(Long idCita); // Cancelar cita
+    void cancelarCita(Long idCita);
 }
