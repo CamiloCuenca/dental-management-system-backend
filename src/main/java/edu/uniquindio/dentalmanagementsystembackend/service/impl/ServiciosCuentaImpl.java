@@ -54,6 +54,14 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     }
 
 
+    /**
+     * Inicia sesión en el sistema.
+     * @param loginDTO DTO con las credenciales de inicio de sesión.
+     * @return TokenDTO con el token de autenticación.
+     * @throws UserNotFoundException si el usuario no se encuentra.
+     * @throws AccountInactiveException si la cuenta está inactiva.
+     * @throws InvalidPasswordException si la contraseña es incorrecta.
+     */
     @Override
     public TokenDTO login(LoginDTO loginDTO) throws UserNotFoundException, AccountInactiveException, InvalidPasswordException {
         // Buscar la cuenta por el número de identificación (cédula)
@@ -89,6 +97,14 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         return new TokenDTO(token);
     }
 
+    /**
+     * Crea una nueva cuenta de usuario.
+     * @param cuenta DTO con la información de la cuenta a crear.
+     * @return String con un mensaje de confirmación.
+     * @throws EmailAlreadyExistsException si el correo electrónico ya está registrado.
+     * @throws UserAlreadyExistsException si el usuario ya existe.
+     * @throws Exception si ocurre un error general.
+     */
     @Override
     @Transactional
     public String crearCuenta(CrearCuentaDTO cuenta) throws EmailAlreadyExistsException, UserAlreadyExistsException, Exception {
@@ -140,11 +156,20 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         return createdAccount.getId().toString();
     }
 
+    /**
+     * Genera un código de validación.
+     * @return String con el código de validación generado.
+     */
     private String generateValidationCode() {
         return String.format("%05d", new SecureRandom().nextInt(100000));
     }
 
-
+    /**
+     * Obtiene el perfil del paciente basado en su identificación.
+     * @param accountId Número de identificación del paciente.
+     * @return PerfilDTO con la información del usuario.
+     * @throws UserNotFoundException si el usuario no existe.
+     */
     @Override
     public PerfilDTO obtenerPerfil(Long accountId) throws UserNotFoundException {
         // Buscar la cuenta en la base de datos
@@ -174,6 +199,12 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         );
     }
 
+    /**
+     * Actualiza los datos personales del usuario.
+     * @param accountId Número de identificación del usuario.
+     * @param actualizarPerfilDTO DTO con los datos a actualizar.
+     * @throws UserNotFoundException si el usuario no existe.
+     */
     @Override
     @Transactional
     public void actualizarPerfil(Long accountId, ActualizarPerfilDTO actualizarPerfilDTO)
@@ -204,7 +235,11 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         userRepository.save(user);
     }
 
-
+    /**
+     * Desactiva la cuenta del usuario.
+     * @param accountId Número de identificación del usuario.
+     * @throws AccountNotFoundException si la cuenta no existe.
+     */
     @Override
     @Transactional
     public void eliminarCuenta(Long accountId) throws AccountNotFoundException {
@@ -225,6 +260,14 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         accountRepository.save(account);
     }
 
+    /**
+     * Activa la cuenta del usuario.
+     * @param activateAccountDTO DTO con la información para activar la cuenta.
+     * @return String con un mensaje de confirmación.
+     * @throws AccountAlreadyActiveException si la cuenta ya está activa.
+     * @throws ValidationCodeExpiredException si el código de validación ha expirado.
+     * @throws AccountNotFoundException si la cuenta no se encuentra.
+     */
     @Override
     @Transactional
     public String activateAccount(ActivateAccountDTO activateAccountDTO)
@@ -259,6 +302,13 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         return "Cuenta activada exitosamente.";
     }
 
+    /**
+     * Envía un código de activación al correo electrónico del usuario.
+     * @param email Correo electrónico del usuario.
+     * @return String con un mensaje de confirmación.
+     * @throws EmailNotFoundException si el correo electrónico no se encuentra.
+     * @throws Exception si ocurre un error general.
+     */
     @Override
     @Transactional
     public String sendActiveCode(String email) throws Exception, EmailNotFoundException {
@@ -286,6 +336,15 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         return "Código de validación de cuenta enviado al correo: " + account.getEmail();
     }
 
+    /**
+     * Cambia el código de la contraseña.
+     * @param changePasswordDTO DTO con la información para cambiar el código de la contraseña.
+     * @return String con un mensaje de confirmación.
+     * @throws InvalidValidationCodeException si el código de validación es inválido.
+     * @throws ValidationCodeExpiredException si el código de validación ha expirado.
+     * @throws PasswordsDoNotMatchException si las contraseñas no coinciden.
+     * @throws Exception si ocurre un error general.
+     */
     @Override
     @Transactional
     public String changePasswordCode(ChangePasswordCodeDTO changePasswordDTO) throws Exception, InvalidValidationCodeException, ValidationCodeExpiredException, PasswordsDoNotMatchException {
@@ -317,6 +376,15 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         return "La contraseña ha sido cambiada exitosamente.";
     }
 
+    /**
+     * Actualiza la contraseña del usuario.
+     * @param id Número de identificación del usuario.
+     * @param updatePasswordDTO DTO con la nueva contraseña.
+     * @return String con un mensaje de confirmación.
+     * @throws AccountNotFoundException si la cuenta no se encuentra.
+     * @throws InvalidCurrentPasswordException si la contraseña actual es incorrecta.
+     * @throws PasswordMismatchException si las contraseñas no coinciden.
+     */
     @Override
     @Transactional
     public String updatePassword(Long id, UpdatePasswordDTO updatePasswordDTO)
@@ -335,7 +403,6 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         String newPassword = updatePasswordDTO.newPassword();
         String confirmNewPassword = updatePasswordDTO.confirmationPassword();
 
-
         if (!newPassword.equals(confirmNewPassword)) {
             throw new PasswordMismatchException("La nueva contraseña y la confirmación no coinciden.");
         }
@@ -347,6 +414,13 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         return "La contraseña ha sido cambiada exitosamente.";
     }
 
+    /**
+     * Envía un código de recuperación de contraseña al correo electrónico del usuario.
+     * @param email Correo electrónico del usuario.
+     * @return String con un mensaje de confirmación.
+     * @throws EmailNotFoundException si el correo electrónico no se encuentra.
+     * @throws Exception si ocurre un error general.
+     */
     @Override
     @Transactional
     public String sendPasswordRecoveryCode(String email) throws Exception, EmailNotFoundException {
@@ -369,7 +443,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         accountRepository.save(account); // Guardar los cambios en la cuenta
 
         // Enviar el código por correo
-        emailService.sendCodevalidation(account.getEmail(), account.getRecoveryCode().getCode());
+        emailService.sendRecoveryCode(account.getEmail(), account.getRecoveryCode().getCode());
 
         return "Código de recuperacion de contraseña enviado al correo: " + account.getEmail();
     }

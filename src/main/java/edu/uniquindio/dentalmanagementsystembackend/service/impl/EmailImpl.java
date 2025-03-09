@@ -80,7 +80,7 @@ public class EmailImpl implements EmailService {
                 "<h3>Código de activación: " + validationCode + "</h3>" +
                 "<p>Este código es válido por 15 minutos.</p>" +
                 "<p>Si usted no solicitó este registro, por favor ignore este email.</p>" +
-                "<p>Atentamente,<br/>El equipo de UniEventos</p>" +
+                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
                 "</body></html>";
 
 
@@ -93,20 +93,20 @@ public class EmailImpl implements EmailService {
     /** Envía un código de recuperación de contraseña por email electrónico.
      *
      * @param email La dirección de email electrónico a la que se enviará el código de recuperación.
-     * @param passwordValidationCode El código de validación de la contraseña a enviar.
+     * @param recoveryCode El código de validación de la contraseña a enviar.
      * @throws Exception
      */
     @Override
     @Async
-    public void sendRecoveryCode(String email, String passwordValidationCode) throws Exception {
+    public void sendRecoveryCode(String email, String recoveryCode) throws Exception {
         // Crear el mensaje a enviar por email
         String htmlMessage = "<html><body>" +
                 "<p>Estimado usuario,</p>" +
                 "<p>Ha solicitado recuperar su contraseña. Utilice el siguiente código de recuperación para restablecer su contraseña:</p>" +
-                "<h3>Código de recuperación: " + passwordValidationCode + "</h3>" +
+                "<h3>Código de recuperación: " + recoveryCode + "</h3>" +
                 "<p>Este código es válido por 15 minutos.</p>" +
                 "<p>Si usted no solicitó esta recuperación, por favor ignore este email.</p>" +
-                "<p>Atentamente,<br/>El equipo de UniEventos</p>" +
+                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
                 "</body></html>";
 
 
