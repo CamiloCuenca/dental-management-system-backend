@@ -18,6 +18,10 @@ public interface CuentaRepository extends JpaRepository<Account,Long> {
     @Query("SELECT a FROM Account a WHERE a.email = :email")
     Optional<Account> findByEmail(@Param("email") String email);
 
+    Optional<Account> findByRegistrationValidationCode_Code(String code);
+    Optional<Account> findByRecoveryCode_Code(String code);
+
+
 
 
 }

@@ -40,4 +40,8 @@ public class Account {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "validation_code_id")
     private ValidationCode registrationValidationCode;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "Recovery_Code_id")
+    private RecoveryCode recoveryCode ;
 }
