@@ -13,35 +13,43 @@ import java.util.List;
 @RequestMapping("/api/citas")
 public class CitaController {
 
+
     private final ServiciosCitas servicioCita;
 
+    // Constructor para inyectar el servicio de citas
     public CitaController(ServiciosCitas servicioCita) {
         this.servicioCita = servicioCita;
     }
 
+    // Endpoint para crear una nueva cita
     @PostMapping("/crear")
     public ResponseEntity<String> crearCita(@RequestBody CitaDTO citaDTO) {
         servicioCita.crearCita(citaDTO);
         return ResponseEntity.ok("Cita creada exitosamente.");
     }
+
+    // Endpoint para obtener las citas de un paciente específico
     @GetMapping("/paciente/{idPaciente}")
     public ResponseEntity<List<ListaCitasDTO>> obtenerCitasPorPaciente(@PathVariable Long idPaciente) {
         List<ListaCitasDTO> citas = servicioCita.obtenerCitasPorPaciente(idPaciente);
         return ResponseEntity.ok(citas);
     }
 
+    // Endpoint para obtener todas las citas de los doctores
     @GetMapping("/doctor")
     public ResponseEntity<List<ListaCitasDTO>> ObtenerCitas() {
         List<ListaCitasDTO> citas = servicioCita.obtenerTodasLasCitas();
         return ResponseEntity.ok(citas);
     }
 
+    // Endpoint para editar una cita existente
     @PutMapping("/editar/{idCita}")
     public ResponseEntity<String> editarCita(@PathVariable Long idCita, @RequestParam TipoCita nuevoTipoCita) {
         servicioCita.editarCita(idCita, nuevoTipoCita);
         return ResponseEntity.ok("Cita actualizada correctamente.");
     }
 
+    // Endpoint para cancelar una cita existente
     @PutMapping("/cancelar/{idCita}")
     public ResponseEntity<String> cancelarCita(@PathVariable Long idCita) {
         servicioCita.cancelarCita(idCita);
