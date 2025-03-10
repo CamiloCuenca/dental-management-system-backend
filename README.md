@@ -66,7 +66,29 @@ spring.jpa.hibernate.ddl-auto=update
 ✅ Agendamiento automatizado de citas  
 ✅ Seguridad con JWT y Spring Security  
 ✅ Envío de correos con Simple Java Mail  
-✅ Documentación con Spring REST Docs  
+✅ Documentación con Spring REST Docs   
+
+## ✨Endpoints
+
+### Citas
+- **PUT** `/api/citas/cancelar/{idCita}` - Cancelar una cita.
+- **POST** `/api/citas/crear` - Crear una nueva cita.
+- **GET** `/api/citas/doctor` - Obtener citas asignadas a un doctor.
+- **PUT** `/api/citas/editar/{idCita}` - Editar el tipo de cita.
+- **GET** `/api/citas/paciente/{idPaciente}` - Obtener citas de un paciente.
+
+### Cuenta
+- **POST** `/api/cuenta/activate` - Activar una cuenta.
+- **POST** `/api/cuenta/change-password` - Cambiar la contraseña.
+- **POST** `/api/cuenta/login` - Iniciar sesión.
+- **GET** `/api/cuenta/perfil/{accountId}` - Obtener el perfil de una cuenta.
+- **PUT** `/api/cuenta/perfil/{accountId}` - Actualizar el perfil de una cuenta.
+- **POST** `/api/cuenta/register` - Crear una cuenta.
+- **POST** `/api/cuenta/send-activation-code` - Enviar código de activación.
+- **POST** `/api/cuenta/send-recovery-code` - Enviar código de recuperación de contraseña.
+- **PUT** `/api/cuenta/update-password/{id}` - Actualizar la contraseña.
+- **DELETE** `/api/cuenta/{accountId}` - Eliminar una cuenta.
+
 
 ## 📌 Dependencias Backend
 ```gradle
