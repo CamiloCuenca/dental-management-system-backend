@@ -1,0 +1,441 @@
+openapi: "3.1.0"
+info:
+  title: "dental_management_system_backend API"
+  description: "dental_management_system_backend API"
+  version: "1.0.0"
+servers:
+  - url: "https://dental_management_system_backend"
+paths:
+  /api/citas/cancelar/{idCita}:
+    put:
+      summary: "PUT api/citas/cancelar/{idCita}"
+      operationId: "cancelarCita"
+      parameters:
+        - name: "idCita"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/citas/crear:
+    post:
+      summary: "POST api/citas/crear"
+      operationId: "crearCita"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CitaDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/citas/doctor:
+    get:
+      summary: "GET api/citas/doctor"
+      operationId: "ObtenerCitas"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/ListaCitasDTO"
+  /api/citas/editar/{idCita}:
+    put:
+      summary: "PUT api/citas/editar/{idCita}"
+      operationId: "editarCita"
+      parameters:
+        - name: "idCita"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "nuevoTipoCita"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+            enum:
+              - "CONSULTA_GENERAL"
+              - "LIMPIEZA_DENTAL"
+              - "EXTRACCION_DIENTES"
+              - "TRATAMIENTO_DE_CONDUCTO"
+              - "ORTODONCIA"
+              - "IMPLANTES_DENTALES"
+              - "BLANQUEAMIENTO_DENTAL"
+              - "OTRO"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/citas/paciente/{idPaciente}:
+    get:
+      summary: "GET api/citas/paciente/{idPaciente}"
+      operationId: "obtenerCitasPorPaciente"
+      parameters:
+        - name: "idPaciente"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/ListaCitasDTO"
+  /api/cuenta/activate:
+    post:
+      summary: "POST api/cuenta/activate"
+      operationId: "activateAccount"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivateAccountDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/cuenta/change-password:
+    post:
+      summary: "POST api/cuenta/change-password"
+      operationId: "changePassword"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordCodeDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/cuenta/login:
+    post:
+      summary: "POST api/cuenta/login"
+      operationId: "login"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TokenDTO"
+  /api/cuenta/perfil/{accountId}:
+    get:
+      summary: "GET api/cuenta/perfil/{accountId}"
+      operationId: "obtenerPerfil"
+      parameters:
+        - name: "accountId"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PerfilDTO"
+    put:
+      summary: "PUT api/cuenta/perfil/{accountId}"
+      operationId: "actualizarPerfil"
+      parameters:
+        - name: "accountId"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActualizarPerfilDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Void"
+  /api/cuenta/register:
+    post:
+      summary: "POST api/cuenta/register"
+      operationId: "crearCuenta"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CrearCuentaDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/cuenta/send-activation-code:
+    post:
+      summary: "POST api/cuenta/send-activation-code"
+      operationId: "sendActiveCode"
+      parameters:
+        - name: "email"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/cuenta/send-recovery-code:
+    post:
+      summary: "POST api/cuenta/send-recovery-code"
+      operationId: "sendPasswordRecoveryCode"
+      parameters:
+        - name: "email"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/cuenta/update-password/{id}:
+    put:
+      summary: "PUT api/cuenta/update-password/{id}"
+      operationId: "updatePassword"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePasswordDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Void"
+  /api/cuenta/{accountId}:
+    delete:
+      summary: "DELETE api/cuenta/{accountId}"
+      operationId: "eliminarCuenta"
+      parameters:
+        - name: "accountId"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Void"
+components:
+  schemas:
+    CitaDTO:
+      type: "object"
+      properties:
+        idPaciente:
+          type: "integer"
+          format: "int64"
+        estado:
+          type: "string"
+          enum:
+            - "PENDIENTE"
+            - "CONFIRMADA"
+            - "CANCELADA"
+            - "COMPLETADA"
+        tipoCita:
+          type: "string"
+          enum:
+            - "CONSULTA_GENERAL"
+            - "LIMPIEZA_DENTAL"
+            - "EXTRACCION_DIENTES"
+            - "TRATAMIENTO_DE_CONDUCTO"
+            - "ORTODONCIA"
+            - "IMPLANTES_DENTALES"
+            - "BLANQUEAMIENTO_DENTAL"
+            - "OTRO"
+    ListaCitasDTO:
+      type: "object"
+      properties:
+        idCita:
+          type: "integer"
+          format: "int32"
+        idPaciente:
+          type: "integer"
+          format: "int64"
+        idDoctor:
+          type: "integer"
+          format: "int64"
+        fechaHora:
+          type: "string"
+          format: "date-time"
+        estado:
+          type: "string"
+          enum:
+            - "PENDIENTE"
+            - "CONFIRMADA"
+            - "CANCELADA"
+            - "COMPLETADA"
+        tipoCita:
+          type: "string"
+          enum:
+            - "CONSULTA_GENERAL"
+            - "LIMPIEZA_DENTAL"
+            - "EXTRACCION_DIENTES"
+            - "TRATAMIENTO_DE_CONDUCTO"
+            - "ORTODONCIA"
+            - "IMPLANTES_DENTALES"
+            - "BLANQUEAMIENTO_DENTAL"
+            - "OTRO"
+    ActivateAccountDTO:
+      type: "object"
+      properties:
+        code:
+          type: "string"
+        email:
+          type: "string"
+    ChangePasswordCodeDTO:
+      type: "object"
+      properties:
+        code:
+          type: "string"
+        newPassword:
+          type: "string"
+        confirmationPassword:
+          type: "string"
+    LoginDTO:
+      type: "object"
+      properties:
+        idNumber:
+          type: "string"
+        password:
+          type: "string"
+    TokenDTO:
+      type: "object"
+      properties:
+        token:
+          type: "string"
+    PerfilDTO:
+      type: "object"
+      properties:
+        idNumber:
+          type: "string"
+        name:
+          type: "string"
+        lastName:
+          type: "string"
+        phoneNumber:
+          type: "string"
+        address:
+          type: "string"
+        fechaNacimiento:
+          type: "string"
+          format: "date"
+        email:
+          type: "string"
+    ActualizarPerfilDTO:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        lastName:
+          type: "string"
+        phoneNumber:
+          type: "string"
+        address:
+          type: "string"
+    Void:
+      type: "object"
+      properties: { }
+    CrearCuentaDTO:
+      type: "object"
+      properties:
+        idNumber:
+          type: "string"
+        name:
+          type: "string"
+        lastName:
+          type: "string"
+        phoneNumber:
+          type: "string"
+        address:
+          type: "string"
+        fechaNacimiento:
+          type: "string"
+          format: "date"
+        email:
+          type: "string"
+        password:
+          type: "string"
+    UpdatePasswordDTO:
+      type: "object"
+      properties:
+        currentPassword:
+          type: "string"
+        newPassword:
+          type: "string"
+        confirmationPassword:
+          type: "string"
