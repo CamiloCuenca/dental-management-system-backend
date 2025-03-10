@@ -1,6 +1,5 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.impl;
 
-
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.EmailDTO;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.EmailService;
 import org.simplejavamail.api.email.Email;
@@ -11,13 +10,17 @@ import org.simplejavamail.mailer.MailerBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+// Anotación que indica que esta clase es un servicio de Spring
 @Service
 public class EmailImpl implements EmailService {
 
-    private final String SMTP_USERNAME = "unieventosproyect@gmail.com";
+    // Nombre de usuario del servidor SMTP
+    private final String SMTP_USERNAME = "odontoLogic@gmail.com";
+    // Contraseña del servidor SMTP
     private final String SMTP_PASSWORD = "fyncswwbtqwubuja";
 
-    /**  Envía un email electrónico.
+    /**
+     * Envía un email electrónico.
      *
      * @param emailDTO Data Transfer Object que contiene la información del email electrónico a enviar.
      * @throws Exception
@@ -25,6 +28,7 @@ public class EmailImpl implements EmailService {
     @Override
     @Async
     public void sendMail(EmailDTO emailDTO) throws Exception {
+        // Construcción del email utilizando el EmailBuilder
         Email email = EmailBuilder.startingBlank()
                 .from(SMTP_USERNAME)
                 .to(emailDTO.recipient())
@@ -32,6 +36,7 @@ public class EmailImpl implements EmailService {
                 .withHTMLText(emailDTO.body())
                 .buildEmail();
 
+        // Envío del email utilizando el Mailer
         try (Mailer mailer = MailerBuilder
                 .withSMTPServer("smtp.gmail.com", 587, SMTP_USERNAME, SMTP_PASSWORD)
                 .withTransportStrategy(TransportStrategy.SMTP_TLS)
@@ -41,7 +46,8 @@ public class EmailImpl implements EmailService {
         }
     }
 
-    /** Envía un código QR por email electrónico.
+    /**
+     * Envía un código QR por email electrónico.
      *
      * @param email La dirección de email electrónico a la que se enviará el QR.
      * @param qrUrl La URL de la imagen del código QR.
@@ -49,6 +55,7 @@ public class EmailImpl implements EmailService {
     @Override
     @Async
     public void sendQrByEmail(String email, String qrUrl) {
+        // Construcción del mensaje HTML con el código QR
         String htmlMessage = "<html><body>" +
                 "<p>Estimado usuario,</p>" +
                 "<p>Gracias por su compra. A continuación encontrará el código QR de su orden:</p>" +
@@ -56,6 +63,7 @@ public class EmailImpl implements EmailService {
                 "<p>Atentamente,<br/>El equipo de UniEventos</p>" +
                 "</body></html>";
 
+        // Envío del email con el código QR
         try {
             sendMail(new EmailDTO(email, "Código QR de su Orden", htmlMessage));
         } catch (Exception e) {
@@ -63,7 +71,8 @@ public class EmailImpl implements EmailService {
         }
     }
 
-    /** Envía un código de validación por email electrónico.
+    /**
+     * Envía un código de validación por email electrónico.
      *
      * @param email La dirección de email electrónico a la que se enviará el código de validación.
      * @param validationCode El código de validación a enviar.
@@ -72,8 +81,7 @@ public class EmailImpl implements EmailService {
     @Async
     @Override
     public void sendCodevalidation(String email, String validationCode) throws Exception {
-
-
+        // Construcción del mensaje HTML con el código de validación
         String htmlMessage = "<html><body>" +
                 "<p>Estimado usuario,</p>" +
                 "<p>Gracias por registrarse en nuestra plataforma. Para activar su cuenta, por favor utilice el siguiente código de activación:</p>" +
@@ -83,14 +91,12 @@ public class EmailImpl implements EmailService {
                 "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
                 "</body></html>";
 
-
-
+        // Envío del email con el código de activación
         sendMail(new EmailDTO(email, "\"Activación de cuenta\"", htmlMessage));
-
     }
 
-
-    /** Envía un código de recuperación de contraseña por email electrónico.
+    /**
+     * Envía un código de recuperación de contraseña por email electrónico.
      *
      * @param email La dirección de email electrónico a la que se enviará el código de recuperación.
      * @param recoveryCode El código de validación de la contraseña a enviar.
@@ -99,7 +105,7 @@ public class EmailImpl implements EmailService {
     @Override
     @Async
     public void sendRecoveryCode(String email, String recoveryCode) throws Exception {
-        // Crear el mensaje a enviar por email
+        // Construcción del mensaje HTML con el código de recuperación
         String htmlMessage = "<html><body>" +
                 "<p>Estimado usuario,</p>" +
                 "<p>Ha solicitado recuperar su contraseña. Utilice el siguiente código de recuperación para restablecer su contraseña:</p>" +
@@ -109,8 +115,7 @@ public class EmailImpl implements EmailService {
                 "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
                 "</body></html>";
 
-
-        // Enviar el email electrónico con el código de recuperación
+        // Envío del email con el código de recuperación
         sendMail(new EmailDTO(email, "Recuperación de contraseña", htmlMessage));
     }
 }

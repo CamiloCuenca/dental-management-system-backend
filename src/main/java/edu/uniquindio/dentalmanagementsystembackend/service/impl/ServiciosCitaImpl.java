@@ -16,20 +16,22 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
+// Anotación que indica que esta clase es un servicio de Spring
 @Service
 public class ServiciosCitaImpl implements ServiciosCitas {
 
+    // Inyección de dependencias para el repositorio de citas
     @Autowired
     private CitasRepository citasRepository;
 
+    // Inyección de dependencias para el repositorio de cuentas
     @Autowired
     private CuentaRepository cuentaRepository; // Para obtener pacientes y doctores
 
+    // Inyección de dependencias para el repositorio de usuarios
     @Autowired
     private UserRepository userRepository;
 
@@ -44,6 +46,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         User paciente = userRepository.findById(citaDTO.idPaciente())
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
 
+        // Verificar que el usuario es un paciente
         if (paciente.getAccount() == null || paciente.getAccount().getRol() != Rol.PACIENTE) {
             throw new IllegalArgumentException("El usuario con ID " + citaDTO.idPaciente() + " no es un paciente.");
         }
