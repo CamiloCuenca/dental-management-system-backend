@@ -18,10 +18,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+// Anotación que indica que esta clase es un componente de Spring
 @Component
+// Anotación que genera un constructor con los campos finales como parámetros
 @RequiredArgsConstructor
 public class FiltroToken extends OncePerRequestFilter {
 
+    // Inyección de dependencias para la utilidad de JWT
     private final JWTUtils jwtUtils;
 
     @Override
