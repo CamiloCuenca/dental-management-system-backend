@@ -10,12 +10,14 @@ import org.simplejavamail.mailer.MailerBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 // Anotación que indica que esta clase es un servicio de Spring
 @Service
 public class EmailImpl implements EmailService {
 
     // Nombre de usuario del servidor SMTP
-    private final String SMTP_USERNAME = "odontoLogic@gmail.com";
+    private final String SMTP_USERNAME = "unieventosproyect@gmail.com";
     // Contraseña del servidor SMTP
     private final String SMTP_PASSWORD = "fyncswwbtqwubuja";
 
@@ -118,4 +120,23 @@ public class EmailImpl implements EmailService {
         // Envío del email con el código de recuperación
         sendMail(new EmailDTO(email, "Recuperación de contraseña", htmlMessage));
     }
+
+    @Override
+    @Async
+    public void enviarCorreoCita(String email, String nombreOdontologo, String fechaHora) throws Exception {
+        // Generación del contenido HTML para la confirmación de cita
+        String htmlMessage = "<html><body>" +
+                "<p>Estimado usuario,</p>" +
+                "<p>Su cita con el Dr. " + nombreOdontologo + " ha sido programada exitosamente.</p>" +
+                "<p><strong>Fecha y hora:</strong> " + fechaHora + "</p>" +
+                "<p>Si necesita cancelar o modificar el tipo de servicio, puede hacerlo 24 horas antes.</p>" +
+                "<p>Para realizar cambios, por favor comuníquese con nuestra clínica.</p>" +
+                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
+                "</body></html>";
+
+        // Envío del correo de confirmación de cita
+        sendMail(new EmailDTO(email, "Confirmación de Cita Odontológica", htmlMessage));
+    }
+
+
 }

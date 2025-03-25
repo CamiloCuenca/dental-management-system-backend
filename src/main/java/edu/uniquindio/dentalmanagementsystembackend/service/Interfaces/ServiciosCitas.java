@@ -13,7 +13,7 @@ public interface ServiciosCitas {
      * Método para crear (agendar) una cita odontológica.
      * @param citaDTO DTO con la información de la cita a crear.
      */
-    void crearCita(CitaDTO citaDTO);
+    void crearCita(CitaDTO citaDTO) throws Exception;
 
     /**
      * Método para obtener la lista de citas de un paciente.

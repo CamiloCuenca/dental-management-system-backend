@@ -22,17 +22,16 @@ public class Cita {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
-
     // Relación con User para obtener detalles del paciente
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL)  // Permite mantener historial de citas
-    @JoinColumn(name = "paciente_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true) // Permitir null para historial de citas
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "paciente_id", nullable = true)
     private User paciente;
 
     // Relación con User para obtener detalles del odontólogo
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL)  // Evita eliminación en cascada
-    @JoinColumn(name = "odontologo_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true) // Permitir null para historial de citas
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "odontologo_id", nullable = true)
     private User odontologo;
 
     @Column(name = "fecha_hora", nullable = false)
@@ -43,9 +42,8 @@ public class Cita {
     private EstadoCitas estado;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "TipoCita", nullable = false)
+    @Column(name = "tipo_cita", nullable = false) // Corrección del nombre
     private TipoCita tipoCita;
-
 
     public Cita(User paciente, User odontologo, Instant fechaHora, EstadoCitas estado , TipoCita tipoCita) {
         this.paciente = paciente;
