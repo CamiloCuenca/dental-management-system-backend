@@ -61,13 +61,13 @@ public class AccountTest {
     @Test
     void testGuardarCuentas() throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException {
         CrearCuentaDTO crearCuentaDTO = new CrearCuentaDTO(
-                "1001277432",                            // idNumber
-                "Brandon andres",                        // name
+                "1001277431",                            // idNumber
+                "Brandon algo",                        // name
                 "Acevedo castañeda",                     // lastName
-                "3153033413",                            // phoneNumber
+                "3153033414",                            // phoneNumber
                 "carrera-15#3",                          // address
                 LocalDate.parse("2000-05-20"),           // fechaNacimiento (LocalDate)
-                "brandone.acevedoc@uqvirtual.edu.co",                   // email
+                "doctor123@gmail.com",                   // email
                 "1234"                                   // password
         );
         serviciosCuenta.crearCuenta(crearCuentaDTO);
@@ -116,8 +116,8 @@ public class AccountTest {
     @Test
     void testActivarCuenta() throws Exception, AccountAlreadyActiveException, ValidationCodeExpiredException {
         ActivateAccountDTO activateAccountDTO = new ActivateAccountDTO(
-                "76299",
-                "ba5808863@gmail.com"
+                "22234",
+                "doctor123@gmail.com"
         );
         serviciosCuenta.activateAccount(activateAccountDTO);
     }
