@@ -126,7 +126,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         Account newAccount = new Account();
         newAccount.setEmail(cuenta.email());
         newAccount.setPassword(hashedPassword);
-        newAccount.setRol(Rol.PACIENTE);
+        newAccount.setRol(Rol.DOCTOR);
         newAccount.setStatus(AccountStatus.INACTIVE);
 
         // Generar código de activación

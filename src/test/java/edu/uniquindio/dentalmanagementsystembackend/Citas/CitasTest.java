@@ -1,11 +1,14 @@
 package edu.uniquindio.dentalmanagementsystembackend.Citas;
 
 // Importa la enumeración TipoCita desde el paquete Enum
+import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 
 // Importa la clase ListaCitasDTO desde el paquete dto
 import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
 // Importa la interfaz CitasRepository desde el paquete repository
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
 // Importa la interfaz ServiciosCitas desde el paquete service.Interfaces
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
@@ -66,5 +69,11 @@ public class CitasTest {
         serviciosCitas.cancelarCita(idCita);
         // Imprime un mensaje indicando que la cita fue cancelada correctamente
         System.out.println("Cita con ID " + idCita + " cancelada correctamente.");
+    }
+
+    @Test
+    void testCrearCita() throws Exception {
+        CitaDTO cita = new CitaDTO(1001277430L, EstadoCitas.PENDIENTE, TipoCita.ORTODONCIA);
+        serviciosCitas.crearCita(cita);
     }
 }

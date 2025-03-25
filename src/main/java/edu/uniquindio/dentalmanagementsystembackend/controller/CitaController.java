@@ -23,7 +23,7 @@ public class CitaController {
 
     // Endpoint para crear una nueva cita
     @PostMapping("/crear")
-    public ResponseEntity<String> crearCita(@RequestBody CitaDTO citaDTO) {
+    public ResponseEntity<String> crearCita(@RequestBody CitaDTO citaDTO) throws Exception {
         servicioCita.crearCita(citaDTO);
         return ResponseEntity.ok("Cita creada exitosamente.");
     }

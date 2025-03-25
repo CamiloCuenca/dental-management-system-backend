@@ -3,6 +3,8 @@ package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.EmailDTO;
 
+import java.time.LocalDateTime;
+
 public interface EmailService {
 
     /**
@@ -39,5 +41,8 @@ public interface EmailService {
      * @throws Exception Si ocurre un error al enviar el código de recuperación.
      */
     void sendRecoveryCode(String email, String passwordValidationCode) throws Exception;
+
+    void enviarCorreoCita(String email, String nombreOdontologo, String fechaHora)  throws Exception;
+
 
 }

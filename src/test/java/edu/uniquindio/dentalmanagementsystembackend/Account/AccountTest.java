@@ -61,13 +61,13 @@ public class AccountTest {
     @Test
     void testGuardarCuentas() throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException {
         CrearCuentaDTO crearCuentaDTO = new CrearCuentaDTO(
-                "1001277430",                            // idNumber
+                "1001277432",                            // idNumber
                 "Brandon andres",                        // name
                 "Acevedo castañeda",                     // lastName
-                "3153033412",                            // phoneNumber
+                "3153033413",                            // phoneNumber
                 "carrera-15#3",                          // address
                 LocalDate.parse("2000-05-20"),           // fechaNacimiento (LocalDate)
-                "ba5808864@gmail.com",                   // email
+                "brandone.acevedoc@uqvirtual.edu.co",                   // email
                 "1234"                                   // password
         );
         serviciosCuenta.crearCuenta(crearCuentaDTO);
@@ -116,8 +116,8 @@ public class AccountTest {
     @Test
     void testActivarCuenta() throws Exception, AccountAlreadyActiveException, ValidationCodeExpiredException {
         ActivateAccountDTO activateAccountDTO = new ActivateAccountDTO(
-                "04517",
-                "ba5808864@gmail.com"
+                "76299",
+                "ba5808863@gmail.com"
         );
         serviciosCuenta.activateAccount(activateAccountDTO);
     }
@@ -139,7 +139,7 @@ public class AccountTest {
      */
     @Test
     void testEnviarCodigoRecuperacion() throws Exception, EmailNotFoundException {
-        serviciosCuenta.sendPasswordRecoveryCode("ba5808864@gmail.com");
+        serviciosCuenta.sendPasswordRecoveryCode("brandone.acevedoc@uqvirtual.edu.co");
     }
 
     /**
