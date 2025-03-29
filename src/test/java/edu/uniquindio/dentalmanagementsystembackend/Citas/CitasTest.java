@@ -33,7 +33,7 @@ public class CitasTest {
     // Prueba unitaria para listar citas de un paciente específico
     @Test
     void testListarCitasPaciente()throws  Exception{
-        Long idPaciente= 555666777L;
+        Long idPaciente= 1001277431L;
 
         // Imprime las citas obtenidas para el paciente con el ID especificado
         System.out.println(serviciosCitas.obtenerCitasPorPaciente(idPaciente));
@@ -73,7 +73,7 @@ public class CitasTest {
 
     @Test
     void testCrearCita() throws Exception {
-        CitaDTO cita = new CitaDTO(1001277430L, EstadoCitas.PENDIENTE, TipoCita.ORTODONCIA);
+        CitaDTO cita = new CitaDTO(1001277431L, EstadoCitas.PENDIENTE, TipoCita.ORTODONCIA);
         serviciosCitas.crearCita(cita);
     }
 }
