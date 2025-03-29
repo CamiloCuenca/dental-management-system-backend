@@ -5,12 +5,11 @@ import edu.uniquindio.dentalmanagementsystembackend.dto.JWT.TokenDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.*;
 import edu.uniquindio.dentalmanagementsystembackend.exception.*;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCuenta;
+import edu.uniquindio.dentalmanagementsystembackend.exception.DatabaseOperationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.security.auth.login.AccountNotFoundException;
 
 @RestController
 @RequestMapping("/api/cuenta")
@@ -43,7 +42,8 @@ public class CuentaController {
     public ResponseEntity<String> crearCuenta(@RequestBody CrearCuentaDTO cuentaDTO) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(accountService.crearCuenta(cuentaDTO));
-        } catch (EmailAlreadyExistsException | UserAlreadyExistsException | Exception e) {
+        } catch (EmailAlreadyExistsException | UserAlreadyExistsException | Exception | DatabaseOperationException |
+                 EmailSendingException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }

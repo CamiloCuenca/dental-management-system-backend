@@ -8,6 +8,7 @@ import edu.uniquindio.dentalmanagementsystembackend.exception.InvalidIdFormatExc
 import edu.uniquindio.dentalmanagementsystembackend.exception.ValidationCodeExpiredException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.InvalidCurrentPasswordException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.PasswordMismatchException;
+import edu.uniquindio.dentalmanagementsystembackend.exception.DatabaseOperationException;
 
 public interface ServiciosCuenta {
 
@@ -31,7 +32,7 @@ public interface ServiciosCuenta {
      * @throws EmailAlreadyExistsException si el correo electrónico ya está registrado.
      * @throws UserAlreadyExistsException si el usuario ya existe.
      */
-    String crearCuenta(CrearCuentaDTO cuenta) throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException;
+    String crearCuenta(CrearCuentaDTO cuenta) throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException, DatabaseOperationException, EmailSendingException;
 
     /**
      * Obtiene el perfil del paciente basado en su identificación.
