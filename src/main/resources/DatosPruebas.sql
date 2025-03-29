@@ -1,28 +1,21 @@
--- Poblar la tabla usuarios_detalles
-INSERT INTO usuarios_detalles (id_number, telefono, nombre, direccion) VALUES
-                                                                           ('123456789', '3201234567', 'Dr. Juan Pérez', 'Calle 45 # 23-10'),
-                                                                           ('987654321', '3107654321', 'Dra. María Gómez', 'Carrera 12 # 56-78'),
-                                                                           ('555666777', '3219876543', 'Carlos Ramírez', 'Calle 8 # 10-15'),
-                                                                           ('444333222', '3123456789', 'Laura Sánchez', 'Avenida 30 # 5-20'),
-                                                                           ('999888777', '3145678901', 'Pedro López', 'Carrera 15 # 20-30');
+-- 1️⃣ Eliminar primero las cuentas (depende de `usuarios_detalles`)
+DELETE FROM cuentas;
 
--- Poblar la tabla cuentas
-INSERT INTO cuentas (fecha_registro, codigo_activacion, user_id, email, user_password, estado, rol) VALUES
-                                                                                                        (NOW(), 'ABC123', '123456789', 'juan.perez@clinica.com', 'password123', 'ACTIVE', 'DOCTOR'),
-                                                                                                        (NOW(), 'DEF456', '987654321', 'maria.gomez@clinica.com', 'password123', 'ACTIVE', 'DOCTOR'),
-                                                                                                        (NOW(), 'GHI789', '555666777', 'carlos.ramirez@gmail.com', 'password123', 'ACTIVE', 'PACIENTE'),
-                                                                                                        (NOW(), 'JKL012', '444333222', 'laura.sanchez@hotmail.com', 'password123', 'INACTIVE', 'PACIENTE'),
-                                                                                                        (NOW(), 'MNO345', '999888777', 'pedro.lopez@yahoo.com', 'password123', 'ACTIVE', 'PACIENTE');
+-- 2️⃣ Luego eliminar los usuarios
+DELETE FROM usuarios_detalles;
 
--- Poblar la tabla citas
-INSERT INTO citas (fecha_hora, odontologo_id, paciente_id, estado) VALUES
-                                                                       ('2025-03-10 09:00:00', '123456789', '555666777', 'CONFIRMADA'),
-                                                                       ('2025-03-12 10:30:00', '987654321', '444333222', 'PENDIENTE'),
-                                                                       ('2025-03-15 14:00:00', '123456789', '999888777', 'CANCELADA'),
-                                                                       ('2025-03-20 16:45:00', '987654321', '555666777', 'COMPLETADA');
+-- 3️⃣ Insertar usuarios
+INSERT INTO usuarios_detalles (id_number, name, last_name, phone_number, address, birth_date) VALUES
+                                                                                                  ('123456789', 'Juan', 'Pérez', '3201234567', 'Calle 45 # 23-10', '1980-05-15'),
+                                                                                                  ('987654321', 'María', 'Gómez', '3107654321', 'Carrera 12 # 56-78', '1985-09-20'),
+                                                                                                  ('555666777', 'Carlos', 'Ramírez', '3219876543', 'Calle 8 # 10-15', '1992-03-10'),
+                                                                                                  ('444333222', 'Laura', 'Sánchez', '3123456789', 'Avenida 30 # 5-20', '1995-07-25'),
+                                                                                                  ('999888777', 'Pedro', 'López', '3145678901', 'Carrera 15 # 20-30', '1988-11-30');
 
--- Poblar la tabla historiales_medicos
-INSERT INTO historiales_medicos (fecha, odontologo_id, paciente_id, descripcion) VALUES
-                                                                                     ('2025-02-15', '123456789', '555666777', 'Extracción de muela del juicio'),
-                                                                                     ('2025-02-20', '987654321', '444333222', 'Limpieza dental y revisión de caries'),
-                                                                                     ('2025-02-28', '123456789', '999888777', 'Tratamiento de conducto en molar superior derecho');
+-- 4️⃣ Insertar cuentas
+INSERT INTO cuentas (email, password, rol, status, user_id) VALUES
+                                                                ('juan.perez@clinica.com', '$2a$10$ppr07MHNC8I3dIwkh1U5EO9t8KlZbPhtFVLbcgW0IqxRDO8GhLZBC', 'DOCTOR', 'ACTIVE', '123456789'),
+                                                                ('maria.gomez@clinica.com', '$2a$10$/XusW.ksxRAY4nlgfVhNxe4zP9ipjpMfSrGwNoZ47m9IeK0zu98XW', 'DOCTOR', 'ACTIVE', '987654321'),
+                                                                ('carlos.ramirez@gmail.com', '$2a$10$hza6RXjD3eU9RAz4cgiij.SIfQMIF1Bfw1Tm/RrvtYcMvGdubbqae', 'PACIENTE', 'ACTIVE', '555666777'),
+                                                                ('laura.sanchez@hotmail.com', '$2a$10$5lXsYMkmi/zy4T9igTDvhugfgKM..Nadf50EoJzSfGepF3FLyF6uS', 'PACIENTE', 'INACTIVE', '444333222'),
+                                                                ('pedro.lopez@yahoo.com', '$2a$10$QZqkVYlwo4vuzpe5YiBR6esUXQOpi5Gvz7JcLb9kWburDl6kNuX96', 'PACIENTE', 'ACTIVE', '999888777');

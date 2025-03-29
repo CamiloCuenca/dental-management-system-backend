@@ -65,38 +65,46 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      * @throws InvalidPasswordException si la contraseña es incorrecta.
      */
     @Override
-    public TokenDTO login(LoginDTO loginDTO) throws UserNotFoundException, AccountInactiveException, InvalidPasswordException {
-        // Buscar la cuenta por el número de identificación (cédula)
-        Optional<Account> accountOptional = accountRepository.findByIdUNumber(String.valueOf(loginDTO.idNumber()));
+    @Transactional
+    public TokenDTO login(LoginDTO loginDTO)
+            throws UserNotFoundException, AccountInactiveException, InvalidPasswordException {
+
+        validarLoginDTO(loginDTO);
+        String idNumber = loginDTO.idNumber().trim();
+
+        Optional<Account> accountOptional = accountRepository.findByIdUNumber(idNumber);
 
         if (accountOptional.isEmpty()) {
-            throw new UserNotFoundException("Usuario con ID " + loginDTO.idNumber() + " no encontrado.");
+            throw new UserNotFoundException("Usuario con ID " + idNumber + " no encontrado.");
         }
 
         Account account = accountOptional.get();
 
-        // Verificar si la cuenta está activa
         if (account.getStatus() != AccountStatus.ACTIVE) {
             throw new AccountInactiveException("La cuenta no está activa.");
         }
 
-        // Comparar la contraseña ingresada con la almacenada en la base de datos
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         if (!passwordEncoder.matches(loginDTO.password(), account.getPassword())) {
             throw new InvalidPasswordException("Contraseña incorrecta.");
         }
 
-        // Construir claims para el token
-        Map<String, Object> map = construirClaims(account);
+        // 🛠 Generar el token
+        Map<String, Object> claims = construirClaims(account);
+        String token = jwtUtils.generateToken(account.getEmail(), claims);
 
-        // Generar el token JWT
-        String token = jwtUtils.generateToken(account.getEmail(), map);
-
-        // 🔹 Imprimir el token en la consola
-        System.out.println("🔑 Token generado: " + token);
-
-        // Retornar el token de autenticación
         return new TokenDTO(token);
+    }
+
+    private void validarLoginDTO(LoginDTO loginDTO) {
+        if (loginDTO == null) {
+            throw new IllegalArgumentException("El objeto LoginDTO no puede ser nulo.");
+        }
+        if (loginDTO.idNumber() == null || loginDTO.idNumber().isBlank()) {
+            throw new IllegalArgumentException("El número de identificación no puede estar vacío.");
+        }
+        if (loginDTO.password() == null || loginDTO.password().isBlank()) {
+            throw new IllegalArgumentException("La contraseña no puede estar vacía.");
+        }
     }
 
     /**

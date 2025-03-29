@@ -46,8 +46,8 @@ public class AccountTest {
     @Test
     void testLogin() throws Exception, UserNotFoundException, InvalidPasswordException, AccountInactiveException {
         LoginDTO loginDTO = new LoginDTO(
-                "1001277430",
-                "1234"
+                "555666777",
+                "password123"
         );
 
         serviciosCuenta.login(loginDTO);
