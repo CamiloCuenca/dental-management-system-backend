@@ -1,9 +1,8 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
-import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.ListaCitasDTO;
 
-import java.util.ArrayList;
 import java.util.List;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 
@@ -40,4 +39,6 @@ public interface ServiciosCitas {
      * @param idCita Número de identificación de la cita.
      */
     void cancelarCita(Long idCita);
+
+
 }

@@ -5,10 +5,9 @@ import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 
 // Importa la clase ListaCitasDTO desde el paquete dto
-import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.ListaCitasDTO;
 // Importa la interfaz CitasRepository desde el paquete repository
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
-import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
 // Importa la interfaz ServiciosCitas desde el paquete service.Interfaces
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
