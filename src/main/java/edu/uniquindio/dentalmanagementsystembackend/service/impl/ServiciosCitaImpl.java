@@ -4,7 +4,7 @@ import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
-import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.ListaCitasDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorDisponibilidadDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;

@@ -22,14 +22,13 @@ public class Cita {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
-    // Relación con User para obtener detalles del paciente
-    @ManyToOne(fetch = FetchType.LAZY, optional = true) // Permitir null para historial de citas
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "paciente_id", nullable = true)
     private User paciente;
 
-    // Relación con User para obtener detalles del odontólogo
-    @ManyToOne(fetch = FetchType.LAZY, optional = true) // Permitir null para historial de citas
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "odontologo_id", nullable = true)
     private User odontologo;
@@ -42,14 +41,21 @@ public class Cita {
     private EstadoCitas estado;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_cita", nullable = false) // Corrección del nombre
+    @Column(name = "tipo_cita", nullable = false)
     private TipoCita tipoCita;
 
-    public Cita(User paciente, User odontologo, Instant fechaHora, EstadoCitas estado , TipoCita tipoCita) {
+    public Cita(User paciente, User odontologo, Instant fechaHora, EstadoCitas estado, TipoCita tipoCita) {
+        validarOdontologo(odontologo, tipoCita);
         this.paciente = paciente;
         this.odontologo = odontologo;
         this.fechaHora = fechaHora;
         this.estado = estado;
         this.tipoCita = tipoCita;
+    }
+
+    private void validarOdontologo(User odontologo, TipoCita tipoCita) {
+        if (odontologo != null && odontologo.getAccount().getTipoDoctor() != tipoCita.getTipoDoctorRequerido()) {
+            throw new IllegalArgumentException("El odontólogo seleccionado no tiene la especialidad requerida para esta cita.");
+        }
     }
 }

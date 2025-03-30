@@ -1,7 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.controller;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
-import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.ListaCitasDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
 import org.springframework.web.bind.annotation.*;

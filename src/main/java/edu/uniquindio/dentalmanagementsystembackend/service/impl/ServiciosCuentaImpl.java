@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
@@ -298,16 +299,25 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     @Override
     @Transactional
     public void actualizarPerfil(Long accountId, ActualizarPerfilDTO actualizarPerfilDTO)
-            throws UserNotFoundException {
+            throws UserNotFoundException, IllegalArgumentException {
 
-        // Buscar la cuenta por su ID
+        // 1️⃣ Validar que los parámetros no sean nulos
+        if (accountId == null) {
+            throw new IllegalArgumentException("El ID de la cuenta no puede ser nulo.");
+        }
+
+        if (actualizarPerfilDTO == null) {
+            throw new IllegalArgumentException("Los datos de actualización no pueden ser nulos.");
+        }
+
+        // 2️⃣ Buscar la cuenta por su ID
         Optional<Account> accountOptional = accountRepository.findById(accountId);
 
         if (accountOptional.isEmpty()) {
             throw new UserNotFoundException("La cuenta con ID " + accountId + " no existe.");
         }
 
-        // Obtener la cuenta y verificar si tiene un usuario asociado
+        // 3️⃣ Obtener la cuenta y verificar si tiene un usuario asociado
         Account account = accountOptional.get();
         User user = account.getUser();
 
@@ -315,13 +325,36 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
             throw new UserNotFoundException("No se encontró un usuario asociado a la cuenta con ID " + accountId);
         }
 
-        // Actualizar los datos del usuario
+        // 4️⃣ Validar que los datos no sean nulos o vacíos
+        if (actualizarPerfilDTO.name() == null || actualizarPerfilDTO.name().trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre no puede estar vacío.");
+        }
+
+        if (actualizarPerfilDTO.lastName() == null || actualizarPerfilDTO.lastName().trim().isEmpty()) {
+            throw new IllegalArgumentException("El apellido no puede estar vacío.");
+        }
+
+        if (actualizarPerfilDTO.phoneNumber() == null || !actualizarPerfilDTO.phoneNumber().matches("\\d{10}")) {
+            throw new IllegalArgumentException("El número de teléfono debe contener exactamente 10 dígitos.");
+        }
+
+        if (actualizarPerfilDTO.address() == null || actualizarPerfilDTO.address().trim().isEmpty()) {
+            throw new IllegalArgumentException("La dirección no puede estar vacía.");
+        }
+
+        // 5️⃣ Verificar si el número de teléfono ya está en uso por otro usuario (opcional)
+        Optional<User> existingUser = userRepository.findByPhoneNumber(actualizarPerfilDTO.phoneNumber());
+        if (existingUser.isPresent() && !existingUser.get().getIdNumber().equals(user.getIdNumber())) {
+            throw new IllegalArgumentException("El número de teléfono ya está registrado en otro usuario.");
+        }
+
+        // 6️⃣ Actualizar los datos del usuario
         user.setName(actualizarPerfilDTO.name());
         user.setLastName(actualizarPerfilDTO.lastName());
         user.setPhoneNumber(actualizarPerfilDTO.phoneNumber());
         user.setAddress(actualizarPerfilDTO.address());
 
-        // Guardar los cambios en el usuario
+        // 7️⃣ Guardar los cambios en el usuario
         userRepository.save(user);
     }
 
@@ -336,19 +369,23 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     public void eliminarCuenta(Long accountId) throws AccountNotFoundException {
 
         // Buscar la cuenta en la base de datos
-        Optional<Account> accountOptional = accountRepository.findById(accountId);
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException("No se encontró una cuenta con ID " + accountId));
 
-        if (accountOptional.isEmpty()) {
-            throw new AccountNotFoundException("No se encontró una cuenta con ID " + accountId);
+        // Verificar si la cuenta ya está inactiva
+        if (account.getStatus() == AccountStatus.INACTIVE) {
+            throw new IllegalStateException("La cuenta con ID " + accountId + " ya está inactiva.");
         }
-
-        Account account = accountOptional.get();
 
         // Cambiar el estado de la cuenta a INACTIVE en lugar de eliminarla
         account.setStatus(AccountStatus.INACTIVE);
 
-        // Guardar cambios en la base de datos
-        accountRepository.save(account);
+        try {
+            // Guardar cambios en la base de datos
+            accountRepository.save(account);
+        } catch (Exception e) {
+            throw new RuntimeException("Ocurrió un error al intentar inactivar la cuenta.", e);
+        }
     }
 
     /**
@@ -365,7 +402,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     public String activateAccount(ActivateAccountDTO activateAccountDTO)
             throws AccountAlreadyActiveException, ValidationCodeExpiredException, AccountNotFoundException {
 
-        // Buscar la cuenta por código de activación usando JPA
+        // Buscar la cuenta por el código de activación
         Account account = accountRepository.findByRegistrationValidationCode_Code(activateAccountDTO.code())
                 .orElseThrow(() -> new AccountNotFoundException("No se encontró una cuenta con el código: " + activateAccountDTO.code()));
 
@@ -374,7 +411,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
             throw new AccountAlreadyActiveException("La cuenta ya está activada.");
         }
 
-        // Obtener y verificar el código de validación asociado a la cuenta
+        // Obtener el código de validación asociado a la cuenta
         ValidationCode validationCode = Optional.ofNullable(account.getRegistrationValidationCode())
                 .orElseThrow(() -> new ValidationCodeExpiredException("El código de validación no existe."));
 
@@ -383,15 +420,19 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
             throw new ValidationCodeExpiredException("El código de validación ha expirado.");
         }
 
-        // **Eliminar el código de activación de la base de datos**
-        account.setRegistrationValidationCode(null); // Desvincular la relación en la entidad Account
-        validationCodeRepository.delete(validationCode); // Eliminar la entidad ValidationCode de la BD
+        try {
+            // **Eliminar el código de activación de la base de datos**
+            account.setRegistrationValidationCode(null); // Desvincular de la entidad Account
+            validationCodeRepository.delete(validationCode); // Eliminar de la BD
 
-        // Activar la cuenta
-        account.setStatus(AccountStatus.ACTIVE);
-        accountRepository.save(account); // Guardar cambios en la base de datos
+            // Activar la cuenta
+            account.setStatus(AccountStatus.ACTIVE);
+            accountRepository.save(account); // Guardar cambios en la base de datos
 
-        return "Cuenta activada exitosamente.";
+            return "Cuenta activada exitosamente.";
+        } catch (Exception e) {
+            throw new RuntimeException("Error activando la cuenta.", e);
+        }
     }
 
     /**
@@ -404,10 +445,15 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      */
     @Override
     @Transactional
-    public String sendActiveCode(String email) throws Exception, EmailNotFoundException {
+    public String sendActiveCode(String email) throws EmailNotFoundException, Exception {
         // Buscar la cuenta por email
         Account account = accountRepository.findByEmail(email)
-                .orElseThrow(() -> new EmailNotFoundException(email));
+                .orElseThrow(() -> new EmailNotFoundException("No se encontró una cuenta asociada al email: " + email));
+
+        // Verificar si la cuenta ya está activa
+        if (account.getStatus() == AccountStatus.ACTIVE) {
+            return "La cuenta ya está activada, no es necesario un código de validación.";
+        }
 
         // Si ya tiene un código de activación previo, eliminarlo
         ValidationCode existingCode = account.getRegistrationValidationCode();
@@ -419,14 +465,65 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         ValidationCode validationCode = new ValidationCode();
         validationCode.setCode(generateValidationCode());
 
+        // Guardar el nuevo código en la BD antes de asignarlo a la cuenta
+        validationCodeRepository.save(validationCode);
+
         // Asignar el nuevo código a la cuenta
         account.setRegistrationValidationCode(validationCode);
         accountRepository.save(account); // Guardar los cambios en la cuenta
 
         // Enviar el código por correo
-        emailService.sendCodevalidation(account.getEmail(), account.getRegistrationValidationCode().getCode());
+        emailService.sendCodevalidation(email, validationCode.getCode());
 
-        return "Código de validación de cuenta enviado al correo: " + account.getEmail();
+        return "Código de validación de cuenta enviado al correo: " + email;
+    }
+
+
+    /**
+     * Envía un código de recuperación de contraseña al correo electrónico del usuario.
+     *
+     * @param email Correo electrónico del usuario.
+     * @return String con un mensaje de confirmación.
+     * @throws EmailNotFoundException si el correo electrónico no se encuentra.
+     * @throws Exception              si ocurre un error general.
+     */
+    @Override
+    @Transactional
+    public String sendPasswordRecoveryCode(String email) throws EmailNotFoundException, Exception {
+        // Buscar la cuenta por email
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new EmailNotFoundException("No se encontró una cuenta asociada al email: " + email));
+
+        // Verificar si la cuenta está activa antes de enviar el código
+        if (account.getStatus() != AccountStatus.ACTIVE) {
+            throw new EmailNotFoundException("No se puede recuperar la contraseña de una cuenta inactiva.");
+        }
+
+        // Verificar si ya existe un código de recuperación y si aún es válido
+        RecoveryCode existingCode = account.getRecoveryCode();
+        if (existingCode != null && !existingCode.isExpired()) {
+            throw new IllegalStateException("Ya tienes un código de recuperación activo. Revisa tu correo.");
+        }
+
+        // Si hay un código previo (aunque esté expirado), eliminarlo
+        if (existingCode != null) {
+            recoveryCodeRepository.delete(existingCode);
+        }
+
+        // Generar nuevo código de recuperación
+        RecoveryCode recoveryCode = new RecoveryCode(generateValidationCode());
+
+        // Guardar el nuevo código en la base de datos
+        recoveryCode = recoveryCodeRepository.save(recoveryCode);
+
+        // Asignar el nuevo código a la cuenta
+        account.setRecoveryCode(recoveryCode);
+        accountRepository.save(account);
+
+        // Enviar el código por correo
+        emailService.sendRecoveryCode(account.getEmail(), recoveryCode.getCode());
+
+        return "Código de recuperación de contraseña enviado al correo: " + account.getEmail();
     }
 
     /**
@@ -441,11 +538,14 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      */
     @Override
     @Transactional
-    public String changePasswordCode(ChangePasswordCodeDTO changePasswordDTO) throws Exception, InvalidValidationCodeException, ValidationCodeExpiredException, PasswordsDoNotMatchException {
-        // Buscar la cuenta del usuario por el código de validación
-        Account account = accountRepository.findByRecoveryCode_Code(changePasswordDTO.code())
-                .orElseThrow(() -> new InvalidValidationCodeException("No se encontró la cuenta."));
+    public String changePasswordCode(ChangePasswordCodeDTO changePasswordDTO)
+            throws InvalidValidationCodeException, ValidationCodeExpiredException, PasswordsDoNotMatchException {
 
+        // Buscar la cuenta por código de recuperación
+        Account account = accountRepository.findByRecoveryCode_Code(changePasswordDTO.code())
+                .orElseThrow(() -> new InvalidValidationCodeException("El código de recuperación no es válido."));
+
+        // Obtener el código de recuperación
         RecoveryCode recoveryCode = account.getRecoveryCode();
 
         // Verificar si el código de recuperación es nulo o ha expirado
@@ -453,18 +553,27 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
             throw new ValidationCodeExpiredException("El código de recuperación ha expirado o no es válido.");
         }
 
+        // Verificar si la cuenta está activa antes de cambiar la contraseña
+        if (account.getStatus() != AccountStatus.ACTIVE) {
+            throw new InvalidValidationCodeException("No se puede cambiar la contraseña de una cuenta inactiva.");
+        }
+
         // Verificar que las contraseñas coincidan
         if (!changePasswordDTO.newPassword().equals(changePasswordDTO.confirmationPassword())) {
             throw new PasswordsDoNotMatchException("Las contraseñas no coinciden.");
         }
 
-        // Encriptar la nueva contraseña y actualizar la cuenta
-        account.setPassword(passwordEncoder.encode(changePasswordDTO.newPassword()));
+        // Verificar que la nueva contraseña cumpla con requisitos mínimos de seguridad
+        if (changePasswordDTO.newPassword().length() < 8) {
+            throw new PasswordsDoNotMatchException("La nueva contraseña debe tener al menos 8 caracteres.");
+        }
 
-        // Eliminar el código de recuperación después de cambiar la contraseña exitosamente
+        // Eliminar el código de recuperación antes de cambiar la contraseña
         recoveryCodeRepository.delete(recoveryCode);
         account.setRecoveryCode(null);
-        // Guardar la cuenta actualizada en el repositorio
+
+        // Encriptar la nueva contraseña y actualizar la cuenta
+        account.setPassword(passwordEncoder.encode(changePasswordDTO.newPassword()));
         accountRepository.save(account);
 
         return "La contraseña ha sido cambiada exitosamente.";
@@ -483,11 +592,17 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     @Override
     @Transactional
     public String updatePassword(Long id, UpdatePasswordDTO updatePasswordDTO)
-            throws AccountNotFoundException, InvalidCurrentPasswordException, PasswordMismatchException {
+            throws AccountNotFoundException, InvalidCurrentPasswordException,
+            PasswordMismatchException {
 
         // Buscar la cuenta en la base de datos utilizando el ID proporcionado
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new AccountNotFoundException("No se encontró la cuenta con ID: " + id));
+
+        // Verificar si la cuenta está activa antes de actualizar la contraseña
+        if (account.getStatus() != AccountStatus.ACTIVE) {
+            throw new AccountNotFoundException("No se puede actualizar la contraseña de una cuenta inactiva.");
+        }
 
         // Verificar si la contraseña actual coincide con la almacenada
         if (!passwordEncoder.matches(updatePasswordDTO.currentPassword(), account.getPassword())) {
@@ -502,6 +617,11 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
             throw new PasswordMismatchException("La nueva contraseña y la confirmación no coinciden.");
         }
 
+        // Evitar que el usuario use la misma contraseña actual
+        if (passwordEncoder.matches(newPassword, account.getPassword())) {
+            throw new PasswordMismatchException("La nueva contraseña no puede ser igual a la actual.");
+        }
+
         // Encriptar y actualizar la nueva contraseña
         account.setPassword(passwordEncoder.encode(newPassword));
         accountRepository.save(account);
@@ -509,40 +629,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         return "La contraseña ha sido cambiada exitosamente.";
     }
 
-    /**
-     * Envía un código de recuperación de contraseña al correo electrónico del usuario.
-     *
-     * @param email Correo electrónico del usuario.
-     * @return String con un mensaje de confirmación.
-     * @throws EmailNotFoundException si el correo electrónico no se encuentra.
-     * @throws Exception              si ocurre un error general.
-     */
-    @Override
-    @Transactional
-    public String sendPasswordRecoveryCode(String email) throws Exception, EmailNotFoundException {
-        // Buscar la cuenta en la base de datos por email
-        Account account = accountRepository.findByEmail(email)
-                .orElseThrow(() -> new EmailNotFoundException("No se encontró una cuenta asociada al email: " + email));
 
-        // Si ya tiene un código de recuperación previo, eliminarlo
-        RecoveryCode existingCode = account.getRecoveryCode();
-        if (existingCode != null) {
-            recoveryCode.delete(existingCode);
-        }
-
-        // Generar código de activación
-        RecoveryCode recoveryCode = new RecoveryCode();
-        recoveryCode.setCode(generateValidationCode());
-
-        // Asignar el nuevo código a la cuenta
-        account.setRecoveryCode(recoveryCode);
-        accountRepository.save(account); // Guardar los cambios en la cuenta
-
-        // Enviar el código por correo
-        emailService.sendRecoveryCode(account.getEmail(), account.getRecoveryCode().getCode());
-
-        return "Código de recuperacion de contraseña enviado al correo: " + account.getEmail();
-    }
 
 
 }

@@ -1,9 +1,8 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
-import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.ListaCitasDTO;
 
-import java.util.ArrayList;
 import java.util.List;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorDisponibilidadDTO;
@@ -47,5 +46,7 @@ public interface ServiciosCitas {
      * @return Lista de objetos con el ID del doctor y las fechas disponibles.
      */
     List<DoctorDisponibilidadDTO> obtenerFechasDisponiblesDoctores();
+
+
 }
 
