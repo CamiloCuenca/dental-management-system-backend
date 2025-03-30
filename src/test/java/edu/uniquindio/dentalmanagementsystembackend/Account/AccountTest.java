@@ -8,6 +8,7 @@ import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.Servicios
 import edu.uniquindio.dentalmanagementsystembackend.exception.ValidationCodeExpiredException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.InvalidCurrentPasswordException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.PasswordMismatchException;
+import edu.uniquindio.dentalmanagementsystembackend.exception.DatabaseOperationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,8 +46,8 @@ public class AccountTest {
     @Test
     void testLogin() throws Exception, UserNotFoundException, InvalidPasswordException, AccountInactiveException {
         LoginDTO loginDTO = new LoginDTO(
-                "1001277430",
-                "1234"
+                "555666777",
+                "password123"
         );
 
         serviciosCuenta.login(loginDTO);
@@ -59,15 +60,15 @@ public class AccountTest {
      * @throws UserAlreadyExistsException if the user already exists.
      */
     @Test
-    void testGuardarCuentas() throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException {
+    void testGuardarCuentas() throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException, DatabaseOperationException, EmailSendingException {
         CrearCuentaDTO crearCuentaDTO = new CrearCuentaDTO(
-                "1001277431",                            // idNumber
-                "Brandon algo",                        // name
+                "1001277437",                            // idNumber
+                "camilo",                        // name
                 "Acevedo castañeda",                     // lastName
                 "3153033414",                            // phoneNumber
                 "carrera-15#3",                          // address
                 LocalDate.parse("2000-05-20"),           // fechaNacimiento (LocalDate)
-                "doctor123@gmail.com",                   // email
+                "camilo123@uqvirtual.edu.co",                   // email
                 "1234"                                   // password
         );
         serviciosCuenta.crearCuenta(crearCuentaDTO);
@@ -116,8 +117,8 @@ public class AccountTest {
     @Test
     void testActivarCuenta() throws Exception, AccountAlreadyActiveException, ValidationCodeExpiredException {
         ActivateAccountDTO activateAccountDTO = new ActivateAccountDTO(
-                "22234",
-                "doctor123@gmail.com"
+                "62738",
+                "brandone.acevedoc@uqvirtual.edu.co"
         );
         serviciosCuenta.activateAccount(activateAccountDTO);
     }

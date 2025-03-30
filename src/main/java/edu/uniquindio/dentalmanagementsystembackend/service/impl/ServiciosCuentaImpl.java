@@ -18,6 +18,7 @@ import edu.uniquindio.dentalmanagementsystembackend.repository.validationCodeRep
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.EmailService;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCuenta;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -56,108 +57,195 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     /**
      * Inicia sesión en el sistema.
+     *
      * @param loginDTO DTO con las credenciales de inicio de sesión.
      * @return TokenDTO con el token de autenticación.
-     * @throws UserNotFoundException si el usuario no se encuentra.
+     * @throws UserNotFoundException    si el usuario no se encuentra.
      * @throws AccountInactiveException si la cuenta está inactiva.
      * @throws InvalidPasswordException si la contraseña es incorrecta.
      */
     @Override
-    public TokenDTO login(LoginDTO loginDTO) throws UserNotFoundException, AccountInactiveException, InvalidPasswordException {
-        // Buscar la cuenta por el número de identificación (cédula)
-        Optional<Account> accountOptional = accountRepository.findByIdUNumber(String.valueOf(loginDTO.idNumber()));
+    @Transactional
+    public TokenDTO login(LoginDTO loginDTO)
+            throws UserNotFoundException, AccountInactiveException, InvalidPasswordException {
+
+        validarLoginDTO(loginDTO);
+        String idNumber = loginDTO.idNumber().trim();
+
+        Optional<Account> accountOptional = accountRepository.findByIdUNumber(idNumber);
 
         if (accountOptional.isEmpty()) {
-            throw new UserNotFoundException("Usuario con ID " + loginDTO.idNumber() + " no encontrado.");
+            throw new UserNotFoundException("Usuario con ID " + idNumber + " no encontrado.");
         }
 
         Account account = accountOptional.get();
 
-        // Verificar si la cuenta está activa
         if (account.getStatus() != AccountStatus.ACTIVE) {
             throw new AccountInactiveException("La cuenta no está activa.");
         }
 
-        // Comparar la contraseña ingresada con la almacenada en la base de datos
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         if (!passwordEncoder.matches(loginDTO.password(), account.getPassword())) {
             throw new InvalidPasswordException("Contraseña incorrecta.");
         }
 
-        // Construir claims para el token
-        Map<String, Object> map = construirClaims(account);
+        // 🛠 Generar el token
+        Map<String, Object> claims = construirClaims(account);
+        String token = jwtUtils.generateToken(account.getEmail(), claims);
 
-        // Generar el token JWT
-        String token = jwtUtils.generateToken(account.getEmail(), map);
-
-        // 🔹 Imprimir el token en la consola
-        System.out.println("🔑 Token generado: " + token);
-
-        // Retornar el token de autenticación
         return new TokenDTO(token);
+    }
+
+    private void validarLoginDTO(LoginDTO loginDTO) {
+        if (loginDTO == null) {
+            throw new IllegalArgumentException("El objeto LoginDTO no puede ser nulo.");
+        }
+        if (loginDTO.idNumber() == null || loginDTO.idNumber().isBlank()) {
+            throw new IllegalArgumentException("El número de identificación no puede estar vacío.");
+        }
+        if (loginDTO.password() == null || loginDTO.password().isBlank()) {
+            throw new IllegalArgumentException("La contraseña no puede estar vacía.");
+        }
     }
 
     /**
      * Crea una nueva cuenta de usuario.
+     *
      * @param cuenta DTO con la información de la cuenta a crear.
      * @return String con un mensaje de confirmación.
      * @throws EmailAlreadyExistsException si el correo electrónico ya está registrado.
-     * @throws UserAlreadyExistsException si el usuario ya existe.
-     * @throws Exception si ocurre un error general.
+     * @throws UserAlreadyExistsException  si el usuario ya existe.
+     * @throws Exception                   si ocurre un error general.
      */
     @Override
     @Transactional
-    public String crearCuenta(CrearCuentaDTO cuenta) throws EmailAlreadyExistsException, UserAlreadyExistsException, Exception {
-        // Verificar si ya existe una cuenta con el mismo email.
+    public String crearCuenta(CrearCuentaDTO cuenta)
+            throws EmailAlreadyExistsException, UserAlreadyExistsException, DatabaseOperationException, EmailSendingException {
+
+        // Validar los datos del DTO de creación de cuenta
+        validarCrearCuentaDTO(cuenta);
+
+        // Verificar si el email ya está registrado
         if (accountRepository.findByEmail(cuenta.email()).isPresent()) {
             throw new EmailAlreadyExistsException("El email " + cuenta.email() + " ya está registrado.");
         }
 
-        // Verificar si ya existe un usuario con el mismo número de identificación.
+        // Verificar si el ID ya está registrado
         if (userRepository.existsByIdNumber(cuenta.idNumber())) {
             throw new UserAlreadyExistsException("El usuario con ID " + cuenta.idNumber() + " ya existe.");
         }
 
-        // Encriptar la contraseña
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        String hashedPassword = passwordEncoder.encode(cuenta.password());
+        try {
+            // Encriptar la contraseña
+            String hashedPassword = passwordEncoder.encode(cuenta.password());
 
-        // Crear la cuenta
-        Account newAccount = new Account();
-        newAccount.setEmail(cuenta.email());
-        newAccount.setPassword(hashedPassword);
-        newAccount.setRol(Rol.DOCTOR);
-        newAccount.setStatus(AccountStatus.INACTIVE);
+            // Crear cuenta y usuario
+            Account newAccount = construirCuenta(cuenta, hashedPassword);
+            User newUser = construirUsuario(cuenta, newAccount);
+            newAccount.setUser(newUser);
 
-        // Generar código de activación
+            // Guardar en la base de datos
+            Account createdAccount = accountRepository.save(newAccount);
+
+            // Enviar código de validación por email
+            enviarCodigoValidacion(createdAccount);
+
+            return createdAccount.getId().toString();
+
+        } catch (DataAccessException dae) {
+            throw new DatabaseOperationException("Error al acceder a la base de datos: " + dae.getMessage());
+        } catch (EmailSendingException ese) {
+            throw new EmailSendingException("Error al enviar el correo de validación: " + ese.getMessage());
+        } catch (Exception e) {
+            throw new DatabaseOperationException("Error inesperado al crear la cuenta: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Valida los datos del DTO de creación de cuenta.
+     *
+     * @param cuenta DTO con la información de la cuenta a crear.
+     * @throws IllegalArgumentException si algún dato es nulo o vacío.
+     */
+    private void validarCrearCuentaDTO(CrearCuentaDTO cuenta) {
+        if (cuenta == null) {
+            throw new IllegalArgumentException("El objeto CrearCuentaDTO no puede ser nulo.");
+        }
+        if (cuenta.idNumber() == null || cuenta.idNumber().isBlank()) {
+            throw new IllegalArgumentException("El número de identificación no puede estar vacío.");
+        }
+        if (cuenta.email() == null || cuenta.email().isBlank()) {
+            throw new IllegalArgumentException("El email no puede estar vacío.");
+        }
+        if (cuenta.password() == null || cuenta.password().isBlank()) {
+            throw new IllegalArgumentException("La contraseña no puede estar vacía.");
+        }
+    }
+
+    /**
+     * Envía un código de validación al correo electrónico del usuario.
+     *
+     * @param createdAccount La cuenta recién creada.
+     * @throws EmailSendingException si ocurre un error al enviar el correo.
+     */
+    private void enviarCodigoValidacion(Account createdAccount) throws EmailSendingException {
+        if (createdAccount.getEmail() == null) {
+            throw new EmailSendingException("El email de la cuenta es nulo. No se puede enviar el código de validación.");
+        }
+
+        try {
+            emailService.sendCodevalidation(
+                    createdAccount.getEmail(),
+                    createdAccount.getRegistrationValidationCode().getCode()
+            );
+        } catch (Exception e) {
+            throw new EmailSendingException("Error al enviar el correo de validación: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Construye y devuelve una nueva cuenta con los datos proporcionados.
+     *
+     * @param cuenta DTO con la información de la cuenta a crear.
+     * @param hashedPassword Contraseña encriptada.
+     * @return Account con los datos de la nueva cuenta.
+     */
+    private Account construirCuenta(CrearCuentaDTO cuenta, String hashedPassword) {
+        Account account = new Account();
+        account.setEmail(cuenta.email());
+        account.setPassword(hashedPassword);
+        account.setRol(Rol.DOCTOR);
+        account.setStatus(AccountStatus.INACTIVE);
+
+        // Generar y asignar código de validación
         ValidationCode validationCode = new ValidationCode();
         validationCode.setCode(generateValidationCode());
-        newAccount.setRegistrationValidationCode(validationCode);
+        account.setRegistrationValidationCode(validationCode);
 
-        // Crear usuario
-        User newUser = new User();
-        newUser.setIdNumber(cuenta.idNumber());
-        newUser.setName(cuenta.name());
-        newUser.setLastName(cuenta.lastName());
-        newUser.setPhoneNumber(cuenta.phoneNumber());
-        newUser.setAddress(cuenta.address());
-        newUser.setBirthDate(cuenta.fechaNacimiento());
+        return account;
+    }
 
-        // Relacionar usuario con cuenta
-        newUser.setAccount(newAccount);
-        newAccount.setUser(newUser);
-
-        // Guardar la cuenta (también guardará el usuario por `CascadeType.ALL`)
-        Account createdAccount = accountRepository.save(newAccount);
-
-        // Enviar código de validación por email
-        emailService.sendCodevalidation(createdAccount.getEmail(), createdAccount.getRegistrationValidationCode().getCode());
-
-        return createdAccount.getId().toString();
+    /**
+     * Construye y devuelve un nuevo usuario asociado a la cuenta.
+     *
+     * @param cuenta DTO con la información del usuario.
+     * @param account La cuenta asociada al usuario.
+     * @return User con los datos del nuevo usuario.
+     */
+    private User construirUsuario(CrearCuentaDTO cuenta, Account account) {
+        User user = new User();
+        user.setIdNumber(cuenta.idNumber());
+        user.setName(cuenta.name());
+        user.setLastName(cuenta.lastName());
+        user.setPhoneNumber(cuenta.phoneNumber());
+        user.setAddress(cuenta.address());
+        user.setBirthDate(cuenta.fechaNacimiento());
+        user.setAccount(account);
+        return user;
     }
 
     /**
      * Genera un código de validación.
+     *
      * @return String con el código de validación generado.
      */
     private String generateValidationCode() {
@@ -166,6 +254,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     /**
      * Obtiene el perfil del paciente basado en su identificación.
+     *
      * @param accountId Número de identificación del paciente.
      * @return PerfilDTO con la información del usuario.
      * @throws UserNotFoundException si el usuario no existe.
@@ -201,7 +290,8 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     /**
      * Actualiza los datos personales del usuario.
-     * @param accountId Número de identificación del usuario.
+     *
+     * @param accountId           Número de identificación del usuario.
      * @param actualizarPerfilDTO DTO con los datos a actualizar.
      * @throws UserNotFoundException si el usuario no existe.
      */
@@ -237,6 +327,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     /**
      * Desactiva la cuenta del usuario.
+     *
      * @param accountId Número de identificación del usuario.
      * @throws AccountNotFoundException si la cuenta no existe.
      */
@@ -262,11 +353,12 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     /**
      * Activa la cuenta del usuario.
+     *
      * @param activateAccountDTO DTO con la información para activar la cuenta.
      * @return String con un mensaje de confirmación.
-     * @throws AccountAlreadyActiveException si la cuenta ya está activa.
+     * @throws AccountAlreadyActiveException  si la cuenta ya está activa.
      * @throws ValidationCodeExpiredException si el código de validación ha expirado.
-     * @throws AccountNotFoundException si la cuenta no se encuentra.
+     * @throws AccountNotFoundException       si la cuenta no se encuentra.
      */
     @Override
     @Transactional
@@ -304,10 +396,11 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     /**
      * Envía un código de activación al correo electrónico del usuario.
+     *
      * @param email Correo electrónico del usuario.
      * @return String con un mensaje de confirmación.
      * @throws EmailNotFoundException si el correo electrónico no se encuentra.
-     * @throws Exception si ocurre un error general.
+     * @throws Exception              si ocurre un error general.
      */
     @Override
     @Transactional
@@ -338,12 +431,13 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     /**
      * Cambia el código de la contraseña.
+     *
      * @param changePasswordDTO DTO con la información para cambiar el código de la contraseña.
      * @return String con un mensaje de confirmación.
      * @throws InvalidValidationCodeException si el código de validación es inválido.
      * @throws ValidationCodeExpiredException si el código de validación ha expirado.
-     * @throws PasswordsDoNotMatchException si las contraseñas no coinciden.
-     * @throws Exception si ocurre un error general.
+     * @throws PasswordsDoNotMatchException   si las contraseñas no coinciden.
+     * @throws Exception                      si ocurre un error general.
      */
     @Override
     @Transactional
@@ -378,12 +472,13 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     /**
      * Actualiza la contraseña del usuario.
-     * @param id Número de identificación del usuario.
+     *
+     * @param id                Número de identificación del usuario.
      * @param updatePasswordDTO DTO con la nueva contraseña.
      * @return String con un mensaje de confirmación.
-     * @throws AccountNotFoundException si la cuenta no se encuentra.
+     * @throws AccountNotFoundException        si la cuenta no se encuentra.
      * @throws InvalidCurrentPasswordException si la contraseña actual es incorrecta.
-     * @throws PasswordMismatchException si las contraseñas no coinciden.
+     * @throws PasswordMismatchException       si las contraseñas no coinciden.
      */
     @Override
     @Transactional
@@ -416,10 +511,11 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     /**
      * Envía un código de recuperación de contraseña al correo electrónico del usuario.
+     *
      * @param email Correo electrónico del usuario.
      * @return String con un mensaje de confirmación.
      * @throws EmailNotFoundException si el correo electrónico no se encuentra.
-     * @throws Exception si ocurre un error general.
+     * @throws Exception              si ocurre un error general.
      */
     @Override
     @Transactional
