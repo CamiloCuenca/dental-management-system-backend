@@ -41,7 +41,7 @@ public interface ServiciosCitas {
      */
     void cancelarCita(Long idCita);
 
-/**
+    /**
      * Método para obtener las fechas más cercanas disponibles de todos los doctores.
      * @return Lista de objetos con el ID del doctor y las fechas disponibles.
      */
