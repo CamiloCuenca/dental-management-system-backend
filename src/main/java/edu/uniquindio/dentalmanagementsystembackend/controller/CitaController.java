@@ -3,6 +3,7 @@ package edu.uniquindio.dentalmanagementsystembackend.controller;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorDisponibilidadDTO;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -55,5 +56,13 @@ public class CitaController {
         servicioCita.cancelarCita(idCita);
         return ResponseEntity.ok("Cita cancelada correctamente.");
     }
+
+    // Endpoint para obtener las fechas disponibles de todos los doctores
+    @GetMapping("/fechas-disponibles")
+    public ResponseEntity<List<DoctorDisponibilidadDTO>> obtenerFechasDisponiblesDoctores() {
+        List<DoctorDisponibilidadDTO> disponibilidadDoctores = servicioCita.obtenerFechasDisponiblesDoctores();
+        return ResponseEntity.ok(disponibilidadDoctores);
+    }
+
 
 }
