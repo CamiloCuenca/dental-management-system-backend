@@ -8,6 +8,7 @@ import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
 // Importa la interfaz CitasRepository desde el paquete repository
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorDisponibilidadDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
 // Importa la interfaz ServiciosCitas desde el paquete service.Interfaces
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 // Anotación que indica que esta clase es una prueba de Spring Boot
@@ -71,9 +73,23 @@ public class CitasTest {
         System.out.println("Cita con ID " + idCita + " cancelada correctamente.");
     }
 
+ @Test
+ void testCrearCita() throws Exception {
+     Long idPaciente = 1004779025L;
+     Long idDoctor = 2001277431L; // Example doctor ID
+     LocalDateTime fechaHora = LocalDateTime.of(2023, 12, 15, 10, 0); // Example date and time
+
+     CitaDTO cita = new CitaDTO(idPaciente, EstadoCitas.PENDIENTE, TipoCita.ORTODONCIA, idDoctor, fechaHora);
+     serviciosCitas.crearCita(cita);
+ }
+
     @Test
-    void testCrearCita() throws Exception {
-        CitaDTO cita = new CitaDTO(1001277431L, EstadoCitas.PENDIENTE, TipoCita.ORTODONCIA);
-        serviciosCitas.crearCita(cita);
+    void testObtenerFechasDisponiblesDoctores() {
+        // Obtiene las fechas más cercanas disponibles de todos los doctores
+        List<DoctorDisponibilidadDTO> fechasDisponibles = serviciosCitas.obtenerFechasDisponiblesDoctores();
+        // Imprime el número de doctores encontrados
+        System.out.println("Doctores encontrados: " + fechasDisponibles.size());
+        // Imprime cada doctor y sus fechas disponibles
+        fechasDisponibles.forEach(System.out::println);
     }
 }

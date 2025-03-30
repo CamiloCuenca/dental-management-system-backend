@@ -6,6 +6,7 @@ import edu.uniquindio.dentalmanagementsystembackend.dto.ListaCitasDTO;
 import java.util.ArrayList;
 import java.util.List;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorDisponibilidadDTO;
 
 public interface ServiciosCitas {
 
@@ -40,4 +41,11 @@ public interface ServiciosCitas {
      * @param idCita Número de identificación de la cita.
      */
     void cancelarCita(Long idCita);
+
+/**
+     * Método para obtener las fechas más cercanas disponibles de todos los doctores.
+     * @return Lista de objetos con el ID del doctor y las fechas disponibles.
+     */
+    List<DoctorDisponibilidadDTO> obtenerFechasDisponiblesDoctores();
 }
+

@@ -46,5 +46,8 @@ public interface CitasRepository  extends JpaRepository <Cita,Long>{
     @Query("SELECT c FROM Cita c WHERE c.paciente = :paciente AND c.fechaHora BETWEEN :inicio AND :fin")
     List<Cita> findByPacienteAndFechaHoraBetween(@Param("paciente") User paciente, @Param("inicio") Instant inicio, @Param("fin") Instant fin);
 
+    @Query("SELECT c FROM Cita c WHERE c.odontologo = :odontologo AND c.fechaHora BETWEEN :inicio AND :fin")
+    List<Cita> findByOdontologoAndFechaHoraBetween(@Param("odontologo") User odontologo, @Param("inicio") Instant inicio, @Param("fin") Instant fin);
+
 
 }
