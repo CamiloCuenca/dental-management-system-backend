@@ -5,6 +5,7 @@ import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.ListaCitasDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorDisponibilidadDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 // Anotación que indica que esta clase es un servicio de Spring
@@ -55,6 +57,16 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             throw new IllegalArgumentException("El ID del paciente no es válido.");
         }
 
+        // Validar que el ID del doctor no sea nulo o negativo
+        if (citaDTO.idDoctor() == null || citaDTO.idDoctor() <= 0) {
+            throw new IllegalArgumentException("El ID del doctor no es válido.");
+        }
+
+        // Validar que la fecha y hora no sean nulas
+        if (citaDTO.fechaHora() == null) {
+            throw new IllegalArgumentException("La fecha y hora de la cita no pueden ser nulas.");
+        }
+
         // Buscar el paciente en la base de datos
         User paciente = userRepository.findById(citaDTO.idPaciente())
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
@@ -63,6 +75,16 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         Hibernate.initialize(paciente.getAccount()); // Asegurar carga de la cuenta
         if (paciente.getAccount() == null || paciente.getAccount().getRol() != Rol.PACIENTE) {
             throw new IllegalArgumentException("El usuario con ID " + citaDTO.idPaciente() + " no es un paciente.");
+        }
+
+        // Buscar el doctor en la base de datos
+        User doctor = userRepository.findById(citaDTO.idDoctor())
+                .orElseThrow(() -> new RuntimeException("Doctor no encontrado"));
+
+        // Verificar que el usuario es un doctor
+        Hibernate.initialize(doctor.getAccount()); // Asegurar carga de la cuenta
+        if (doctor.getAccount() == null || doctor.getAccount().getRol() != Rol.DOCTOR) {
+            throw new IllegalArgumentException("El usuario con ID " + citaDTO.idDoctor() + " no es un doctor.");
         }
 
         // Validar que el tipo de cita y el estado no sean nulos
@@ -74,78 +96,36 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         }
 
         // Validar que el paciente no tenga otra cita el mismo día
-        LocalDate hoy = LocalDate.now();
-        Instant inicioDelDia = hoy.atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant finDelDia = hoy.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant();
+        LocalDate fechaCita = citaDTO.fechaHora().toLocalDate();
+        Instant inicioDelDia = fechaCita.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant finDelDia = fechaCita.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant();
 
-        boolean tieneCitaHoy = citasRepository.findByPacienteAndFechaHoraBetween(paciente, inicioDelDia, finDelDia)
+        boolean tieneCitaEseDia = citasRepository.findByPacienteAndFechaHoraBetween(paciente, inicioDelDia, finDelDia)
                 .stream()
-                .anyMatch(cita -> cita.getFechaHora().atZone(ZoneOffset.UTC).toLocalDate().equals(hoy));
+                .anyMatch(cita -> cita.getFechaHora().atZone(ZoneOffset.UTC).toLocalDate().equals(fechaCita));
 
-        if (tieneCitaHoy) {
-            throw new IllegalArgumentException("El paciente ya tiene una cita programada para hoy.");
+        if (tieneCitaEseDia) {
+            throw new IllegalArgumentException("El paciente ya tiene una cita programada para ese día.");
         }
 
-        // Obtener odontólogos disponibles
-        List<User> odontologos = userRepository.findByAccount_Rol(Rol.DOCTOR);
-        if (odontologos.isEmpty()) {
-            throw new IllegalArgumentException("No hay odontólogos disponibles.");
-        }
+        // Validar que el doctor no tenga otra cita en la misma fecha y hora
+        boolean doctorOcupado = citasRepository.findByOdontologoAndFechaHoraBetween(doctor, inicioDelDia, finDelDia)
+                .stream()
+                .anyMatch(cita -> cita.getFechaHora().atZone(ZoneOffset.UTC).toLocalDateTime().equals(citaDTO.fechaHora()));
 
-        // Buscar odontólogo con disponibilidad
-        User odontologoAsignado = null;
-        LocalDateTime fechaHoraAsignada = null;
-        LocalDate fecha = LocalDate.now();
-        LocalTime horaInicio = LocalTime.of(8, 0);
-        LocalTime horaFin = LocalTime.of(18, 0);
-
-        for (User odontologo : odontologos) {
-            while (odontologoAsignado == null) {
-                List<Cita> citasDelDia = citasRepository.findByOdontologoAndFecha(odontologo, fecha);
-                LocalDateTime posibleHora = LocalDateTime.of(fecha, horaInicio);
-
-                while (posibleHora.toLocalTime().isBefore(horaFin)) {
-                    LocalDateTime finalPosibleHora = posibleHora;
-                    boolean disponible = citasDelDia.stream().noneMatch(cita ->
-                            cita.getFechaHora() != null &&
-                                    Math.abs(ChronoUnit.MINUTES.between(cita.getFechaHora().atZone(ZoneOffset.UTC).toLocalDateTime(), finalPosibleHora)) < 40);
-
-                    if (disponible) {
-                        odontologoAsignado = odontologo;
-                        fechaHoraAsignada = posibleHora;
-                        break;
-                    }
-                    posibleHora = posibleHora.plusMinutes(40);
-                }
-                if (odontologoAsignado == null) {
-                    fecha = fecha.plusDays(1);
-                }
-            }
-            if (odontologoAsignado != null) break;
-        }
-
-        if (fechaHoraAsignada.getHour() < 8 || fechaHoraAsignada.getHour() >= 18) {
-            throw new IllegalArgumentException("Las citas solo pueden programarse entre las 08:00 y las 18:00.");
-        }
-
-        // Validar si se encontró un odontólogo y horario disponible
-        if (odontologoAsignado == null || fechaHoraAsignada == null) {
-            throw new IllegalArgumentException("No se encontró disponibilidad para programar la cita.");
-        }
-
-        if (fechaHoraAsignada.isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("La fecha de la cita debe ser en el futuro.");
+        if (doctorOcupado) {
+            throw new IllegalArgumentException("El doctor ya tiene una cita programada para esa fecha y hora.");
         }
 
         // Convertir a Instant y guardar la cita
-        Instant instant = fechaHoraAsignada.atZone(ZoneId.systemDefault()).toInstant();
-        Cita cita = new Cita(paciente, odontologoAsignado, instant, citaDTO.estado(), citaDTO.tipoCita());
+        Instant instant = citaDTO.fechaHora().atZone(ZoneId.systemDefault()).toInstant();
+        Cita cita = new Cita(paciente, doctor, instant, citaDTO.estado(), citaDTO.tipoCita());
         citasRepository.save(cita);
 
         // Enviar correo al paciente con los detalles de la cita
         String emailPaciente = paciente.getAccount().getEmail();
-        emailService.enviarCorreoCita(emailPaciente, odontologoAsignado.getName(), fechaHoraAsignada.toString());
-        System.out.println("✅ Cita creada correctamente con el odontólogo " + odontologoAsignado.getName() + " en la fecha: " + fechaHoraAsignada);
+        emailService.enviarCorreoCita(emailPaciente, doctor.getName(), citaDTO.fechaHora().toString());
+        System.out.println("✅ Cita creada correctamente con el doctor " + doctor.getName() + " en la fecha: " + citaDTO.fechaHora());
     }
 
     /**
@@ -312,4 +292,56 @@ public class ServiciosCitaImpl implements ServiciosCitas {
 
         System.out.println("✅ Cita con ID " + idCita + " cancelada correctamente.");
     }
+
+
+    @Override
+    public List<DoctorDisponibilidadDTO> obtenerFechasDisponiblesDoctores() {
+        List<DoctorDisponibilidadDTO> disponibilidadDoctores = new ArrayList<>();
+
+        // Obtener todos los doctores
+        List<User> doctores = userRepository.findAll();
+
+        for (User doctor : doctores) {
+            List<LocalDateTime> fechasDisponibles = obtenerFechasDisponibles(doctor);
+
+            // Limitar a un máximo de 5 fechas
+            if (fechasDisponibles.size() > 5) {
+                fechasDisponibles = fechasDisponibles.subList(0, 5);
+            }
+
+            disponibilidadDoctores.add(new DoctorDisponibilidadDTO(doctor.getIdNumber(), fechasDisponibles));
+        }
+
+        return disponibilidadDoctores;
+    }
+
+   private List<LocalDateTime> obtenerFechasDisponibles(User doctor) {
+       List<LocalDateTime> fechasDisponibles = new ArrayList<>();
+       LocalDateTime ahora = LocalDateTime.now();
+       LocalDateTime tresMesesAdelante = ahora.plusMonths(3);
+       LocalTime horaInicio = LocalTime.of(8, 0);
+       LocalTime horaFin = LocalTime.of(18, 0);
+
+       // Obtener todas las citas del doctor en los próximos tres meses
+       List<Cita> citas = citasRepository.findByOdontologoAndFechaHoraBetween(doctor, ahora.toInstant(ZoneOffset.UTC), tresMesesAdelante.toInstant(ZoneOffset.UTC));
+
+       // Crear un conjunto de fechas ocupadas
+       Set<LocalDateTime> fechasOcupadas = citas.stream()
+               .map(cita -> cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime())
+               .collect(Collectors.toSet());
+
+       // Iterar sobre cada día en el rango de tres meses
+       for (LocalDateTime fecha = ahora; fecha.isBefore(tresMesesAdelante); fecha = fecha.plusDays(1)) {
+           // Iterar sobre cada intervalo de 40 minutos en el horario de trabajo
+           for (LocalDateTime hora = fecha.with(horaInicio); hora.isBefore(fecha.with(horaFin)); hora = hora.plusMinutes(40)) {
+               // Si la fecha y hora no están ocupadas, añadir a la lista de fechas disponibles
+               if (!fechasOcupadas.contains(hora)) {
+                   fechasDisponibles.add(hora);
+               }
+           }
+       }
+
+       return fechasDisponibles;
+   }
+
 }
