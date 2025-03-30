@@ -46,8 +46,8 @@ public class AccountTest {
     @Test
     void testLogin() throws Exception, UserNotFoundException, InvalidPasswordException, AccountInactiveException {
         LoginDTO loginDTO = new LoginDTO(
-                "555666777",
-                "password123"
+                "444333222",
+                "Cr@milo123"
         );
 
         serviciosCuenta.login(loginDTO);
@@ -82,7 +82,7 @@ public class AccountTest {
      */
     @Test
     void testEliminarCuentas() throws Exception, UserNotFoundException, InvalidIdFormatException {
-        serviciosCuenta.eliminarCuenta(1L);
+        serviciosCuenta.eliminarCuenta(17L);
     }
 
     /**
@@ -93,8 +93,8 @@ public class AccountTest {
      */
     @Test
     void actualizarUsuario() throws Exception, UserNotFoundException, InvalidIdFormatException {
-        ActualizarPerfilDTO actualizarPerfilDTO = new ActualizarPerfilDTO("morgan", "montealegre", "31530331", "Maria-cristina#15");
-        serviciosCuenta.actualizarPerfil(1L, actualizarPerfilDTO);
+        ActualizarPerfilDTO actualizarPerfilDTO = new ActualizarPerfilDTO("morgan", "montealegre", "3153033418", "Maria-cristina#15");
+        serviciosCuenta.actualizarPerfil(17L, actualizarPerfilDTO);
     }
 
     /**
@@ -117,8 +117,8 @@ public class AccountTest {
     @Test
     void testActivarCuenta() throws Exception, AccountAlreadyActiveException, ValidationCodeExpiredException {
         ActivateAccountDTO activateAccountDTO = new ActivateAccountDTO(
-                "62738",
-                "brandone.acevedoc@uqvirtual.edu.co"
+                "77468",
+                "laura.sanchez@hotmail.com"
         );
         serviciosCuenta.activateAccount(activateAccountDTO);
     }
@@ -130,7 +130,7 @@ public class AccountTest {
      */
     @Test
     void testEnviarCodigo() throws Exception, EmailNotFoundException {
-        serviciosCuenta.sendActiveCode("ba5808864@gmail.com");
+        serviciosCuenta.sendActiveCode("laura.sanchez@hotmail.com");
     }
 
     /**
@@ -140,7 +140,7 @@ public class AccountTest {
      */
     @Test
     void testEnviarCodigoRecuperacion() throws Exception, EmailNotFoundException {
-        serviciosCuenta.sendPasswordRecoveryCode("brandone.acevedoc@uqvirtual.edu.co");
+        serviciosCuenta.sendPasswordRecoveryCode("laura.sanchez@hotmail.com");
     }
 
     /**
@@ -152,11 +152,11 @@ public class AccountTest {
     @Test
     void testUpdateCode() throws Exception, PasswordMismatchException, InvalidCurrentPasswordException {
         UpdatePasswordDTO updatePasswordDTO = new UpdatePasswordDTO(
-                "12345",
-                "12",
-                "12"
+                "Br@ndon123",
+                "Cr@milo123",
+                "Cr@milo123"
         );
-        serviciosCuenta.updatePassword(4L, updatePasswordDTO);
+        serviciosCuenta.updatePassword(20L, updatePasswordDTO);
     }
 
     /**
@@ -169,9 +169,9 @@ public class AccountTest {
     @Test
     void testChangePasswordCode() throws Exception, PasswordsDoNotMatchException, InvalidValidationCodeException, ValidationCodeExpiredException {
         ChangePasswordCodeDTO changePasswordCodeDTO = new ChangePasswordCodeDTO(
-                "59473",
-                "123",
-                "123"
+                "04028",
+                "Br@ndon123",
+                "Br@ndon123"
         );
         serviciosCuenta.changePasswordCode(changePasswordCodeDTO);
     }
