@@ -72,7 +72,7 @@ public class CitasTest {
 
     @Test
     void testCrearCita() throws Exception {
-        CitaDTO cita = new CitaDTO(1001277431L, EstadoCitas.PENDIENTE, TipoCita.ORTODONCIA);
+        CitaDTO cita = new CitaDTO(555666777L, EstadoCitas.PENDIENTE, TipoCita.ORTODONCIA);
         serviciosCitas.crearCita(cita);
     }
 }
