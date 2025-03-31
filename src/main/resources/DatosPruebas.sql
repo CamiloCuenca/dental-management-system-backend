@@ -9,6 +9,9 @@ FROM cuentas;
 DELETE
 FROM usuarios_detalles;
 
+DELETE
+FROM citas;
+
 -- 4️⃣ Reactivar restricciones de claves foráneas
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -121,7 +124,43 @@ VALUES
     ('carlos.zapata@clinica.com', '$2a$10$wfpuTYSfzaM3R/w6CZ09mughqySbb7G3DlNiEEShiiGz8i6lWJXaa', 'PACIENTE', 'ACTIVE',
      '101000101', NULL);
 
+-- 6️⃣ Insertar citas
+INSERT INTO citas (paciente_id, odontologo_id, fecha_hora, estado, tipo_cita) VALUES
+    -- Citas con Odontólogos Generales
+    ('111000111', '111111111', '2024-04-01 09:00:00', 'PENDIENTE', 'CONSULTA_GENERAL'),
+    ('222000222', '222222222', '2024-04-02 10:30:00', 'CONFIRMADA', 'CONSULTA_GENERAL'),
 
+    -- Citas con Higienistas Dentales
+    ('333000333', '333333333', '2024-04-03 11:00:00', 'PENDIENTE', 'LIMPIEZA_DENTAL'),
+    ('444000444', '444444444', '2024-04-04 14:00:00', 'CONFIRMADA', 'LIMPIEZA_DENTAL'),
+
+    -- Citas con Cirujanos Orales
+    ('555000555', '555555555', '2024-04-05 15:30:00', 'PENDIENTE', 'EXTRACCION_DIENTES'),
+    ('666000666', '666666666', '2024-04-06 16:00:00', 'CONFIRMADA', 'EXTRACCION_DIENTES'),
+
+    -- Citas con Endodoncistas
+    ('777000777', '123456789', '2024-04-07 09:30:00', 'PENDIENTE', 'TRATAMIENTO_DE_CONDUCTO'),
+    ('888000888', '777777777', '2024-04-08 10:00:00', 'CONFIRMADA', 'TRATAMIENTO_DE_CONDUCTO'),
+
+    -- Citas con Ortodoncistas
+    ('999000999', '987654321', '2024-04-09 11:30:00', 'PENDIENTE', 'ORTODONCIA'),
+    ('101000101', '888888888', '2024-04-10 14:30:00', 'CONFIRMADA', 'ORTODONCIA'),
+
+    -- Citas con Periodoncistas
+    ('111000111', '999999999', '2024-04-11 15:00:00', 'PENDIENTE', 'IMPLANTES_DENTALES'),
+    ('222000222', '101010101', '2024-04-12 16:30:00', 'CONFIRMADA', 'IMPLANTES_DENTALES'),
+
+    -- Citas con Odontólogos Estéticos
+    ('333000333', '121212121', '2024-04-13 09:00:00', 'PENDIENTE', 'BLANQUEAMIENTO_DENTAL'),
+    ('444000444', '131313131', '2024-04-14 10:30:00', 'CONFIRMADA', 'BLANQUEAMIENTO_DENTAL'),
+
+    -- Segunda ronda de citas para algunos pacientes
+    ('555000555', '111111111', '2024-04-15 11:00:00', 'PENDIENTE', 'CONSULTA_GENERAL'),
+    ('666000666', '333333333', '2024-04-16 14:00:00', 'CONFIRMADA', 'LIMPIEZA_DENTAL'),
+    ('777000777', '555555555', '2024-04-17 15:30:00', 'PENDIENTE', 'EXTRACCION_DIENTES'),
+    ('888000888', '123456789', '2024-04-18 16:00:00', 'CONFIRMADA', 'TRATAMIENTO_DE_CONDUCTO'),
+    ('999000999', '987654321', '2024-04-19 09:30:00', 'PENDIENTE', 'ORTODONCIA'),
+    ('101000101', '999999999', '2024-04-20 10:00:00', 'CONFIRMADA', 'IMPLANTES_DENTALES');
 
 -- Contraseña de los doctores
 /*
@@ -133,7 +172,6 @@ passwords = [
     "hashed_password13", "hashed_password14"
 ]
 */
-
 
 -- Contraseña de los pacientes
 /* // Lista de contraseñas en texto plano
