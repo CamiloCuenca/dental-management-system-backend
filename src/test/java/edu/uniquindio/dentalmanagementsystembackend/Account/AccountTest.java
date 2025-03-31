@@ -46,8 +46,8 @@ public class AccountTest {
     @Test
     void testLogin() throws Exception, UserNotFoundException, InvalidPasswordException, AccountInactiveException {
         LoginDTO loginDTO = new LoginDTO(
-                "444333222",
-                "Cr@milo123"
+                "1001277439",
+                "M@mahermosa123"
         );
 
         serviciosCuenta.login(loginDTO);
@@ -62,14 +62,14 @@ public class AccountTest {
     @Test
     void testGuardarCuentas() throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException, DatabaseOperationException, EmailSendingException {
         CrearCuentaDTO crearCuentaDTO = new CrearCuentaDTO(
-                "1001277437",                            // idNumber
+                "1001277439",                            // idNumber
                 "camilo",                        // name
                 "Acevedo castañeda",                     // lastName
-                "3153033414",                            // phoneNumber
+                "3153033413",                            // phoneNumber
                 "carrera-15#3",                          // address
                 LocalDate.parse("2000-05-20"),           // fechaNacimiento (LocalDate)
-                "camilo123@uqvirtual.edu.co",                   // email
-                "1234"                                   // password
+                "san1234@uqvirtual.edu.co",                   // email
+                "M@mahermosa123"                                   // password
         );
         serviciosCuenta.crearCuenta(crearCuentaDTO);
     }
@@ -117,8 +117,8 @@ public class AccountTest {
     @Test
     void testActivarCuenta() throws Exception, AccountAlreadyActiveException, ValidationCodeExpiredException {
         ActivateAccountDTO activateAccountDTO = new ActivateAccountDTO(
-                "77468",
-                "laura.sanchez@hotmail.com"
+                "91601",
+                "san1234@uqvirtual.edu.co"
         );
         serviciosCuenta.activateAccount(activateAccountDTO);
     }
@@ -152,11 +152,11 @@ public class AccountTest {
     @Test
     void testUpdateCode() throws Exception, PasswordMismatchException, InvalidCurrentPasswordException {
         UpdatePasswordDTO updatePasswordDTO = new UpdatePasswordDTO(
-                "Br@ndon123",
                 "Cr@milo123",
-                "Cr@milo123"
+                "M@mahermosa123",
+                "M@mahermosa123"
         );
-        serviciosCuenta.updatePassword(20L, updatePasswordDTO);
+        serviciosCuenta.updatePassword(8L, updatePasswordDTO);
     }
 
     /**
