@@ -35,7 +35,7 @@ public class CitasTest {
     // Prueba unitaria para listar citas de un paciente específico
     @Test
     void testListarCitasPaciente()throws  Exception{
-        Long idPaciente= 1001277431L;
+        Long idPaciente= 222000222L;
 
         // Imprime las citas obtenidas para el paciente con el ID especificado
         System.out.println(serviciosCitas.obtenerCitasPorPaciente(idPaciente));
@@ -66,7 +66,7 @@ public class CitasTest {
     // Prueba unitaria para cancelar una cita específica
     @Test
     void testCancelarCita() {
-        Long idCita = 2L; // Asegúrate de que exista en la BD
+        Long idCita = 42L; // Asegúrate de que exista en la BD
         // Cancela la cita con el ID especificado
         serviciosCitas.cancelarCita(idCita);
         // Imprime un mensaje indicando que la cita fue cancelada correctamente
@@ -75,11 +75,11 @@ public class CitasTest {
 
  @Test
  void testCrearCita() throws Exception {
-     Long idPaciente = 1004779025L;
-     Long idDoctor = 2001277431L; // Example doctor ID
-     LocalDateTime fechaHora = LocalDateTime.of(2023, 12, 15, 10, 0); // Example date and time
+     Long idPaciente = 222000222L;
+     Long idDoctor = 222222222L; // Example doctor ID
+     LocalDateTime fechaHora = LocalDateTime.of(2025, 11, 15, 10, 0); // Example date and time
 
-     CitaDTO cita = new CitaDTO(idPaciente, EstadoCitas.PENDIENTE, TipoCita.ORTODONCIA, idDoctor, fechaHora);
+     CitaDTO cita = new CitaDTO(idPaciente, EstadoCitas.PENDIENTE, TipoCita.CONSULTA_GENERAL, idDoctor, fechaHora);
      serviciosCitas.crearCita(cita);
  }
 

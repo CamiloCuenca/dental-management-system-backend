@@ -18,32 +18,47 @@ public class HistorialMedico {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id;
 
-    // Relación con User para almacenar información del paciente
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL) // Evita eliminación en cascada
-    @JoinColumn(name = "paciente_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "paciente_id", referencedColumnName = "id_number", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User paciente;
 
-    // Relación con User para almacenar información del odontólogo
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL) // Evita eliminación en cascada
-    @JoinColumn(name = "odontologo_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "odontologo_id", referencedColumnName = "id_number", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User odontologo;
 
-    @Column(name = "fecha", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cita_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Cita cita;
+
+    @Column(nullable = false)
     private LocalDate fecha;
 
-    @Lob
-    @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
-    private String descripcion;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String diagnostico;
 
-    public HistorialMedico(User paciente, User odontologo, LocalDate fecha, String descripcion) {
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String tratamiento;
+
+    @Column(columnDefinition = "TEXT")
+    private String observaciones;
+
+    private LocalDate proximaCita;
+
+    public HistorialMedico(User paciente, User odontologo, Cita cita, LocalDate fecha, 
+                          String diagnostico, String tratamiento, String observaciones, 
+                          LocalDate proximaCita) {
         this.paciente = paciente;
         this.odontologo = odontologo;
+        this.cita = cita;
         this.fecha = fecha;
-        this.descripcion = descripcion;
+        this.diagnostico = diagnostico;
+        this.tratamiento = tratamiento;
+        this.observaciones = observaciones;
+        this.proximaCita = proximaCita;
     }
 }
