@@ -34,25 +34,8 @@ public interface ServiciosCuenta {
      */
     String crearCuenta(CrearCuentaDTO cuenta) throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException, DatabaseOperationException, EmailSendingException;
 
-    /**
-     * Obtiene el perfil del paciente basado en su identificación.
-     * @param id Número de identificación del paciente.
-     * @return PerfilDTO con la información del usuario.
-     * @throws Exception si el usuario no existe.
-     * @throws UserNotFoundException si el usuario no se encuentra.
-     * @throws InvalidIdFormatException si el formato del ID es inválido.
-     */
-    PerfilDTO obtenerPerfil(Long id) throws Exception, UserNotFoundException, InvalidIdFormatException;
+  
 
-    /**
-     * Actualiza los datos personales del usuario.
-     * @param id Número de identificación del usuario.
-     * @param actualizarPerfilDTO DTO con los datos a actualizar.
-     * @throws Exception si el usuario no existe o hay algún error en la actualización.
-     * @throws UserNotFoundException si el usuario no se encuentra.
-     * @throws InvalidIdFormatException si el formato del ID es inválido.
-     */
-    void actualizarPerfil(Long id, ActualizarPerfilDTO actualizarPerfilDTO) throws Exception, UserNotFoundException, InvalidIdFormatException;
 
     /**
      * Desactiva la cuenta del usuario.

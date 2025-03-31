@@ -85,28 +85,6 @@ public class AccountTest {
         serviciosCuenta.eliminarCuenta(17L);
     }
 
-    /**
-     * Test for updating a user profile.
-     * @throws Exception if a general error occurs.
-     * @throws UserNotFoundException if the user is not found.
-     * @throws InvalidIdFormatException if the ID format is invalid.
-     */
-    @Test
-    void actualizarUsuario() throws Exception, UserNotFoundException, InvalidIdFormatException {
-        ActualizarPerfilDTO actualizarPerfilDTO = new ActualizarPerfilDTO("morgan", "montealegre", "3153033418", "Maria-cristina#15");
-        serviciosCuenta.actualizarPerfil(17L, actualizarPerfilDTO);
-    }
-
-    /**
-     * Test for obtaining a user profile.
-     * @throws Exception if a general error occurs.
-     * @throws UserNotFoundException if the user is not found.
-     * @throws InvalidIdFormatException if the ID format is invalid.
-     */
-    @Test
-    void testObtenerUsuario() throws Exception, UserNotFoundException, InvalidIdFormatException {
-        serviciosCuenta.obtenerPerfil(1L);
-    }
 
     /**
      * Test for activating an account.

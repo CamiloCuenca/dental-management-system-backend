@@ -48,40 +48,7 @@ public class CuentaController {
         }
     }
 
-    /**
-     * Endpoint for retrieving a user profile.
-     * @param accountId ID of the account to retrieve.
-     * @return ResponseEntity with the user profile if found, or appropriate error status if it fails.
-     */
-    @GetMapping("/perfil/{accountId}")
-    public ResponseEntity<PerfilDTO> obtenerPerfil(@PathVariable Long accountId) {
-        try {
-            return ResponseEntity.ok(accountService.obtenerPerfil(accountId));
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        } catch (InvalidIdFormatException | Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
-
-    /**
-     * Endpoint for updating a user profile.
-     * @param accountId ID of the account to update.
-     * @param actualizarPerfilDTO Data transfer object containing updated profile details.
-     * @return ResponseEntity with no content if update is successful, or appropriate error status if it fails.
-     */
-    @PutMapping("/perfil/{accountId}")
-    public ResponseEntity<Void> actualizarPerfil(@PathVariable Long accountId, @RequestBody ActualizarPerfilDTO actualizarPerfilDTO) {
-        try {
-            accountService.actualizarPerfil(accountId, actualizarPerfilDTO);
-            return ResponseEntity.noContent().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (InvalidIdFormatException | Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-    }
-
+    
     /**
      * Endpoint for deleting an account.
      * @param accountId ID of the account to delete.
