@@ -266,8 +266,6 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         }
     }
 
-
-
     /**
      * Elimina (desactiva) una cuenta.
      *
@@ -755,5 +753,24 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     private void actualizarContraseñaUsuario(Account account, String newPassword) {
         account.setPassword(passwordEncoder.encode(newPassword));
         accountRepository.save(account);
+    }
+
+    @Override
+    @Transactional
+    public String actualizarUsuario(String idNumber, ActualizarUsuarioDTO actualizarUsuarioDTO) throws Exception, UserNotFoundException {
+        User user = userRepository.findByIdNumber(idNumber)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con ID: " + idNumber));
+
+        // Actualizar los campos del usuario
+        user.setName(actualizarUsuarioDTO.name());
+        user.setLastName(actualizarUsuarioDTO.lastName());
+        user.setPhoneNumber(actualizarUsuarioDTO.phoneNumber());
+        user.setAddress(actualizarUsuarioDTO.address());
+        user.setBirthDate(actualizarUsuarioDTO.birthDate());
+
+        // Guardar los cambios
+        userRepository.save(user);
+
+        return "Usuario actualizado exitosamente";
     }
 }

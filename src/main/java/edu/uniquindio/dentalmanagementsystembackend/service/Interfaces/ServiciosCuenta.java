@@ -96,6 +96,14 @@ public interface ServiciosCuenta {
      */
     String sendPasswordRecoveryCode(String correo) throws Exception, EmailNotFoundException;
 
-
+    /**
+     * Actualiza la información del usuario.
+     * @param idNumber Número de identificación del usuario.
+     * @param actualizarUsuarioDTO DTO con la información actualizada del usuario.
+     * @return String con un mensaje de confirmación.
+     * @throws Exception si ocurre un error general.
+     * @throws UserNotFoundException si el usuario no se encuentra.
+     */
+    String actualizarUsuario(String idNumber, ActualizarUsuarioDTO actualizarUsuarioDTO) throws Exception, UserNotFoundException;
 
 }
