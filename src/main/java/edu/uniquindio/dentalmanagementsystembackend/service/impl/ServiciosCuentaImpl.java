@@ -71,7 +71,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      *
      * @param loginDTO DTO con las credenciales de inicio de sesión
      * @return TokenDTO con el token de autenticación
-     * @throws UserNotFoundException si el usuario no existe
+     * @throws UserNotFoundException    si el usuario no existe
      * @throws AccountInactiveException si la cuenta está inactiva
      * @throws InvalidPasswordException si la contraseña es incorrecta
      */
@@ -116,9 +116,9 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      * @param cuenta DTO con la información de la cuenta
      * @return ID de la cuenta creada
      * @throws EmailAlreadyExistsException si el email ya existe
-     * @throws UserAlreadyExistsException si el usuario ya existe
-     * @throws DatabaseOperationException si hay error en la base de datos
-     * @throws EmailSendingException si hay error al enviar el email
+     * @throws UserAlreadyExistsException  si el usuario ya existe
+     * @throws DatabaseOperationException  si hay error en la base de datos
+     * @throws EmailSendingException       si hay error al enviar el email
      */
     @Override
     @Transactional
@@ -210,7 +210,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     /**
      * Crea una nueva cuenta con los datos proporcionados.
      *
-     * @param cuenta DTO con los datos de la cuenta
+     * @param cuenta         DTO con los datos de la cuenta
      * @param hashedPassword Contraseña encriptada
      * @return Account creada
      */
@@ -231,7 +231,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     /**
      * Crea un nuevo usuario con los datos proporcionados.
      *
-     * @param cuenta DTO con los datos del usuario
+     * @param cuenta  DTO con los datos del usuario
      * @param account Cuenta asociada al usuario
      * @return User creado
      */
@@ -273,16 +273,16 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      *
      * @param accountId ID de la cuenta
      * @return PerfilDTO con los datos del usuario
-     * @throws UserNotFoundException si el usuario no existe
+     * @throws UserNotFoundException    si el usuario no existe
      * @throws AccountNotFoundException si la cuenta no existe
      */
     @Override
     public PerfilDTO obtenerPerfil(Long accountId) throws UserNotFoundException, AccountNotFoundException {
         log.info("Iniciando obtención de perfil para accountId: {}", accountId);
-        
+
         Account account = obtenerCuentaPorId(accountId);
         log.debug("Cuenta encontrada: {}", account);
-        
+
         User user = account.getUser();
         log.debug("Usuario asociado: {}", user);
 
@@ -297,41 +297,16 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
                 user.getPhoneNumber(),
                 user.getAddress()
         );
-        
+
         log.info("Perfil obtenido exitosamente: {}", perfil);
         return perfil;
     }
 
 
-
-    /**
-     * Valida los datos de actualización del perfil.
-     *
-     * @param dto DTO con los datos a validar
-     * @throws IllegalArgumentException si los datos no son válidos
-     */
-    private void validarDatosActualizacion(ActualizarPerfilDTO dto) {
-        if (dto == null) {
-            throw new IllegalArgumentException("Los datos de actualización no pueden ser nulos.");
-        }
-        if (dto.name() == null || dto.name().trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre no puede estar vacío.");
-        }
-        if (dto.lastName() == null || dto.lastName().trim().isEmpty()) {
-            throw new IllegalArgumentException("El apellido no puede estar vacío.");
-        }
-        if (dto.phoneNumber() == null || !dto.phoneNumber().matches("\\d{10}")) {
-            throw new IllegalArgumentException("El número de teléfono debe contener exactamente 10 dígitos.");
-        }
-        if (dto.address() == null || dto.address().trim().isEmpty()) {
-            throw new IllegalArgumentException("La dirección no puede estar vacía.");
-        }
-    }
-
     /**
      * Valida que el número de teléfono no esté en uso por otro usuario.
      *
-     * @param phoneNumber Número de teléfono a validar
+     * @param phoneNumber   Número de teléfono a validar
      * @param currentUserId ID del usuario actual
      * @throws IllegalArgumentException si el teléfono ya está en uso
      */
@@ -346,7 +321,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      * Actualiza los datos de un usuario.
      *
      * @param user Usuario a actualizar
-     * @param dto DTO con los nuevos datos
+     * @param dto  DTO con los nuevos datos
      */
     private void actualizarDatosUsuario(User user, ActualizarPerfilDTO dto) {
         user.setName(dto.name());
@@ -397,7 +372,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      * @param email Email del usuario
      * @return Mensaje de confirmación
      * @throws EmailNotFoundException si el email no existe
-     * @throws Exception si hay un error general
+     * @throws Exception              si hay un error general
      */
     @Override
     @Transactional
@@ -405,7 +380,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         Account account = obtenerCuentaPorEmail(email);
         validarEstadoCuentaParaRecuperacion(account);
         validarCodigoRecuperacionExistente(account);
-        
+
         RecoveryCode recoveryCode = crearYGuardarCodigoRecuperacion(account);
         enviarCodigoRecuperacion(account.getEmail(), recoveryCode.getCode());
 
@@ -470,7 +445,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      * Envía el código de recuperación por email.
      *
      * @param email Email del usuario
-     * @param code Código de recuperación
+     * @param code  Código de recuperación
      * @throws Exception si hay error al enviar el email
      */
     private void enviarCodigoRecuperacion(String email, String code) throws Exception {
@@ -525,7 +500,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     /**
      * Valida que la contraseña sea correcta.
      *
-     * @param account Cuenta del usuario
+     * @param account  Cuenta del usuario
      * @param password Contraseña a validar
      * @throws InvalidPasswordException si la contraseña es incorrecta
      */
@@ -540,9 +515,9 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      *
      * @param activateAccountDTO DTO con el código de activación
      * @return Mensaje de confirmación
-     * @throws AccountAlreadyActiveException si la cuenta ya está activa
+     * @throws AccountAlreadyActiveException  si la cuenta ya está activa
      * @throws ValidationCodeExpiredException si el código ha expirado
-     * @throws AccountNotFoundException si la cuenta no existe
+     * @throws AccountNotFoundException       si la cuenta no existe
      */
     @Override
     @Transactional
@@ -551,7 +526,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         Account account = obtenerCuentaPorCodigoValidacion(activateAccountDTO.code());
         validarEstadoCuentaParaActivacion(account);
         validarCodigoActivacion(account);
-        
+
         activarCuenta(account);
         return "Cuenta activada exitosamente.";
     }
@@ -614,7 +589,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      * @param email Email del usuario
      * @return Mensaje de confirmación
      * @throws EmailNotFoundException si el email no existe
-     * @throws Exception si hay un error general
+     * @throws Exception              si hay un error general
      */
     @Override
     @Transactional
@@ -622,7 +597,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         Account account = obtenerCuentaPorEmail(email);
         validarEstadoCuentaParaEnvioCodigo(account);
         validarCodigoActivacionExistente(account);
-        
+
         ValidationCode validationCode = crearYGuardarCodigoActivacion(account);
         enviarCodigoActivacion(account.getEmail(), validationCode.getCode());
 
@@ -672,7 +647,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      * Envía el código de activación por email.
      *
      * @param email Email del usuario
-     * @param code Código de activación
+     * @param code  Código de activación
      * @throws Exception si hay error al enviar el email
      */
     private void enviarCodigoActivacion(String email, String code) throws Exception {
@@ -686,7 +661,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      * @return Mensaje de confirmación
      * @throws InvalidValidationCodeException si el código no es válido
      * @throws ValidationCodeExpiredException si el código ha expirado
-     * @throws PasswordsDoNotMatchException si las contraseñas no coinciden
+     * @throws PasswordsDoNotMatchException   si las contraseñas no coinciden
      */
     @Override
     @Transactional
@@ -696,7 +671,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         validarEstadoCuentaParaCambioContraseña(account);
         validarCodigoRecuperacion(account);
         validarNuevaContraseña(changePasswordDTO);
-        
+
         actualizarContraseña(account, changePasswordDTO.newPassword());
         return "La contraseña ha sido cambiada exitosamente.";
     }
@@ -756,7 +731,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     /**
      * Actualiza la contraseña de una cuenta.
      *
-     * @param account Cuenta a actualizar
+     * @param account     Cuenta a actualizar
      * @param newPassword Nueva contraseña
      */
     private void actualizarContraseña(Account account, String newPassword) {
@@ -772,12 +747,12 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     /**
      * Actualiza la contraseña de un usuario autenticado.
      *
-     * @param id ID de la cuenta
+     * @param id                ID de la cuenta
      * @param updatePasswordDTO DTO con la información de la contraseña
      * @return Mensaje de confirmación
-     * @throws AccountNotFoundException si la cuenta no existe
+     * @throws AccountNotFoundException        si la cuenta no existe
      * @throws InvalidCurrentPasswordException si la contraseña actual es incorrecta
-     * @throws PasswordMismatchException si las contraseñas no coinciden
+     * @throws PasswordMismatchException       si las contraseñas no coinciden
      */
     @Override
     @Transactional
@@ -787,7 +762,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         validarCuentaActivaParaCambioContraseña(account);
         validarContraseñaActualCorrecta(account, updatePasswordDTO.currentPassword());
         validarNuevaContraseñaCumpleRequisitos(account, updatePasswordDTO);
-        
+
         actualizarContraseñaUsuario(account, updatePasswordDTO.newPassword());
         return "La contraseña ha sido cambiada exitosamente.";
     }
@@ -807,7 +782,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     /**
      * Valida que la contraseña actual ingresada sea correcta.
      *
-     * @param account Cuenta del usuario
+     * @param account         Cuenta del usuario
      * @param currentPassword Contraseña actual ingresada
      * @throws InvalidCurrentPasswordException si la contraseña es incorrecta
      */
@@ -821,7 +796,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      * Valida que la nueva contraseña cumpla con todos los requisitos de seguridad.
      *
      * @param account Cuenta del usuario
-     * @param dto DTO con la información de la contraseña
+     * @param dto     DTO con la información de la contraseña
      * @throws PasswordMismatchException si las contraseñas no coinciden o no cumplen requisitos
      */
     private void validarNuevaContraseñaCumpleRequisitos(Account account, UpdatePasswordDTO dto) throws PasswordMismatchException {
@@ -836,7 +811,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     /**
      * Actualiza la contraseña del usuario en la base de datos.
      *
-     * @param account Cuenta a actualizar
+     * @param account     Cuenta a actualizar
      * @param newPassword Nueva contraseña a guardar
      */
     private void actualizarContraseñaUsuario(Account account, String newPassword) {
@@ -849,16 +824,16 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
     public String actualizarUsuario(Long accountId, ActualizarUsuarioDTO dto) throws Exception, UserNotFoundException {
         Account account = obtenerCuentaPorId(accountId);
         User user = account.getUser();
-        
+
         if (user == null) {
             throw new UserNotFoundException("No se encontró un usuario asociado a la cuenta con ID " + accountId);
         }
-        
+
         user.setName(dto.name());
         user.setLastName(dto.lastName());
         user.setPhoneNumber(dto.phoneNumber());
         user.setAddress(dto.address());
-        
+
         userRepository.save(user);
         return "Usuario actualizado exitosamente.";
     }
