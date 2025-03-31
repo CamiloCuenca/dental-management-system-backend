@@ -18,6 +18,7 @@ import edu.uniquindio.dentalmanagementsystembackend.repository.validationCodeRep
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.EmailService;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCuenta;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,6 +39,7 @@ import java.util.Optional;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     private final CuentaRepository accountRepository;
@@ -264,6 +266,93 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         } catch (Exception e) {
             throw new EmailSendingException("Error al enviar el correo de validación: " + e.getMessage());
         }
+    }
+
+    /**
+     * Obtiene el perfil de un usuario.
+     *
+     * @param accountId ID de la cuenta
+     * @return PerfilDTO con los datos del usuario
+     * @throws UserNotFoundException si el usuario no existe
+     * @throws AccountNotFoundException si la cuenta no existe
+     */
+    @Override
+    public PerfilDTO obtenerPerfil(Long accountId) throws UserNotFoundException, AccountNotFoundException {
+        log.info("Iniciando obtención de perfil para accountId: {}", accountId);
+        
+        Account account = obtenerCuentaPorId(accountId);
+        log.debug("Cuenta encontrada: {}", account);
+        
+        User user = account.getUser();
+        log.debug("Usuario asociado: {}", user);
+
+        if (user == null) {
+            log.error("No se encontró usuario asociado para accountId: {}", accountId);
+            throw new UserNotFoundException("La cuenta con ID " + accountId + " no tiene un usuario asociado.");
+        }
+
+        PerfilDTO perfil = new PerfilDTO(
+                user.getName(),
+                user.getLastName(),
+                user.getPhoneNumber(),
+                user.getAddress()
+        );
+        
+        log.info("Perfil obtenido exitosamente: {}", perfil);
+        return perfil;
+    }
+
+
+
+    /**
+     * Valida los datos de actualización del perfil.
+     *
+     * @param dto DTO con los datos a validar
+     * @throws IllegalArgumentException si los datos no son válidos
+     */
+    private void validarDatosActualizacion(ActualizarPerfilDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Los datos de actualización no pueden ser nulos.");
+        }
+        if (dto.name() == null || dto.name().trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre no puede estar vacío.");
+        }
+        if (dto.lastName() == null || dto.lastName().trim().isEmpty()) {
+            throw new IllegalArgumentException("El apellido no puede estar vacío.");
+        }
+        if (dto.phoneNumber() == null || !dto.phoneNumber().matches("\\d{10}")) {
+            throw new IllegalArgumentException("El número de teléfono debe contener exactamente 10 dígitos.");
+        }
+        if (dto.address() == null || dto.address().trim().isEmpty()) {
+            throw new IllegalArgumentException("La dirección no puede estar vacía.");
+        }
+    }
+
+    /**
+     * Valida que el número de teléfono no esté en uso por otro usuario.
+     *
+     * @param phoneNumber Número de teléfono a validar
+     * @param currentUserId ID del usuario actual
+     * @throws IllegalArgumentException si el teléfono ya está en uso
+     */
+    private void validarTelefonoExistente(String phoneNumber, String currentUserId) {
+        Optional<User> existingUser = userRepository.findByPhoneNumber(phoneNumber);
+        if (existingUser.isPresent() && !existingUser.get().getIdNumber().equals(currentUserId)) {
+            throw new IllegalArgumentException("El número de teléfono ya está registrado en otro usuario.");
+        }
+    }
+
+    /**
+     * Actualiza los datos de un usuario.
+     *
+     * @param user Usuario a actualizar
+     * @param dto DTO con los nuevos datos
+     */
+    private void actualizarDatosUsuario(User user, ActualizarPerfilDTO dto) {
+        user.setName(dto.name());
+        user.setLastName(dto.lastName());
+        user.setPhoneNumber(dto.phoneNumber());
+        user.setAddress(dto.address());
     }
 
     /**
@@ -757,20 +846,20 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     @Override
     @Transactional
-    public String actualizarUsuario(String idNumber, ActualizarUsuarioDTO actualizarUsuarioDTO) throws Exception, UserNotFoundException {
-        User user = userRepository.findByIdNumber(idNumber)
-                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con ID: " + idNumber));
-
-        // Actualizar los campos del usuario
-        user.setName(actualizarUsuarioDTO.name());
-        user.setLastName(actualizarUsuarioDTO.lastName());
-        user.setPhoneNumber(actualizarUsuarioDTO.phoneNumber());
-        user.setAddress(actualizarUsuarioDTO.address());
-        user.setBirthDate(actualizarUsuarioDTO.birthDate());
-
-        // Guardar los cambios
+    public String actualizarUsuario(Long accountId, ActualizarUsuarioDTO dto) throws Exception, UserNotFoundException {
+        Account account = obtenerCuentaPorId(accountId);
+        User user = account.getUser();
+        
+        if (user == null) {
+            throw new UserNotFoundException("No se encontró un usuario asociado a la cuenta con ID " + accountId);
+        }
+        
+        user.setName(dto.name());
+        user.setLastName(dto.lastName());
+        user.setPhoneNumber(dto.phoneNumber());
+        user.setAddress(dto.address());
+        
         userRepository.save(user);
-
-        return "Usuario actualizado exitosamente";
+        return "Usuario actualizado exitosamente.";
     }
 }

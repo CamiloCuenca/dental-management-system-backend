@@ -144,16 +144,16 @@ public class CuentaController {
 
     /**
      * Endpoint para actualizar la información del usuario.
-     * @param idNumber Número de identificación del usuario.
+     * @param accountId ID de la cuenta.
      * @param actualizarUsuarioDTO DTO con la información actualizada del usuario.
      * @return ResponseEntity con un mensaje de confirmación.
      */
-    @PutMapping("/usuario/{idNumber}")
+    @PutMapping("/usuario/{accountId}")
     public ResponseEntity<String> actualizarUsuario(
-            @PathVariable String idNumber,
+            @PathVariable Long accountId,
             @RequestBody ActualizarUsuarioDTO actualizarUsuarioDTO) {
         try {
-            return ResponseEntity.ok(accountService.actualizarUsuario(idNumber, actualizarUsuarioDTO));
+            return ResponseEntity.ok(accountService.actualizarUsuario(accountId, actualizarUsuarioDTO));
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {

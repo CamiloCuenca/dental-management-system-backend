@@ -9,6 +9,7 @@ import edu.uniquindio.dentalmanagementsystembackend.exception.ValidationCodeExpi
 import edu.uniquindio.dentalmanagementsystembackend.exception.InvalidCurrentPasswordException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.PasswordMismatchException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.DatabaseOperationException;
+import javax.security.auth.login.AccountNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -153,6 +154,45 @@ public class AccountTest {
         );
         serviciosCuenta.changePasswordCode(changePasswordCodeDTO);
     }
+
+    @Test
+    void testActualizarUsuario() throws Exception, UserNotFoundException {
+        // Arrange
+        Long accountId = 39L; // ID de una cuenta existente
+        ActualizarUsuarioDTO dto = new ActualizarUsuarioDTO(
+            "Nuevo Nombre",
+            "Nuevo Apellido",
+            "3001234567",
+            "Nueva Dirección",
+            LocalDate.of(1990, 1, 1)
+        );
+
+        // Act
+        String resultado = serviciosCuenta.actualizarUsuario(accountId, dto);
+
+        // Assert
+        assertEquals("Usuario actualizado exitosamente.", resultado);
+    }
+
+    @Test
+    void testObtenerPerfil() throws UserNotFoundException, AccountNotFoundException {
+        // Arrange
+        Long accountId = 39L; // ID de una cuenta existente
+
+        // Act
+        PerfilDTO perfil = serviciosCuenta.obtenerPerfil(accountId);
+
+        // Assert
+        assertEquals("Nuevo Nombre", perfil.name());
+        assertEquals("Nuevo Apellido", perfil.lastName());
+        assertEquals("3001234567", perfil.phoneNumber());
+        assertEquals("Nueva Dirección", perfil.address());
+    }
+
+    
+
+
+    
 
 
 

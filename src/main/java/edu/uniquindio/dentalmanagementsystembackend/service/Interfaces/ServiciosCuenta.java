@@ -9,6 +9,7 @@ import edu.uniquindio.dentalmanagementsystembackend.exception.ValidationCodeExpi
 import edu.uniquindio.dentalmanagementsystembackend.exception.InvalidCurrentPasswordException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.PasswordMismatchException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.DatabaseOperationException;
+import javax.security.auth.login.AccountNotFoundException;
 
 public interface ServiciosCuenta {
 
@@ -98,12 +99,15 @@ public interface ServiciosCuenta {
 
     /**
      * Actualiza la información del usuario.
-     * @param idNumber Número de identificación del usuario.
+     * @param accountId ID de la cuenta.
      * @param actualizarUsuarioDTO DTO con la información actualizada del usuario.
      * @return String con un mensaje de confirmación.
      * @throws Exception si ocurre un error general.
      * @throws UserNotFoundException si el usuario no se encuentra.
      */
-    String actualizarUsuario(String idNumber, ActualizarUsuarioDTO actualizarUsuarioDTO) throws Exception, UserNotFoundException;
+    String actualizarUsuario(Long accountId, ActualizarUsuarioDTO actualizarUsuarioDTO) throws Exception, UserNotFoundException;
+
+    PerfilDTO obtenerPerfil(Long accountId) throws UserNotFoundException, AccountNotFoundException;
+
 
 }
