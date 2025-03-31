@@ -21,29 +21,39 @@ public class HistorialMedico {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    // Relación con User para almacenar información del paciente
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL) // Evita eliminación en cascada
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "paciente_id", nullable = false)
     private User paciente;
 
-    // Relación con User para almacenar información del odontólogo
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL) // Evita eliminación en cascada
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "odontologo_id", nullable = false)
     private User odontologo;
 
     @Column(name = "fecha", nullable = false)
     private LocalDate fecha;
 
-    @Lob
-    @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
-    private String descripcion;
+    @Column(name = "diagnostico", nullable = false, columnDefinition = "TEXT")
+    private String diagnostico;
 
-    public HistorialMedico(User paciente, User odontologo, LocalDate fecha, String descripcion) {
+    @Column(name = "tratamiento", nullable = false, columnDefinition = "TEXT")
+    private String tratamiento;
+
+    @Column(name = "observaciones", columnDefinition = "TEXT")
+    private String observaciones;
+
+    @Column(name = "proxima_cita", nullable = true)
+    private LocalDate proximaCita;
+
+    public HistorialMedico(User paciente, User odontologo, LocalDate fecha, String diagnostico, 
+                          String tratamiento, String observaciones, LocalDate proximaCita) {
         this.paciente = paciente;
         this.odontologo = odontologo;
         this.fecha = fecha;
-        this.descripcion = descripcion;
+        this.diagnostico = diagnostico;
+        this.tratamiento = tratamiento;
+        this.observaciones = observaciones;
+        this.proximaCita = proximaCita;
     }
 }
