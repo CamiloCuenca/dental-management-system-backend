@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface HistorialMedicoRepository extends JpaRepository<HistorialMedico, Integer> {
+public interface HistorialMedicoRepository extends JpaRepository<HistorialMedico, Long> {
     
     @Query("SELECT h FROM HistorialMedico h WHERE h.paciente.idNumber = :pacienteId")
     List<HistorialMedico> findByPacienteIdNumber(@Param("pacienteId") String pacienteId);

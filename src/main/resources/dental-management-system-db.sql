@@ -86,13 +86,20 @@ DROP TABLE IF EXISTS `historiales_medicos`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `historiales_medicos` (
-                                       `fecha` date NOT NULL,
-                                       `id` int NOT NULL AUTO_INCREMENT,
-                                       `odontologo_id` varchar(20) NOT NULL,
-                                       `paciente_id` varchar(20) NOT NULL,
-                                       `descripcion` text NOT NULL,
-                                       PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `fecha` date NOT NULL,
+    `diagnostico` text NOT NULL,
+    `tratamiento` text NOT NULL,
+    `observaciones` text,
+    `proxima_cita` date,
+    `paciente_id` varchar(20) NOT NULL,
+    `odontologo_id` varchar(20) NOT NULL,
+    `cita_id` bigint NOT NULL,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `FK_historial_paciente` FOREIGN KEY (`paciente_id`) REFERENCES `usuarios_detalles` (`id_number`),
+    CONSTRAINT `FK_historial_odontologo` FOREIGN KEY (`odontologo_id`) REFERENCES `usuarios_detalles` (`id_number`),
+    CONSTRAINT `FK_historial_cita` FOREIGN KEY (`cita_id`) REFERENCES `citas` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -101,7 +108,7 @@ CREATE TABLE `historiales_medicos` (
 
 LOCK TABLES `historiales_medicos` WRITE;
 /*!40000 ALTER TABLE `historiales_medicos` DISABLE KEYS */;
-INSERT INTO `historiales_medicos` VALUES ('2025-02-15',1,'123456789','555666777','Extracción de muela del juicio'),('2025-02-20',2,'987654321','444333222','Limpieza dental y revisión de caries'),('2025-02-28',3,'123456789','999888777','Tratamiento de conducto en molar superior derecho');
+INSERT INTO `historiales_medicos` VALUES ('2025-02-15',1,'Extracción de muela del juicio','Tratamiento de conducto en molar superior derecho','Observaciones de la cita','2025-02-20','555666777','123456789',1),('2025-02-20',2,'Limpieza dental y revisión de caries','Tratamiento de conducto en molar superior derecho','Observaciones de la cita','2025-02-28','444333222','987654321',2),('2025-02-28',3,'Tratamiento de conducto en molar superior derecho','Tratamiento de conducto en molar superior derecho','Observaciones de la cita','2025-03-10','999888777','123456789',3);
 /*!40000 ALTER TABLE `historiales_medicos` ENABLE KEYS */;
 UNLOCK TABLES;
 
