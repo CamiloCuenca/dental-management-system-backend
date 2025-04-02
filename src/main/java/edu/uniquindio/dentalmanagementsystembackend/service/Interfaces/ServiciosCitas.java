@@ -110,7 +110,7 @@ public interface ServiciosCitas {
 
     DoctorDisponibilidadDTO obtenerFechasDisponiblesDoctor(Long doctorId);
 
-    List<DoctorDisponibilidadDTO> obtenerFechasDisponiblesPorTipoDoctor(String tipoDoctor);
+    List<DoctorDisponibilidadDTO> obtenerFechasDisponiblesPorTipoDoctor(Long tipoDoctor);
 
 }
 

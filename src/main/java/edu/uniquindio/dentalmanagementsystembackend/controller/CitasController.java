@@ -111,7 +111,7 @@ public class CitasController {
 
     @GetMapping("/disponibilidad/tipo-doctor/{tipoDoctor}")
     public ResponseEntity<List<DoctorDisponibilidadDTO>> obtenerFechasDisponiblesPorTipoDoctor(
-            @PathVariable String tipoDoctor) {
+            @PathVariable Long tipoDoctor) {
         return ResponseEntity.ok(serviciosCitas.obtenerFechasDisponiblesPorTipoDoctor(tipoDoctor));
     }
 } 

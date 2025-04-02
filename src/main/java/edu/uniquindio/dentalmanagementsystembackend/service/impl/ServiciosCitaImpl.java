@@ -674,6 +674,11 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         enviarNotificacionRecordatorio(cita);
     }
 
+    @Override
+    public DoctorDisponibilidadDTO obtenerFechasDisponiblesDoctor(String doctorId) {
+        return null;
+    }
+
 
     @Override
     public DoctorDisponibilidadDTO obtenerFechasDisponiblesDoctor(Long doctorId) {
@@ -707,12 +712,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     }
 
     @Override
-    public List<DoctorDisponibilidadDTO> obtenerFechasDisponiblesPorTipoDoctor(String tipoDoctor) {
+    public List<DoctorDisponibilidadDTO> obtenerFechasDisponiblesPorTipoDoctor(Long tipoDoctor) {
         try {
             // 1. Obtener todos los doctores del tipo especificado
             List<Account> cuentasDoctores = cuentaRepository.findByRolAndTipoDoctor(
                     Rol.DOCTOR,
-                    TipoDoctor.valueOf(tipoDoctor)
+                    TipoDoctor.values()[(int) (tipoDoctor - 1)] // Convertir el ID a enum
             );
 
             // 2. Mapear cada doctor a su DTO con fechas disponibles
@@ -728,7 +733,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                         );
                     })
                     .collect(Collectors.toList());
-        } catch (IllegalArgumentException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             throw new CitaException("Tipo de doctor inválido: " + tipoDoctor);
         } catch (Exception e) {
             throw new CitaException("Error al obtener las fechas disponibles por tipo de doctor: " + e.getMessage());
