@@ -17,8 +17,9 @@ import java.util.List;
 @Table(name = "usuarios_detalles")
 public class User {
 
+
     @Id
-    @Column(name = "id_number")
+    @Column(name = "id_number", length = 20) // Asegura la longitud según la BD
     private String idNumber; // Cédula como clave primaria
 
     @Column(nullable = false)
@@ -36,14 +37,15 @@ public class User {
     @Column(nullable = false)
     private LocalDate birthDate;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "usuario_id") // Se recomienda para claridad
     private Account account;
 
-    @OneToMany(mappedBy = "paciente", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "paciente", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("fecha DESC")
     private List<HistorialMedico> historialesComoPaciente = new ArrayList<>();
 
-    @OneToMany(mappedBy = "odontologo", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "odontologo", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("fecha DESC")
     private List<HistorialMedico> historialesComoOdontologo = new ArrayList<>();
 

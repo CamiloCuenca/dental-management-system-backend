@@ -34,29 +34,32 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id", referencedColumnName = "id_number", unique = true)
     private User user;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "validation_code_id")
     private ValidationCode registrationValidationCode;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "Recovery_Code_id")
-    private RecoveryCode recoveryCode ;
-
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "recovery_code_id") // Corregido: Antes estaba `Recovery_Code_id`
+    private RecoveryCode recoveryCode;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true) // Puede ser null si no es doctor
     private TipoDoctor tipoDoctor;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt; // Fecha de creación automática
 
     // Método para asignar el tipo de doctor solo si el rol es DOCTOR
     public void setTipoDoctor(TipoDoctor tipoDoctor) {
         if (this.rol == Rol.DOCTOR) {
             this.tipoDoctor = tipoDoctor;
         } else {
-            throw new IllegalStateException("Solo los doctores pueden tener un TipoDoctor asignado.");
+            this.tipoDoctor = null; // En lugar de lanzar una excepción, simplemente se limpia
         }
     }
 }
