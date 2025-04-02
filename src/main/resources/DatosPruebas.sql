@@ -59,70 +59,47 @@ VALUES
     ('101000101', 'Carlos', 'Zapata', '3291010101', 'Avenida 40 # 77-99', '1989-12-12');
 
 
-INSERT INTO cuentas (email, password, rol, status, user_id, tipo_doctor)
+INSERT INTO cuentas (email, password, rol, status, user_id, tipo_doctor, created_at)
 VALUES
     -- ODONTOLOGOS GENERALES
-    ('andres.torres@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE',
-     '111111111', 'ODONTOLOGO_GENERAL'),
-    ('beatriz.martinez@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE',
-     '222222222', 'ODONTOLOGO_GENERAL'),
+    ('andres.torres@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '111111111', 'ODONTOLOGO_GENERAL', NOW()),
+    ('beatriz.martinez@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '222222222', 'ODONTOLOGO_GENERAL', NOW()),
 
     -- HIGIENISTAS DENTALES
-    ('camilo.fernandez@clinica.com', '$2a$10$SUq/4RlcDDmYtfxwWadCtOfrpZ31lXhOhlINr5SiBI4EtfW9y/CJ6', 'DOCTOR', 'ACTIVE',
-     '333333333', 'HIGIENISTA_DENTAL'),
-    ('daniela.paredes@clinica.com', '$2a$10$yY5g1sLXRa6HexmHa0AS7.ndIrL3i3CRdeLFv/Y7cwPDWw.hZa.c6', 'DOCTOR', 'ACTIVE',
-     '444444444', 'HIGIENISTA_DENTAL'),
+    ('camilo.fernandez@clinica.com', '$2a$10$SUq/4RlcDDmYtfxwWadCtOfrpZ31lXhOhlINr5SiBI4EtfW9y/CJ6', 'DOCTOR', 'ACTIVE', '333333333', 'HIGIENISTA_DENTAL', NOW()),
+    ('daniela.paredes@clinica.com', '$2a$10$yY5g1sLXRa6HexmHa0AS7.ndIrL3i3CRdeLFv/Y7cwPDWw.hZa.c6', 'DOCTOR', 'ACTIVE', '444444444', 'HIGIENISTA_DENTAL', NOW()),
 
     -- CIRUJANOS ORALES Y MAXILOFACIALES
-    ('eduardo.rios@clinica.com', '$2a$10$w.LOsuR2D.Gi4woi33EUve9Xp0JsdyJiOrQjqHpPoc5pP/91XsPZW', 'DOCTOR', 'ACTIVE',
-     '555555555', 'CIRUJANO_ORAL_Y_MAXILOFACIAL'),
-    ('fernanda.quintero@clinica.com', '$2a$10$dpKT0RAzLsBjcOVG79DlQuSejRsxhcRZ2uQTSca.LzM/PWXg0YLYK', 'DOCTOR',
-     'ACTIVE', '666666666', 'CIRUJANO_ORAL_Y_MAXILOFACIAL'),
+    ('eduardo.rios@clinica.com', '$2a$10$w.LOsuR2D.Gi4woi33EUve9Xp0JsdyJiOrQjqHpPoc5pP/91XsPZW', 'DOCTOR', 'ACTIVE', '555555555', 'CIRUJANO_ORAL_Y_MAXILOFACIAL', NOW()),
+    ('fernanda.quintero@clinica.com', '$2a$10$dpKT0RAzLsBjcOVG79DlQuSejRsxhcRZ2uQTSca.LzM/PWXg0YLYK', 'DOCTOR', 'ACTIVE', '666666666', 'CIRUJANO_ORAL_Y_MAXILOFACIAL', NOW()),
 
     -- ENDODONCISTAS
-    ('juan.perez@clinica.com', '$2a$10$4X88HzfWxkzwyuZKUsn/k.LASJfXmBrEYkMVAjSDar9dOdQY/eCGK', 'DOCTOR', 'ACTIVE',
-     '123456789', 'ENDODONCISTA'),
-    ('gabriela.lopez@clinica.com', '$2a$10$3F31BSxtjEGRk6ZEAFzxNeHLPJxh8HQht2uW1EDitxNWZi4bIgo62', 'DOCTOR', 'ACTIVE',
-     '777777777', 'ENDODONCISTA'),
+    ('juan.perez@clinica.com', '$2a$10$4X88HzfWxkzwyuZKUsn/k.LASJfXmBrEYkMVAjSDar9dOdQY/eCGK', 'DOCTOR', 'ACTIVE', '123456789', 'ENDODONCISTA', NOW()),
+    ('gabriela.lopez@clinica.com', '$2a$10$3F31BSxtjEGRk6ZEAFzxNeHLPJxh8HQht2uW1EDitxNWZi4bIgo62', 'DOCTOR', 'ACTIVE', '777777777', 'ENDODONCISTA', NOW()),
 
     -- ORTODONCISTAS
-    ('maria.gomez@clinica.com', '$2a$10$1gir6D.2hOtX9l4T3seK/u4wJ7H/kdxl3i9h4mmLlgUh510GNh5My', 'DOCTOR', 'ACTIVE',
-     '987654321', 'ORTODONCISTA'),
-    ('hugo.ramirez@clinica.com', '$2a$10$HxD4WVrXIJWMnz11al/aBOdeDHQkx8x8wKnRb.HIdZAVYfFM4qZrq', 'DOCTOR', 'ACTIVE',
-     '888888888', 'ORTODONCISTA'),
+    ('maria.gomez@clinica.com', '$2a$10$1gir6D.2hOtX9l4T3seK/u4wJ7H/kdxl3i9h4mmLlgUh510GNh5My', 'DOCTOR', 'ACTIVE', '987654321', 'ORTODONCISTA', NOW()),
+    ('hugo.ramirez@clinica.com', '$2a$10$HxD4WVrXIJWMnz11al/aBOdeDHQkx8x8wKnRb.HIdZAVYfFM4qZrq', 'DOCTOR', 'ACTIVE', '888888888', 'ORTODONCISTA', NOW()),
 
     -- PERIODONCISTAS
-    ('isabel.salazar@clinica.com', '$2a$10$/5PDcnCIYtvQs7wQIeZ4pOZpzFJC3YPOMpUCmw5xmvCJOiI/6BXlC', 'DOCTOR', 'ACTIVE',
-     '999999999', 'PERIODONCISTA'),
-    ('javier.ortega@clinica.com', '$2a$10$43VQmQHBwyxmsp8QhqhDQ.xG.unhxMR3NVzDGBds.7JdfyU0W.Pgi', 'DOCTOR', 'ACTIVE',
-     '101010101', 'PERIODONCISTA'),
+    ('isabel.salazar@clinica.com', '$2a$10$/5PDcnCIYtvQs7wQIeZ4pOZpzFJC3YPOMpUCmw5xmvCJOiI/6BXlC', 'DOCTOR', 'ACTIVE', '999999999', 'PERIODONCISTA', NOW()),
+    ('javier.ortega@clinica.com', '$2a$10$43VQmQHBwyxmsp8QhqhDQ.xG.unhxMR3NVzDGBds.7JdfyU0W.Pgi', 'DOCTOR', 'ACTIVE', '101010101', 'PERIODONCISTA', NOW()),
 
     -- ODONTÓLOGOS ESTÉTICOS
-    ('karen.gonzalez@clinica.com', '$2a$10$cRF5R8.fXojqWOlBqKoJUOwUlB1ouB7pucZCtBqNcdATMlR0ge9qq', 'DOCTOR', 'ACTIVE',
-     '121212121', 'ODONTOLOGO_ESTETICO'),
-    ('luis.castillo@clinica.com', '$2a$10$3zlrc5FHTqsGupFMtBHV6uMgH8LUU/MysFn2a5utgzxzUKOX6fLQS', 'DOCTOR', 'ACTIVE',
-     '131313131', 'ODONTOLOGO_ESTETICO'),
+    ('karen.gonzalez@clinica.com', '$2a$10$cRF5R8.fXojqWOlBqKoJUOwUlB1ouB7pucZCtBqNcdATMlR0ge9qq', 'DOCTOR', 'ACTIVE', '121212121', 'ODONTOLOGO_ESTETICO', NOW()),
+    ('luis.castillo@clinica.com', '$2a$10$3zlrc5FHTqsGupFMtBHV6uMgH8LUU/MysFn2a5utgzxzUKOX6fLQS', 'DOCTOR', 'ACTIVE', '131313131', 'ODONTOLOGO_ESTETICO', NOW()),
 
-    ('sofia.mejia@clinica.com', '$2a$10$TncYEQsmq7F/R2LzSH1lVeExL.CEfd2Y6H5Ce/7C/ZF7vH7MfMcqm', 'PACIENTE', 'ACTIVE',
-     '111000111', NULL),
-    ('diego.velasquez@clinica.com', '$2a$10$gvPyqlOS2wSNtfxYuVTiZeLqDqzPReAKd3apNRkcyHCUl.QXKH1Om', 'PACIENTE',
-     'ACTIVE', '222000222', NULL),
-    ('valentina.rios@clinica.com', '$2a$10$LIBG4y0kbUi6b2UOpo4lOOp6RVGol/LfpUQF9kIb8EkiVJfiqLr1e', 'PACIENTE', 'ACTIVE',
-     '333000333', NULL),
-    ('mateo.cardona@clinica.com', '$2a$10$dwauCMpJm7h7.bq0QqN/2.AyJ/2KPDQ3PG2rRV9WsZzVs9acD9OLu', 'PACIENTE', 'ACTIVE',
-     '444000444', NULL),
-    ('camila.gutierrez@clinica.com', '$2a$10$Yiv7G45lunp/1w/JOH1dku.7CcJFNbUWPgLdFc4SDdBUiWfWDFsoa', 'PACIENTE',
-     'ACTIVE', '555000555', NULL),
-    ('julian.montoya@clinica.com', '$2a$10$Qd1MmFBTBObdBVYQxRJNFegrNijK8qf0NigSgMMHTj9gCx.ht2z7i', 'PACIENTE', 'ACTIVE',
-     '666000666', NULL),
-    ('fernanda.londono@clinica.com', '$2a$10$1vyLRpLY.sMWSGf7dlgZ1u/lnhXiFtgHpE37eA8RUNF1lB2lo0lOS', 'PACIENTE',
-     'ACTIVE', '777000777', NULL),
-    ('andres.munoz@clinica.com', '$2a$10$EOAlaUFqalG1urBbXqyj5.vJhgwue6u9YucrsigwonkpmsSPAweai', 'PACIENTE', 'ACTIVE',
-     '888000888', NULL),
-    ('laura.gaviria@clinica.com', '$2a$10$wyvsBfJWU7iQR2vy7uYPGeBPIY83G2hOnLlm2A7YbvKGItqfv2zoO', 'PACIENTE', 'ACTIVE',
-     '999000999', NULL),
-    ('carlos.zapata@clinica.com', '$2a$10$wfpuTYSfzaM3R/w6CZ09mughqySbb7G3DlNiEEShiiGz8i6lWJXaa', 'PACIENTE', 'ACTIVE',
-     '101000101', NULL);
+    -- PACIENTES
+    ('sofia.mejia@clinica.com', '$2a$10$TncYEQsmq7F/R2LzSH1lVeExL.CEfd2Y6H5Ce/7C/ZF7vH7MfMcqm', 'PACIENTE', 'ACTIVE', '111000111', NULL, NOW()),
+    ('diego.velasquez@clinica.com', '$2a$10$gvPyqlOS2wSNtfxYuVTiZeLqDqzPReAKd3apNRkcyHCUl.QXKH1Om', 'PACIENTE', 'ACTIVE', '222000222', NULL, NOW()),
+    ('valentina.rios@clinica.com', '$2a$10$LIBG4y0kbUi6b2UOpo4lOOp6RVGol/LfpUQF9kIb8EkiVJfiqLr1e', 'PACIENTE', 'ACTIVE', '333000333', NULL, NOW()),
+    ('mateo.cardona@clinica.com', '$2a$10$dwauCMpJm7h7.bq0QqN/2.AyJ/2KPDQ3PG2rRV9WsZzVs9acD9OLu', 'PACIENTE', 'ACTIVE', '444000444', NULL, NOW()),
+    ('camila.gutierrez@clinica.com', '$2a$10$Yiv7G45lunp/1w/JOH1dku.7CcJFNbUWPgLdFc4SDdBUiWfWDFsoa', 'PACIENTE', 'ACTIVE', '555000555', NULL, NOW()),
+    ('julian.montoya@clinica.com', '$2a$10$Qd1MmFBTBObdBVYQxRJNFegrNijK8qf0NigSgMMHTj9gCx.ht2z7i', 'PACIENTE', 'ACTIVE', '666000666', NULL, NOW()),
+    ('fernanda.londono@clinica.com', '$2a$10$1vyLRpLY.sMWSGf7dlgZ1u/lnhXiFtgHpE37eA8RUNF1lB2lo0lOS', 'PACIENTE', 'ACTIVE', '777000777', NULL, NOW()),
+    ('andres.munoz@clinica.com', '$2a$10$EOAlaUFqalG1urBbXqyj5.vJhgwue6u9YucrsigwonkpmsSPAweai', 'PACIENTE', 'ACTIVE', '888000888', NULL, NOW()),
+    ('laura.gaviria@clinica.com', '$2a$10$wyvsBfJWU7iQR2vy7uYPGeBPIY83G2hOnLlm2A7YbvKGItqfv2zoO', 'PACIENTE', 'ACTIVE', '999000999', NULL, NOW()),
+    ('carlos.zapata@clinica.com', '$2a$10$wfpuTYSfzaM3R/w6CZ09mughqySbb7G3DlNiEEShiiGz8i6lWJXaa', 'PACIENTE', 'ACTIVE', '101000101', NULL, NOW());
 
 -- 6️⃣ Insertar citas
 INSERT INTO citas (paciente_id, odontologo_id, fecha_hora, estado, tipo_cita) VALUES
