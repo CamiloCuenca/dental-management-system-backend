@@ -92,8 +92,25 @@ public class HistorialServiceImpl implements HistorialService {
     }
 
     @Override
-    public List<HistorialMedico> obtenerHistorialPorPaciente(String pacienteId) {
-        return List.of();
+    @Transactional(readOnly = true)
+    public List<HistorialMedico> obtenerHistorialPorPaciente(Long pacienteId) {
+        // Validar que el paciente exista y tenga el rol correcto
+        User paciente = userRepository.findById(pacienteId)
+                .orElseThrow(() -> new HistorialException("Paciente no encontrado con ID: " + pacienteId));
+
+        if (paciente.getAccount() == null || paciente.getAccount().getRol() != Rol.PACIENTE) {
+            throw new HistorialException("El usuario con ID " + pacienteId + " no es un paciente.");
+        }
+
+        // Obtener los historiales del paciente
+        List<HistorialMedico> historiales = historialRepository.findByPacienteIdNumber(paciente.getIdNumber());
+
+        // Si no hay historiales, lanzar una excepción
+        if (historiales.isEmpty()) {
+            throw new HistorialException("El paciente no tiene historiales médicos registrados.");
+        }
+
+        return historiales;
     }
 
     @Override

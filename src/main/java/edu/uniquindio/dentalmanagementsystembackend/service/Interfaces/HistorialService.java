@@ -19,7 +19,7 @@ public interface HistorialService {
      * @param pacienteId ID del paciente
      * @return Lista de registros del historial médico
      */
-    List<HistorialMedico> obtenerHistorialPorPaciente(String pacienteId);
+    List<HistorialMedico> obtenerHistorialPorPaciente(Long pacienteId);
 
     /**
      * Obtiene todos los registros del historial médico.
