@@ -30,72 +30,70 @@ public class HistorialServiceImpl implements HistorialService {
     @Override
     @Transactional
     public HistorialMedico crearHistorial(CrearHistorialDTO dto) {
-        try {
-            // Obtener y validar paciente
-            User paciente = userRepository.findById(dto.pacienteId())
-                    .orElseThrow(() -> new HistorialException("Paciente no encontrado con ID: " + dto.pacienteId()));
-            
-            if (paciente.getAccount() == null || paciente.getAccount().getRol() != Rol.PACIENTE) {
-                throw new HistorialException("El usuario con ID " + dto.pacienteId() + " no es un paciente.");
-            }
 
-            // Obtener y validar odontólogo
-            User odontologo = userRepository.findById(dto.odontologoId())
-                    .orElseThrow(() -> new HistorialException("Odontólogo no encontrado con ID: " + dto.odontologoId()));
-            
-            if (odontologo.getAccount() == null || odontologo.getAccount().getRol() != Rol.DOCTOR) {
-                throw new HistorialException("El usuario con ID " + dto.odontologoId() + " no es un odontólogo.");
-            }
+        // Obtener y validar paciente
+        User paciente = obtenerYValidarUsuario(dto.pacienteId(), Rol.PACIENTE, "Paciente");
 
-            // Obtener y validar cita
-            Cita cita = citasRepository.findById(dto.citaId())
-                    .orElseThrow(() -> new HistorialException("Cita no encontrada con ID: " + dto.citaId()));
+        // Obtener y validar odontólogo
+        User odontologo = obtenerYValidarUsuario(dto.odontologoId(), Rol.DOCTOR, "Odontólogo");
 
-            // Validar que la cita corresponda al paciente y odontólogo
-            if (!cita.getPaciente().getIdNumber().equals(paciente.getIdNumber())) {
-                throw new HistorialException("La cita no corresponde al paciente especificado.");
-            }
-            if (!cita.getOdontologo().getIdNumber().equals(odontologo.getIdNumber())) {
-                throw new HistorialException("La cita no corresponde al odontólogo especificado.");
-            }
+        // Obtener y validar cita
+        Cita cita = citasRepository.findById(dto.citaId())
+                .orElseThrow(() -> new HistorialException("Cita no encontrada con ID: " + dto.citaId()));
 
-            // Validar estado de la cita
-            if (cita.getEstado() != EstadoCitas.CONFIRMADA) {
-                throw new HistorialException("Solo se pueden crear historiales para citas confirmadas.");
-            }
+        // Validar que la cita corresponda al paciente y odontólogo
+        validarCitaConUsuario(cita, paciente, odontologo);
 
-            // Validar fecha del historial
-            if (dto.fecha().isAfter(LocalDate.now())) {
-                throw new HistorialException("La fecha del historial no puede ser futura.");
-            }
+        // Validar estado de la cita
+        if (cita.getEstado() != EstadoCitas.CONFIRMADA) {
+            throw new HistorialException("Solo se pueden crear historiales para citas confirmadas.");
+        }
 
-            // Crear el historial
-            HistorialMedico historial = new HistorialMedico();
-            historial.setFecha(dto.fecha());
-            historial.setDiagnostico(dto.diagnostico());
-            historial.setTratamiento(dto.tratamiento());
-            historial.setObservaciones(dto.observaciones());
-            historial.setProximaCita(dto.proximaCita());
-            historial.setCita(cita);
+        // Validar fecha del historial
+        if (dto.fecha().isAfter(LocalDate.now())) {
+            throw new HistorialException("La fecha del historial no puede ser futura.");
+        }
 
-            // Establecer las relaciones bidireccionales
-            paciente.agregarHistorialComoPaciente(historial);
-            odontologo.agregarHistorialComoOdontologo(historial);
+        // Crear el historial
+        HistorialMedico historial = new HistorialMedico();
+        historial.setFecha(dto.fecha());
+        historial.setDiagnostico(dto.diagnostico());
+        historial.setTratamiento(dto.tratamiento());
+        historial.setObservaciones(dto.observaciones());
+        historial.setProximaCita(dto.proximaCita());
+        historial.setCita(cita);
 
-            // Guardar el historial
-            HistorialMedico historialGuardado = historialRepository.save(historial);
-            System.out.println("Historial guardado con ID: " + historialGuardado.getId());
-            return historialGuardado;
-        } catch (HistorialException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new HistorialException("Error al crear el historial: " + e.getMessage());
+        // Establecer relaciones bidireccionales
+        paciente.agregarHistorialComoPaciente(historial);
+        odontologo.agregarHistorialComoOdontologo(historial);
+
+        // Guardar el historial
+        return historialRepository.save(historial);
+    }
+
+
+    private User obtenerYValidarUsuario(Long usuarioId, Rol rolEsperado, String tipoUsuario) {
+        User usuario = userRepository.findById(usuarioId)
+                .orElseThrow(() -> new HistorialException(tipoUsuario + " no encontrado con ID: " + usuarioId));
+
+        if (usuario.getAccount() == null || usuario.getAccount().getRol() != rolEsperado) {
+            throw new HistorialException("El usuario con ID " + usuarioId + " no es un " + tipoUsuario.toLowerCase() + ".");
+        }
+        return usuario;
+    }
+
+    private void validarCitaConUsuario(Cita cita, User paciente, User odontologo) {
+        if (!cita.getPaciente().getIdNumber().equals(paciente.getIdNumber())) {
+            throw new HistorialException("La cita no corresponde al paciente especificado.");
+        }
+        if (!cita.getOdontologo().getIdNumber().equals(odontologo.getIdNumber())) {
+            throw new HistorialException("La cita no corresponde al odontólogo especificado.");
         }
     }
 
     @Override
-    public List<HistorialMedico> obtenerHistorialPorPaciente(Long pacienteId) {
-        return historialRepository.findByPacienteIdNumber(pacienteId.toString());
+    public List<HistorialMedico> obtenerHistorialPorPaciente(String pacienteId) {
+        return List.of();
     }
 
     @Override

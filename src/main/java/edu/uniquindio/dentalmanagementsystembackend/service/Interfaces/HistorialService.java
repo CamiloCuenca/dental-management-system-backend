@@ -6,7 +6,7 @@ import edu.uniquindio.dentalmanagementsystembackend.entity.Account.HistorialMedi
 import java.util.List;
 
 public interface HistorialService {
-    
+
     /**
      * Crea un nuevo registro en el historial médico.
      * @param dto DTO con la información del historial médico
@@ -19,7 +19,7 @@ public interface HistorialService {
      * @param pacienteId ID del paciente
      * @return Lista de registros del historial médico
      */
-    List<HistorialMedico> obtenerHistorialPorPaciente(Long pacienteId);
+    List<HistorialMedico> obtenerHistorialPorPaciente(String pacienteId);
 
     /**
      * Obtiene todos los registros del historial médico.
