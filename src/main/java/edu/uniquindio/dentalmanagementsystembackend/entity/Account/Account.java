@@ -59,7 +59,7 @@ public class Account {
         if (this.rol == Rol.DOCTOR) {
             this.tipoDoctor = tipoDoctor;
         } else {
-            this.tipoDoctor = null; // En lugar de lanzar una excepción, simplemente se limpia
+            this.tipoDoctor = null;
         }
     }
 }

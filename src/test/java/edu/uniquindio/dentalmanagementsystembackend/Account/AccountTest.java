@@ -196,4 +196,11 @@ public class AccountTest {
     }
 
 
+    @Test
+    void testObtenerDoctores(){
+        serviciosCuenta.obtenerDoctores();
+    }
+
+
+
 }

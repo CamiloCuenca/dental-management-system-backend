@@ -1,11 +1,15 @@
 package edu.uniquindio.dentalmanagementsystembackend.repository;
 
+import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
+import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoDoctor;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.Account;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -42,6 +46,26 @@ public interface CuentaRepository extends JpaRepository<Account,Long> {
     Optional<Account> findByRecoveryCode_Code(String code);
 
 
+    // ... métodos existentes ...
 
+    /**
+     * Busca todas las cuentas por rol.
+     * @param rol Rol de las cuentas a buscar.
+     * @return Lista de cuentas encontradas.
+     */
+    @Query("SELECT a FROM Account a JOIN FETCH a.user WHERE a.rol = :rol")
+    List<Account> findByRol(@Param("rol") Rol rol);
+
+    /**
+     * Busca todas las cuentas de doctores con su tipo específico.
+     * @param tipoDoctor Tipo de doctor a buscar.
+     * @return Lista de cuentas de doctores encontradas.
+     */
+    @Query("SELECT a FROM Account a JOIN FETCH a.user WHERE a.rol = 'DOCTOR' AND a.tipoDoctor = :tipoDoctor")
+    List<Account> findByTipoDoctor(@Param("tipoDoctor") TipoDoctor tipoDoctor);
+
+    List<Account> findByRolAndTipoDoctor(Rol rol, TipoDoctor tipoDoctor);
+
+    Optional<Account> findByUser(User user);
 
 }

@@ -7,6 +7,7 @@ import edu.uniquindio.dentalmanagementsystembackend.dto.cita.ListaCitasDTO;
 import java.util.List;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorDisponibilidadDTO;
+import jakarta.transaction.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -104,6 +105,12 @@ public interface ServiciosCitas {
      */
     void enviarRecordatorioCita(Long idCita);
 
+
+    DoctorDisponibilidadDTO obtenerFechasDisponiblesDoctor(String doctorId);
+
+    DoctorDisponibilidadDTO obtenerFechasDisponiblesDoctor(Long doctorId);
+
+    List<DoctorDisponibilidadDTO> obtenerFechasDisponiblesPorTipoDoctor(String tipoDoctor);
 
 }
 

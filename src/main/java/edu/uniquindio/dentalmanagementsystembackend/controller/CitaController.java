@@ -61,13 +61,6 @@ public class CitaController {
         return ResponseEntity.ok("Cita cancelada correctamente.");
     }
 
-    // Endpoint para obtener las fechas disponibles de todos los doctores
-    @GetMapping("/fechas-disponibles")
-    public ResponseEntity<List<DoctorDisponibilidadDTO>> obtenerFechasDisponiblesDoctores() {
-        List<DoctorDisponibilidadDTO> disponibilidadDoctores = servicioCita.obtenerFechasDisponiblesDoctores();
-        return ResponseEntity.ok(disponibilidadDoctores);
-    }
-
     // Endpoint para confirmar una cita
     @PutMapping("/confirmar/{idCita}")
     public ResponseEntity<String> confirmarCita(@PathVariable Long idCita) {
@@ -126,6 +119,45 @@ public class CitaController {
         servicioCita.enviarRecordatorioCita(idCita);
         return ResponseEntity.ok("Recordatorio de cita enviado exitosamente.");
     }
+
+
+    // Endpoint para obtener las fechas disponibles de todos los doctores
+    @GetMapping("/fechas-disponibles")
+    public ResponseEntity<List<DoctorDisponibilidadDTO>> obtenerFechasDisponiblesDoctores() {
+        try {
+            List<DoctorDisponibilidadDTO> disponibilidadDoctores = servicioCita.obtenerFechasDisponiblesDoctores();
+            return ResponseEntity.ok(disponibilidadDoctores);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // Nuevo endpoint para obtener fechas disponibles de un doctor específico
+    @GetMapping("/fechas-disponibles/doctor/{doctorId}")
+    public ResponseEntity<DoctorDisponibilidadDTO> obtenerFechasDisponiblesDoctor(
+            @PathVariable String doctorId) {
+        try {
+            DoctorDisponibilidadDTO disponibilidad = servicioCita.obtenerFechasDisponiblesDoctor(doctorId);
+            return ResponseEntity.ok(disponibilidad);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // Nuevo endpoint para obtener doctores y fechas disponibles por tipo de doctor
+    @GetMapping("/fechas-disponibles/tipo/{tipoDoctor}")
+    public ResponseEntity<List<DoctorDisponibilidadDTO>> obtenerFechasDisponiblesPorTipo(
+            @PathVariable String tipoDoctor) {
+        try {
+            List<DoctorDisponibilidadDTO> disponibilidad =
+                    servicioCita.obtenerFechasDisponiblesPorTipoDoctor(tipoDoctor);
+            return ResponseEntity.ok(disponibilidad);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+
 
 
 }

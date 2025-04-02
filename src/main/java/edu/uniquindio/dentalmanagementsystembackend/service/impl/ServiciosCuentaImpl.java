@@ -4,6 +4,7 @@ import edu.uniquindio.dentalmanagementsystembackend.Enum.AccountStatus;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 
 import edu.uniquindio.dentalmanagementsystembackend.config.JWTUtils;
+import edu.uniquindio.dentalmanagementsystembackend.dto.account.DoctorDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.JWT.TokenDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.*;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.Account;
@@ -20,18 +21,14 @@ import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.Servicios
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Implementación del servicio de gestión de cuentas de usuario.
@@ -856,5 +853,23 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         accountRepository.save(account);  // Guardar account para actualizar el email
 
         return "Usuario actualizado exitosamente.";
+    }
+
+    @Override
+    public List<DoctorDTO> obtenerDoctores() throws DatabaseOperationException {
+        try {
+            return accountRepository.findByRol(Rol.DOCTOR)  // Cambiar de userRepository a accountRepository
+                    .stream()
+                    .map(account -> new DoctorDTO(
+                            account.getUser().getIdNumber(),
+                            account.getUser().getName(),
+                            account.getUser().getLastName(),
+                            account.getEmail(),
+                            account.getTipoDoctor() != null ? account.getTipoDoctor().name() : null  // Obtener el tipo de doctor de la cuenta
+                    ))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new DatabaseOperationException("Error al obtener la lista de doctores");
+        }
     }
 }
