@@ -23,6 +23,7 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,7 +51,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
 
     // Servicio para envío de correos electrónicos
     @Autowired
-    EmailService emailService;
+    private EmailService emailService;
 
     // ============= MÉTODOS DE CREACIÓN DE CITAS =============
 
@@ -230,7 +231,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
      */
     private void enviarNotificacionCita(User paciente, User doctor, LocalDateTime fechaHora) throws Exception {
         String emailPaciente = paciente.getAccount().getEmail();
-        emailService.enviarCorreoCita(emailPaciente, doctor.getName(), fechaHora.toString());
+        emailService.enviarCorreoConfirmacionCita(emailPaciente, doctor.getName(), fechaHora);
         System.out.println("✅ Cita creada correctamente con el doctor " + doctor.getName() + " en la fecha: " + fechaHora);
     }
 
@@ -477,6 +478,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     private void cancelarCita(Cita cita) {
         cita.setEstado(EstadoCitas.CANCELADA);
         citasRepository.save(cita);
+        
+        // Enviar notificación de cancelación
+        String emailPaciente = cita.getPaciente().getAccount().getEmail();
+        LocalDateTime fechaHora = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreoCancelacionCita(emailPaciente, cita.getOdontologo().getName(), fechaHora);
+        
         System.out.println("✅ Cita con ID " + cita.getId() + " cancelada correctamente.");
     }
 
@@ -610,14 +617,6 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         return mapearCitasADTO(citas);
     }
 
-    @Override
-    public List<ListaCitasDTO> obtenerCitasPorDoctor(Long idDoctor) {
-        validarIdDoctor(idDoctor);
-        User doctor = obtenerYValidarDoctor(idDoctor);
-        List<Cita> citas = citasRepository.findByOdontologo(doctor);
-        return mapearCitasADTO(citas);
-    }
-
     // ============= MÉTODOS DE REPROGRAMACIÓN =============
 
     @Override
@@ -666,25 +665,6 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         enviarNotificacionRecordatorio(cita);
     }
 
-    // ============= MÉTODOS DE EMERGENCIA =============
-
-    @Override
-    @Transactional
-    public void crearCitaEmergencia(CitaDTO citaDTO) throws Exception {
-        validarDatosBasicos(citaDTO);
-        validarFechaCita(citaDTO.fechaHora());
-        User paciente = obtenerYValidarPaciente(citaDTO.idPaciente());
-        User doctor = obtenerYValidarDoctor(citaDTO.idDoctor());
-        
-        validarEsEmergencia(citaDTO.tipoCita());
-        validarDisponibilidadEmergencia(doctor, citaDTO.fechaHora());
-        
-        Cita cita = new Cita(paciente, doctor, 
-                            citaDTO.fechaHora().atZone(ZoneId.systemDefault()).toInstant(),
-                            EstadoCitas.CONFIRMADA, citaDTO.tipoCita());
-        citasRepository.save(cita);
-        enviarNotificacionEmergencia(cita);
-    }
 
     // ============= MÉTODOS PRIVADOS DE VALIDACIÓN =============
 
@@ -700,58 +680,31 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         }
     }
 
-    private void validarEsEmergencia(TipoCita tipoCita) {
-        if (tipoCita != TipoCita.EMERGENCIA) {
-            throw new CitaException("Este método solo puede ser usado para citas de emergencia");
-        }
-    }
-
-    private void validarDisponibilidadEmergencia(User doctor, LocalDateTime fechaHora) {
-        LocalDateTime inicioCita = fechaHora.minusMinutes(20);
-        LocalDateTime finCita = fechaHora.plusMinutes(20);
-        
-        if (!citasRepository.findByOdontologoAndFechaHoraBetween(
-            doctor,
-            inicioCita.toInstant(ZoneOffset.UTC),
-            finCita.toInstant(ZoneOffset.UTC)
-        ).isEmpty()) {
-            throw new CitaException("El doctor no está disponible para atender la emergencia en este momento");
-        }
-    }
 
     // ============= MÉTODOS PRIVADOS DE NOTIFICACIÓN =============
 
     private void enviarNotificacionConfirmacion(Cita cita) {
         String emailPaciente = cita.getPaciente().getAccount().getEmail();
-        String mensaje = "Su cita ha sido confirmada para " + 
-                        cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        emailService.enviarCorreo(emailPaciente, "Confirmación de Cita", mensaje);
+        LocalDateTime fechaHora = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreoConfirmacionCita(emailPaciente, cita.getOdontologo().getName(), fechaHora);
     }
 
     private void enviarNotificacionCompletada(Cita cita) {
         String emailPaciente = cita.getPaciente().getAccount().getEmail();
-        String mensaje = "Su cita ha sido marcada como completada. Gracias por confiar en nuestros servicios.";
-        emailService.enviarCorreo(emailPaciente, "Cita Completada", mensaje);
+        LocalDateTime fechaHora = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreoCitaCompletada(emailPaciente, cita.getOdontologo().getName(), fechaHora);
     }
 
     private void enviarNotificacionReprogramacion(Cita cita) {
         String emailPaciente = cita.getPaciente().getAccount().getEmail();
-        String mensaje = "Su cita ha sido reprogramada para " + 
-                        cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        emailService.enviarCorreo(emailPaciente, "Reprogramación de Cita", mensaje);
+        LocalDateTime fechaHora = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreoReprogramacionCita(emailPaciente, cita.getOdontologo().getName(), fechaHora);
     }
 
     private void enviarNotificacionRecordatorio(Cita cita) {
         String emailPaciente = cita.getPaciente().getAccount().getEmail();
-        String mensaje = "Recordatorio: Tiene una cita programada para " + 
-                        cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        emailService.enviarCorreo(emailPaciente, "Recordatorio de Cita", mensaje);
+        LocalDateTime fechaHora = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreoRecordatorioCita(emailPaciente, cita.getOdontologo().getName(), fechaHora);
     }
 
-    private void enviarNotificacionEmergencia(Cita cita) {
-        String emailPaciente = cita.getPaciente().getAccount().getEmail();
-        String mensaje = "Se ha programado una cita de emergencia para " + 
-                        cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        emailService.enviarCorreo(emailPaciente, "Cita de Emergencia", mensaje);
-    }
 }

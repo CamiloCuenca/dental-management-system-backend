@@ -78,12 +78,6 @@ public interface ServiciosCitas {
      */
     List<ListaCitasDTO> obtenerCitasPorEstado(EstadoCitas estado);
 
-    /**
-     * Método para obtener citas por doctor.
-     * @param idDoctor Número de identificación del doctor.
-     * @return Lista de citas del doctor especificado.
-     */
-    List<ListaCitasDTO> obtenerCitasPorDoctor(Long idDoctor);
 
     /**
      * Método para reprogramar una cita.
@@ -110,10 +104,6 @@ public interface ServiciosCitas {
      */
     void enviarRecordatorioCita(Long idCita);
 
-    /**
-     * Método para crear una cita de emergencia.
-     * @param citaDTO DTO con la información de la cita de emergencia.
-     */
-    void crearCitaEmergencia(CitaDTO citaDTO) throws Exception;
+
 }
 

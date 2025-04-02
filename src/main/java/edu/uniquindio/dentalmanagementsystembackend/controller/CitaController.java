@@ -96,12 +96,6 @@ public class CitaController {
         return ResponseEntity.ok(citas);
     }
 
-    // Endpoint para obtener citas por doctor
-    @GetMapping("/doctor/{idDoctor}")
-    public ResponseEntity<List<ListaCitasDTO>> obtenerCitasPorDoctor(@PathVariable Long idDoctor) {
-        List<ListaCitasDTO> citas = servicioCita.obtenerCitasPorDoctor(idDoctor);
-        return ResponseEntity.ok(citas);
-    }
 
     // Endpoint para reprogramar una cita
     @PutMapping("/reprogramar/{idCita}")
@@ -133,10 +127,5 @@ public class CitaController {
         return ResponseEntity.ok("Recordatorio de cita enviado exitosamente.");
     }
 
-    // Endpoint para crear una cita de emergencia
-    @PostMapping("/emergencia")
-    public ResponseEntity<String> crearCitaEmergencia(@RequestBody CitaDTO citaDTO) throws Exception {
-        servicioCita.crearCitaEmergencia(citaDTO);
-        return ResponseEntity.ok("Cita de emergencia creada exitosamente.");
-    }
+
 }
