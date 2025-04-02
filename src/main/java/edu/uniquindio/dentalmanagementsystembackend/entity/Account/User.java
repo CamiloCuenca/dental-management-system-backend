@@ -1,11 +1,9 @@
 package edu.uniquindio.dentalmanagementsystembackend.entity.Account;
 
-import edu.uniquindio.dentalmanagementsystembackend.entity.HistorialMedico;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

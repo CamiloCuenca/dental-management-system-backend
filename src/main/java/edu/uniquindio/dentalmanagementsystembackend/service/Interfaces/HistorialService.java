@@ -1,8 +1,8 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.CrearHistorialDTO;
-import edu.uniquindio.dentalmanagementsystembackend.entity.HistorialMedico;
-import java.time.LocalDate;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.HistorialMedico;
+
 import java.util.List;
 
 public interface HistorialService {

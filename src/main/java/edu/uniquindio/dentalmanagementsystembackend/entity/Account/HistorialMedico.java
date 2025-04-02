@@ -1,6 +1,6 @@
-package edu.uniquindio.dentalmanagementsystembackend.entity;
+package edu.uniquindio.dentalmanagementsystembackend.entity.Account;
 
-import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;

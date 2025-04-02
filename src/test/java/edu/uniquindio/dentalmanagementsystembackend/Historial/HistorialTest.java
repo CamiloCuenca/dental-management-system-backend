@@ -1,7 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.Historial;
 
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.CrearHistorialDTO;
-import edu.uniquindio.dentalmanagementsystembackend.entity.HistorialMedico;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.HistorialMedico;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.HistorialService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional

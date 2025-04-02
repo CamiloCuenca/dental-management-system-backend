@@ -5,7 +5,7 @@ import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.CrearHistorialDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
-import edu.uniquindio.dentalmanagementsystembackend.entity.HistorialMedico;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.HistorialMedico;
 import edu.uniquindio.dentalmanagementsystembackend.exception.HistorialException;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.HistorialMedicoRepository;

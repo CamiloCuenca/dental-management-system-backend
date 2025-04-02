@@ -61,6 +61,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
                 "rol", account.getRol(),
                 "nombre", account.getUser().getName(),
                 "id", account.getId(),
+                "lastName", account.getUser().getLastName(),
                 "idUser", account.getUser().getIdNumber(),
                 "email", account.getEmail()
         );
@@ -292,42 +293,17 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         }
 
         PerfilDTO perfil = new PerfilDTO(
+                user.getIdNumber(),
                 user.getName(),
                 user.getLastName(),
                 user.getPhoneNumber(),
-                user.getAddress()
+                user.getAddress(),
+                user.getBirthDate(),
+                account.getEmail()
         );
 
         log.info("Perfil obtenido exitosamente: {}", perfil);
         return perfil;
-    }
-
-
-    /**
-     * Valida que el número de teléfono no esté en uso por otro usuario.
-     *
-     * @param phoneNumber   Número de teléfono a validar
-     * @param currentUserId ID del usuario actual
-     * @throws IllegalArgumentException si el teléfono ya está en uso
-     */
-    private void validarTelefonoExistente(String phoneNumber, String currentUserId) {
-        Optional<User> existingUser = userRepository.findByPhoneNumber(phoneNumber);
-        if (existingUser.isPresent() && !existingUser.get().getIdNumber().equals(currentUserId)) {
-            throw new IllegalArgumentException("El número de teléfono ya está registrado en otro usuario.");
-        }
-    }
-
-    /**
-     * Actualiza los datos de un usuario.
-     *
-     * @param user Usuario a actualizar
-     * @param dto  DTO con los nuevos datos
-     */
-    private void actualizarDatosUsuario(User user, ActualizarPerfilDTO dto) {
-        user.setName(dto.name());
-        user.setLastName(dto.lastName());
-        user.setPhoneNumber(dto.phoneNumber());
-        user.setAddress(dto.address());
     }
 
     /**
@@ -821,7 +797,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     @Override
     @Transactional
-    public String actualizarUsuario(Long accountId, ActualizarUsuarioDTO dto) throws Exception, UserNotFoundException {
+    public String actualizarUsuario(Long accountId, ActualizarUsuarioDTO dto) throws UserNotFoundException, AccountNotFoundException {
         Account account = obtenerCuentaPorId(accountId);
         User user = account.getUser();
 
@@ -829,12 +805,18 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
             throw new UserNotFoundException("No se encontró un usuario asociado a la cuenta con ID " + accountId);
         }
 
-        user.setName(dto.name());
-        user.setLastName(dto.lastName());
-        user.setPhoneNumber(dto.phoneNumber());
-        user.setAddress(dto.address());
+        // Validaciones para evitar sobreescribir con valores nulos
+        if (dto.name() != null) user.setName(dto.name());
+        if (dto.lastName() != null) user.setLastName(dto.lastName());
+        if (dto.phoneNumber() != null) user.setPhoneNumber(dto.phoneNumber());
+        if (dto.address() != null) user.setAddress(dto.address());
+        if (dto.email() != null) {
+            account.setEmail(dto.email());
+        }
 
         userRepository.save(user);
+        accountRepository.save(account);  // Guardar account para actualizar el email
+
         return "Usuario actualizado exitosamente.";
     }
 }
