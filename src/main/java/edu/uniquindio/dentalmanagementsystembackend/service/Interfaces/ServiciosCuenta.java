@@ -109,5 +109,7 @@ public interface ServiciosCuenta {
 
     PerfilDTO obtenerPerfil(Long accountId) throws UserNotFoundException, AccountNotFoundException;
 
+    String generarNuevoToken(Long accountId) throws Exception, UserNotFoundException;
+
 
 }

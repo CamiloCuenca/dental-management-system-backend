@@ -139,11 +139,11 @@ public class AccountTest {
     @Test
     void testUpdateCode() throws Exception, PasswordMismatchException, InvalidCurrentPasswordException {
         UpdatePasswordDTO updatePasswordDTO = new UpdatePasswordDTO(
-                "Cr@milo123",
+                "contraseña1",
                 "M@mahermosa123",
                 "M@mahermosa123"
         );
-        serviciosCuenta.updatePassword(8L, updatePasswordDTO);
+        serviciosCuenta.updatePassword(15L, updatePasswordDTO);
     }
 
     /**

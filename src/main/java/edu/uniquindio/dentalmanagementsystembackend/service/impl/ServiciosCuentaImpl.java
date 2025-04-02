@@ -28,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.security.auth.login.AccountNotFoundException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -56,15 +58,30 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      * @param account Cuenta del usuario
      * @return Mapa con los claims del token
      */
-    private Map<String, Object> construirClaims(Account account) {
-        return Map.of(
-                "rol", account.getRol(),
-                "nombre", account.getUser().getName(),
-                "id", account.getId(),
-                "lastName", account.getUser().getLastName(),
-                "idUser", account.getUser().getIdNumber(),
-                "email", account.getEmail()
-        );
+    public Map<String, Object> construirClaims(Account account) {
+        // Versión más robusta con validaciones
+        if (account == null) {
+            throw new IllegalArgumentException("Account no puede ser nulo");
+        }
+
+        Map<String, Object> claims = new LinkedHashMap<>(); // Mantiene orden
+
+        claims.put("sub", account.getEmail()); // Subject estándar JWT
+        claims.put("accountId", account.getId()); // ID principal
+        claims.put("userId", account.getUser() != null ? account.getUser().getIdNumber() : null);
+        claims.put("role", account.getRol()); // Mejor usar "role" que "rol" para estándares
+        claims.put("email", account.getEmail());
+
+        // Datos de usuario opcionales (con null checks)
+        if (account.getUser() != null) {
+            claims.put("given_name", account.getUser().getName()); // Estándar OpenID
+            claims.put("family_name", account.getUser().getLastName());
+        }
+
+        claims.put("iat", System.currentTimeMillis() / 1000); // Fecha emisión
+        claims.put("exp", (System.currentTimeMillis() / 1000) + 3600); // Expiración en 1h
+
+        return Collections.unmodifiableMap(claims); // Map inmutable
     }
 
     /**
@@ -304,6 +321,27 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
         log.info("Perfil obtenido exitosamente: {}", perfil);
         return perfil;
+    }
+
+    @Override
+    public String generarNuevoToken(Long accountId) throws Exception, UserNotFoundException {
+        // Obtener la cuenta
+        Account account = obtenerCuentaPorId(accountId);
+        if (account == null) {
+            throw new AccountNotFoundException("No se encontró la cuenta con ID: " + accountId);
+        }
+
+        // Obtener el usuario asociado
+        User user = account.getUser();
+        if (user == null) {
+            throw new UserNotFoundException("La cuenta no tiene un usuario asociado");
+        }
+
+        // Crear el payload del token usando el método existente construirClaims
+        Map<String, Object> claims = construirClaims(account);
+
+        // Generar el token usando el JWTUtils que ya está inyectado
+        return jwtUtils.generateToken(account.getEmail(), claims);
     }
 
     /**
