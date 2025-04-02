@@ -3,6 +3,7 @@ package edu.uniquindio.dentalmanagementsystembackend.service.impl;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.CrearHistorialDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.historial.HistorialDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.HistorialMedico;
@@ -17,7 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * Implementación del servicio de gestión de historiales médicos.
+ * Esta clase maneja toda la lógica de negocio relacionada con los historiales médicos,
+ * incluyendo su creación, consulta y validación.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -27,6 +34,14 @@ public class HistorialServiceImpl implements HistorialService {
     private final UserRepository userRepository;
     private final CitasRepository citasRepository;
 
+    /**
+     * Crea un nuevo registro en el historial médico.
+     * Realiza validaciones de seguridad y consistencia de datos antes de crear el historial.
+     *
+     * @param dto DTO con la información del historial médico
+     * @return HistorialMedico creado
+     * @throws HistorialException Si hay algún error en la validación o creación
+     */
     @Override
     @Transactional
     public HistorialMedico crearHistorial(CrearHistorialDTO dto) {
@@ -71,7 +86,15 @@ public class HistorialServiceImpl implements HistorialService {
         return historialRepository.save(historial);
     }
 
-
+    /**
+     * Obtiene y valida que un usuario exista y tenga el rol correcto.
+     *
+     * @param usuarioId ID del usuario a validar
+     * @param rolEsperado Rol que debe tener el usuario
+     * @param tipoUsuario Descripción del tipo de usuario para mensajes de error
+     * @return Usuario validado
+     * @throws HistorialException Si el usuario no existe o no tiene el rol correcto
+     */
     private User obtenerYValidarUsuario(Long usuarioId, Rol rolEsperado, String tipoUsuario) {
         User usuario = userRepository.findById(usuarioId)
                 .orElseThrow(() -> new HistorialException(tipoUsuario + " no encontrado con ID: " + usuarioId));
@@ -82,6 +105,14 @@ public class HistorialServiceImpl implements HistorialService {
         return usuario;
     }
 
+    /**
+     * Valida que una cita corresponda al paciente y odontólogo especificados.
+     *
+     * @param cita Cita a validar
+     * @param paciente Paciente esperado
+     * @param odontologo Odontólogo esperado
+     * @throws HistorialException Si la cita no corresponde a los usuarios especificados
+     */
     private void validarCitaConUsuario(Cita cita, User paciente, User odontologo) {
         if (!cita.getPaciente().getIdNumber().equals(paciente.getIdNumber())) {
             throw new HistorialException("La cita no corresponde al paciente especificado.");
@@ -116,5 +147,89 @@ public class HistorialServiceImpl implements HistorialService {
     @Override
     public List<HistorialMedico> obtenerTodosLosHistoriales() {
         return historialRepository.findAll();
+    }
+
+    /**
+     * Obtiene el historial médico de un paciente en formato DTO.
+     * Los historiales se ordenan por fecha descendente.
+     *
+     * @param pacienteId ID del paciente
+     * @return Lista de DTOs del historial médico
+     * @throws HistorialException Si el paciente no existe o no tiene historiales
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<HistorialDTO> obtenerHistorialesDTOPorPaciente(Long pacienteId) {
+        List<HistorialMedico> historiales = obtenerHistorialPorPaciente(pacienteId);
+        return historiales.stream()
+                .map(this::convertirADTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene un historial médico específico por su ID.
+     *
+     * @param historialId ID del historial médico
+     * @return DTO del historial médico
+     * @throws HistorialException Si el historial no existe
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public HistorialDTO obtenerHistorialPorId(Long historialId) {
+        HistorialMedico historial = historialRepository.findById(historialId)
+                .orElseThrow(() -> new HistorialException("Historial no encontrado con ID: " + historialId));
+        return convertirADTO(historial);
+    }
+
+    /**
+     * Obtiene todos los historiales médicos de una fecha específica.
+     *
+     * @param fecha Fecha a buscar
+     * @return Lista de DTOs del historial médico
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<HistorialDTO> obtenerHistorialesPorFecha(LocalDate fecha) {
+        List<HistorialMedico> historiales = historialRepository.findByFecha(fecha);
+        return historiales.stream()
+                .map(this::convertirADTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene todos los historiales médicos de un odontólogo.
+     *
+     * @param odontologoId ID del odontólogo
+     * @return Lista de DTOs del historial médico
+     * @throws HistorialException Si el odontólogo no existe
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<HistorialDTO> obtenerHistorialesPorOdontologo(Long odontologoId) {
+        User odontologo = obtenerYValidarUsuario(odontologoId, Rol.DOCTOR, "Odontólogo");
+        List<HistorialMedico> historiales = historialRepository.findByOdontologoIdNumber(odontologo.getIdNumber());
+        return historiales.stream()
+                .map(this::convertirADTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Convierte una entidad HistorialMedico a su representación DTO.
+     *
+     * @param historial Entidad HistorialMedico a convertir
+     * @return DTO con la información del historial
+     */
+    private HistorialDTO convertirADTO(HistorialMedico historial) {
+        return new HistorialDTO(
+            historial.getId(),
+            historial.getPaciente().getName() + " " + historial.getPaciente().getLastName(),
+            historial.getOdontologo().getName() + " " + historial.getOdontologo().getLastName(),
+            historial.getFecha(),
+            historial.getDiagnostico(),
+            historial.getTratamiento(),
+            historial.getObservaciones(),
+            historial.getProximaCita(),
+            historial.getCita().getTipoCita().toString()
+        );
     }
 }
