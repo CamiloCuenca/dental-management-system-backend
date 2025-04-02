@@ -569,4 +569,189 @@ public class ServiciosCitaImpl implements ServiciosCitas {
 
         return fechasDisponibles;
     }
+
+    // ============= MÉTODOS DE CONFIRMACIÓN Y ESTADO =============
+
+    @Override
+    @Transactional
+    public void confirmarCita(Long idCita) {
+        validarIdCita(idCita);
+        Cita cita = obtenerYValidarCita(idCita);
+        validarEstadoConfirmacion(cita);
+        cita.setEstado(EstadoCitas.CONFIRMADA);
+        citasRepository.save(cita);
+        enviarNotificacionConfirmacion(cita);
+    }
+
+    @Override
+    @Transactional
+    public void completarCita(Long idCita) {
+        validarIdCita(idCita);
+        Cita cita = obtenerYValidarCita(idCita);
+        validarEstadoCompletar(cita);
+        cita.setEstado(EstadoCitas.COMPLETADA);
+        citasRepository.save(cita);
+        enviarNotificacionCompletada(cita);
+    }
+
+    // ============= MÉTODOS DE BÚSQUEDA AVANZADA =============
+
+    @Override
+    public List<ListaCitasDTO> obtenerCitasPorFecha(LocalDate fecha) {
+        Instant inicioDia = fecha.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant finDia = fecha.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant();
+        List<Cita> citas = citasRepository.findByFechaHoraBetween(inicioDia, finDia);
+        return mapearCitasADTO(citas);
+    }
+
+    @Override
+    public List<ListaCitasDTO> obtenerCitasPorEstado(EstadoCitas estado) {
+        List<Cita> citas = citasRepository.findByEstado(estado);
+        return mapearCitasADTO(citas);
+    }
+
+    @Override
+    public List<ListaCitasDTO> obtenerCitasPorDoctor(Long idDoctor) {
+        validarIdDoctor(idDoctor);
+        User doctor = obtenerYValidarDoctor(idDoctor);
+        List<Cita> citas = citasRepository.findByOdontologo(doctor);
+        return mapearCitasADTO(citas);
+    }
+
+    // ============= MÉTODOS DE REPROGRAMACIÓN =============
+
+    @Override
+    @Transactional
+    public void reprogramarCita(Long idCita, LocalDateTime nuevaFechaHora) {
+        validarIdCita(idCita);
+        Cita cita = obtenerYValidarCita(idCita);
+        validarFechaCita(nuevaFechaHora);
+        validarDisponibilidadDoctor(cita.getOdontologo(), nuevaFechaHora);
+        validarDisponibilidadPaciente(cita.getPaciente(), nuevaFechaHora);
+        cita.setFechaHora(nuevaFechaHora.atZone(ZoneId.systemDefault()).toInstant());
+        citasRepository.save(cita);
+        enviarNotificacionReprogramacion(cita);
+    }
+
+    // ============= MÉTODOS DE ESTADÍSTICAS =============
+
+    @Override
+    public Map<EstadoCitas, Long> obtenerEstadisticasCitasPorEstado() {
+        List<Cita> todasLasCitas = citasRepository.findAll();
+        return todasLasCitas.stream()
+                .collect(Collectors.groupingBy(
+                    Cita::getEstado,
+                    Collectors.counting()
+                ));
+    }
+
+    @Override
+    public Map<Long, Long> obtenerEstadisticasCitasPorDoctor() {
+        List<Cita> todasLasCitas = citasRepository.findAll();
+        return todasLasCitas.stream()
+                .collect(Collectors.groupingBy(
+                    cita -> Long.parseLong(cita.getOdontologo().getIdNumber()),
+                    Collectors.counting()
+                ));
+    }
+
+    // ============= MÉTODOS DE NOTIFICACIONES =============
+
+    @Override
+    public void enviarRecordatorioCita(Long idCita) {
+        Cita cita = obtenerYValidarCita(idCita);
+        if (cita.getEstado() != EstadoCitas.CONFIRMADA) {
+            throw new CitaException("Solo se pueden enviar recordatorios de citas confirmadas");
+        }
+        enviarNotificacionRecordatorio(cita);
+    }
+
+    // ============= MÉTODOS DE EMERGENCIA =============
+
+    @Override
+    @Transactional
+    public void crearCitaEmergencia(CitaDTO citaDTO) throws Exception {
+        validarDatosBasicos(citaDTO);
+        validarFechaCita(citaDTO.fechaHora());
+        User paciente = obtenerYValidarPaciente(citaDTO.idPaciente());
+        User doctor = obtenerYValidarDoctor(citaDTO.idDoctor());
+        
+        validarEsEmergencia(citaDTO.tipoCita());
+        validarDisponibilidadEmergencia(doctor, citaDTO.fechaHora());
+        
+        Cita cita = new Cita(paciente, doctor, 
+                            citaDTO.fechaHora().atZone(ZoneId.systemDefault()).toInstant(),
+                            EstadoCitas.CONFIRMADA, citaDTO.tipoCita());
+        citasRepository.save(cita);
+        enviarNotificacionEmergencia(cita);
+    }
+
+    // ============= MÉTODOS PRIVADOS DE VALIDACIÓN =============
+
+    private void validarEstadoConfirmacion(Cita cita) {
+        if (cita.getEstado() != EstadoCitas.PENDIENTE) {
+            throw new CitaException("Solo se pueden confirmar citas pendientes");
+        }
+    }
+
+    private void validarEstadoCompletar(Cita cita) {
+        if (cita.getEstado() != EstadoCitas.CONFIRMADA) {
+            throw new CitaException("Solo se pueden completar citas confirmadas");
+        }
+    }
+
+    private void validarEsEmergencia(TipoCita tipoCita) {
+        if (tipoCita != TipoCita.EMERGENCIA) {
+            throw new CitaException("Este método solo puede ser usado para citas de emergencia");
+        }
+    }
+
+    private void validarDisponibilidadEmergencia(User doctor, LocalDateTime fechaHora) {
+        LocalDateTime inicioCita = fechaHora.minusMinutes(20);
+        LocalDateTime finCita = fechaHora.plusMinutes(20);
+        
+        if (!citasRepository.findByOdontologoAndFechaHoraBetween(
+            doctor,
+            inicioCita.toInstant(ZoneOffset.UTC),
+            finCita.toInstant(ZoneOffset.UTC)
+        ).isEmpty()) {
+            throw new CitaException("El doctor no está disponible para atender la emergencia en este momento");
+        }
+    }
+
+    // ============= MÉTODOS PRIVADOS DE NOTIFICACIÓN =============
+
+    private void enviarNotificacionConfirmacion(Cita cita) {
+        String emailPaciente = cita.getPaciente().getAccount().getEmail();
+        String mensaje = "Su cita ha sido confirmada para " + 
+                        cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreo(emailPaciente, "Confirmación de Cita", mensaje);
+    }
+
+    private void enviarNotificacionCompletada(Cita cita) {
+        String emailPaciente = cita.getPaciente().getAccount().getEmail();
+        String mensaje = "Su cita ha sido marcada como completada. Gracias por confiar en nuestros servicios.";
+        emailService.enviarCorreo(emailPaciente, "Cita Completada", mensaje);
+    }
+
+    private void enviarNotificacionReprogramacion(Cita cita) {
+        String emailPaciente = cita.getPaciente().getAccount().getEmail();
+        String mensaje = "Su cita ha sido reprogramada para " + 
+                        cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreo(emailPaciente, "Reprogramación de Cita", mensaje);
+    }
+
+    private void enviarNotificacionRecordatorio(Cita cita) {
+        String emailPaciente = cita.getPaciente().getAccount().getEmail();
+        String mensaje = "Recordatorio: Tiene una cita programada para " + 
+                        cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreo(emailPaciente, "Recordatorio de Cita", mensaje);
+    }
+
+    private void enviarNotificacionEmergencia(Cita cita) {
+        String emailPaciente = cita.getPaciente().getAccount().getEmail();
+        String mensaje = "Se ha programado una cita de emergencia para " + 
+                        cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreo(emailPaciente, "Cita de Emergencia", mensaje);
+    }
 }

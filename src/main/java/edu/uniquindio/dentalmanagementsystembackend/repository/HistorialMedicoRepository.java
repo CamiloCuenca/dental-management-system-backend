@@ -45,4 +45,13 @@ public interface HistorialMedicoRepository extends JpaRepository<HistorialMedico
      */
     @Query("SELECT h FROM HistorialMedico h WHERE h.odontologo.idNumber = :odontologoId ORDER BY h.fecha DESC")
     List<HistorialMedico> findByOdontologoIdNumber(@Param("odontologoId") String odontologoId);
+
+    /**
+     * Busca historiales médicos por rango de fechas
+     */
+    @Query("SELECT h FROM HistorialMedico h WHERE h.fecha BETWEEN :fechaInicio AND :fechaFin ORDER BY h.fecha DESC")
+    List<HistorialMedico> findByFechaBetween(
+        @Param("fechaInicio") LocalDate fechaInicio,
+        @Param("fechaFin") LocalDate fechaFin
+    );
 } 

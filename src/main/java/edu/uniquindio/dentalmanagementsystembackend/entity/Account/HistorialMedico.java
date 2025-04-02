@@ -6,6 +6,8 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Entidad que representa el historial médico de un paciente.
@@ -88,6 +90,13 @@ public class HistorialMedico {
     private LocalDate proximaCita;
 
     /**
+     * Procedimientos realizados en la consulta
+     */
+    @ElementCollection
+    @CollectionTable(name = "procedimientos_historial")
+    private List<String> procedimientos = new ArrayList<>();
+
+    /**
      * Constructor con todos los campos necesarios para crear un historial médico.
      *
      * @param paciente Paciente al que pertenece el historial
@@ -99,8 +108,8 @@ public class HistorialMedico {
      * @param observaciones Observaciones adicionales
      * @param proximaCita Fecha de la próxima cita
      */
-    public HistorialMedico(User paciente, User odontologo, Cita cita, LocalDate fecha, 
-                          String diagnostico, String tratamiento, String observaciones, 
+    public HistorialMedico(User paciente, User odontologo, Cita cita, LocalDate fecha,
+                          String diagnostico, String tratamiento, String observaciones,
                           LocalDate proximaCita) {
         this.paciente = paciente;
         this.odontologo = odontologo;
@@ -110,5 +119,13 @@ public class HistorialMedico {
         this.tratamiento = tratamiento;
         this.observaciones = observaciones;
         this.proximaCita = proximaCita;
+        this.procedimientos = new ArrayList<>();
+    }
+
+    /**
+     * Agrega un procedimiento al historial
+     */
+    public void agregarProcedimiento(String procedimiento) {
+        this.procedimientos.add(procedimiento);
     }
 }

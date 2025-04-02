@@ -1,6 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.controller;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
+import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.ListaCitasDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorDisponibilidadDTO;
@@ -8,7 +9,10 @@ import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.Servicios
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/citas")
@@ -64,5 +68,75 @@ public class CitaController {
         return ResponseEntity.ok(disponibilidadDoctores);
     }
 
+    // Endpoint para confirmar una cita
+    @PutMapping("/confirmar/{idCita}")
+    public ResponseEntity<String> confirmarCita(@PathVariable Long idCita) {
+        servicioCita.confirmarCita(idCita);
+        return ResponseEntity.ok("Cita confirmada exitosamente.");
+    }
 
+    // Endpoint para marcar una cita como completada
+    @PutMapping("/completar/{idCita}")
+    public ResponseEntity<String> completarCita(@PathVariable Long idCita) {
+        servicioCita.completarCita(idCita);
+        return ResponseEntity.ok("Cita marcada como completada.");
+    }
+
+    // Endpoint para obtener citas por fecha
+    @GetMapping("/fecha/{fecha}")
+    public ResponseEntity<List<ListaCitasDTO>> obtenerCitasPorFecha(@PathVariable LocalDate fecha) {
+        List<ListaCitasDTO> citas = servicioCita.obtenerCitasPorFecha(fecha);
+        return ResponseEntity.ok(citas);
+    }
+
+    // Endpoint para obtener citas por estado
+    @GetMapping("/estado/{estado}")
+    public ResponseEntity<List<ListaCitasDTO>> obtenerCitasPorEstado(@PathVariable EstadoCitas estado) {
+        List<ListaCitasDTO> citas = servicioCita.obtenerCitasPorEstado(estado);
+        return ResponseEntity.ok(citas);
+    }
+
+    // Endpoint para obtener citas por doctor
+    @GetMapping("/doctor/{idDoctor}")
+    public ResponseEntity<List<ListaCitasDTO>> obtenerCitasPorDoctor(@PathVariable Long idDoctor) {
+        List<ListaCitasDTO> citas = servicioCita.obtenerCitasPorDoctor(idDoctor);
+        return ResponseEntity.ok(citas);
+    }
+
+    // Endpoint para reprogramar una cita
+    @PutMapping("/reprogramar/{idCita}")
+    public ResponseEntity<String> reprogramarCita(
+            @PathVariable Long idCita,
+            @RequestParam LocalDateTime nuevaFechaHora) {
+        servicioCita.reprogramarCita(idCita, nuevaFechaHora);
+        return ResponseEntity.ok("Cita reprogramada exitosamente.");
+    }
+
+    // Endpoint para obtener estadísticas de citas por estado
+    @GetMapping("/estadisticas/estado")
+    public ResponseEntity<Map<EstadoCitas, Long>> obtenerEstadisticasCitasPorEstado() {
+        Map<EstadoCitas, Long> estadisticas = servicioCita.obtenerEstadisticasCitasPorEstado();
+        return ResponseEntity.ok(estadisticas);
+    }
+
+    // Endpoint para obtener estadísticas de citas por doctor
+    @GetMapping("/estadisticas/doctor")
+    public ResponseEntity<Map<Long, Long>> obtenerEstadisticasCitasPorDoctor() {
+        Map<Long, Long> estadisticas = servicioCita.obtenerEstadisticasCitasPorDoctor();
+        return ResponseEntity.ok(estadisticas);
+    }
+
+    // Endpoint para enviar recordatorio de cita
+    @PostMapping("/recordatorio/{idCita}")
+    public ResponseEntity<String> enviarRecordatorioCita(@PathVariable Long idCita) {
+        servicioCita.enviarRecordatorioCita(idCita);
+        return ResponseEntity.ok("Recordatorio de cita enviado exitosamente.");
+    }
+
+    // Endpoint para crear una cita de emergencia
+    @PostMapping("/emergencia")
+    public ResponseEntity<String> crearCitaEmergencia(@RequestBody CitaDTO citaDTO) throws Exception {
+        servicioCita.crearCitaEmergencia(citaDTO);
+        return ResponseEntity.ok("Cita de emergencia creada exitosamente.");
+    }
 }
