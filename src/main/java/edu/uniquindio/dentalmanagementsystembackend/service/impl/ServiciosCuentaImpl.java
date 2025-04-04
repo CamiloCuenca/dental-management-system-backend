@@ -855,21 +855,4 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         return "Usuario actualizado exitosamente.";
     }
 
-    @Override
-    public List<DoctorDTO> obtenerDoctores() throws DatabaseOperationException {
-        try {
-            return accountRepository.findByRol(Rol.DOCTOR)  // Cambiar de userRepository a accountRepository
-                    .stream()
-                    .map(account -> new DoctorDTO(
-                            account.getUser().getIdNumber(),
-                            account.getUser().getName(),
-                            account.getUser().getLastName(),
-                            account.getEmail(),
-                            account.getTipoDoctor() != null ? account.getTipoDoctor().name() : null  // Obtener el tipo de doctor de la cuenta
-                    ))
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            throw new DatabaseOperationException("Error al obtener la lista de doctores");
-        }
-    }
 }

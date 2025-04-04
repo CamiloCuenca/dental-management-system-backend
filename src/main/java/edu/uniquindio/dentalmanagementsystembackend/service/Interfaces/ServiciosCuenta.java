@@ -113,7 +113,7 @@ public interface ServiciosCuenta {
 
     String generarNuevoToken(Long accountId) throws Exception, UserNotFoundException;
 
-    List<DoctorDTO> obtenerDoctores() throws DatabaseOperationException;
+
 
 
 }

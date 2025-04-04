@@ -1,7 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.entity;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
-import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,25 +39,15 @@ public class Cita {
     @Column(name = "estado", nullable = false)
     private EstadoCitas estado;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_cita", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tipo_cita_id", nullable = false)
     private TipoCita tipoCita;
 
     public Cita(User paciente, User odontologo, Instant fechaHora, EstadoCitas estado, TipoCita tipoCita) {
-        validarOdontologo(odontologo, tipoCita);
         this.paciente = paciente;
         this.odontologo = odontologo;
         this.fechaHora = fechaHora;
         this.estado = estado;
         this.tipoCita = tipoCita;
     }
-
-    private void validarOdontologo(User odontologo, TipoCita tipoCita) {
-        if (odontologo != null && odontologo.getAccount() != null) {
-            if (odontologo.getAccount().getTipoDoctor() != tipoCita.getTipoDoctorRequerido()) {
-                throw new IllegalArgumentException("El odontólogo seleccionado no tiene la especialidad requerida para esta cita.");
-            }
-        }
-    }
-
 }

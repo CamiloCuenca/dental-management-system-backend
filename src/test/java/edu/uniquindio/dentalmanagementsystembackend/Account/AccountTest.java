@@ -196,10 +196,6 @@ public class AccountTest {
     }
 
 
-    @Test
-    void testObtenerDoctores() throws DatabaseOperationException {
-        serviciosCuenta.obtenerDoctores();
-    }
 
 
 

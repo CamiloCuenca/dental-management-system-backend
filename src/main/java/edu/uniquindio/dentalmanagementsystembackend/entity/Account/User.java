@@ -1,8 +1,8 @@
 package edu.uniquindio.dentalmanagementsystembackend.entity.Account;
 
+import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 import edu.uniquindio.dentalmanagementsystembackend.entity.DisponibilidadDoctor;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Especialidad;
-import edu.uniquindio.dentalmanagementsystembackend.entity.HistorialMedico;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -86,5 +86,33 @@ public class User {
         return historialesComoOdontologo.stream()
                 .sorted((h1, h2) -> h2.getFecha().compareTo(h1.getFecha()))
                 .toList();
+    }
+
+    // Métodos de gestión de especialidades
+    public void agregarEspecialidad(Especialidad especialidad) {
+        if (this.account != null && this.account.getRol() == Rol.DOCTOR) {
+            this.especialidades.add(especialidad);
+        } else {
+            throw new IllegalStateException("Solo los usuarios con rol DOCTOR pueden tener especialidades");
+        }
+    }
+
+    public void removerEspecialidad(Especialidad especialidad) {
+        if (this.account != null && this.account.getRol() == Rol.DOCTOR) {
+            this.especialidades.remove(especialidad);
+        } else {
+            throw new IllegalStateException("Solo los usuarios con rol DOCTOR pueden gestionar especialidades");
+        }
+    }
+
+    public boolean tieneEspecialidad(Especialidad especialidad) {
+        return this.especialidades.contains(especialidad);
+    }
+
+    public Set<Especialidad> getEspecialidades() {
+        if (this.account != null && this.account.getRol() == Rol.DOCTOR) {
+            return new HashSet<>(this.especialidades);
+        }
+        return new HashSet<>(); // Retorna un conjunto vacío si no es doctor
     }
 }

@@ -201,18 +201,7 @@ public class CuentaController {
         }
     }
 
-    @GetMapping("/doctores")
-    public ResponseEntity<List<DoctorDTO>> obtenerDoctores() {
-        try {
-            List<DoctorDTO> doctores = accountService.obtenerDoctores();
-            return ResponseEntity.ok(doctores);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Collections.emptyList());
-        } catch (DatabaseOperationException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 
 
 }

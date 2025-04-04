@@ -4,9 +4,9 @@ import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.CrearHistorialDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.HistorialDTO;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.HistorialMedico;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
-import edu.uniquindio.dentalmanagementsystembackend.entity.Account.HistorialMedico;
 import edu.uniquindio.dentalmanagementsystembackend.exception.HistorialException;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.HistorialMedicoRepository;
@@ -118,114 +118,5 @@ public class HistorialServiceImpl implements HistorialService {
         }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<HistorialMedico> obtenerHistorialPorPaciente(Long pacienteId) {
-        // Validar que el paciente exista y tenga el rol correcto
-        User paciente = userRepository.findById(pacienteId)
-                .orElseThrow(() -> new HistorialException("Paciente no encontrado con ID: " + pacienteId));
 
-        if (paciente.getAccount() == null || paciente.getAccount().getRol() != Rol.PACIENTE) {
-            throw new HistorialException("El usuario con ID " + pacienteId + " no es un paciente.");
-        }
-
-        // Obtener los historiales del paciente
-        List<HistorialMedico> historiales = historialRepository.findByPacienteIdNumber(paciente.getIdNumber());
-
-        // Si no hay historiales, lanzar una excepción
-        if (historiales.isEmpty()) {
-            throw new HistorialException("El paciente no tiene historiales médicos registrados.");
-        }
-
-        return historiales;
-    }
-
-    @Override
-    public List<HistorialMedico> obtenerTodosLosHistoriales() {
-        return historialRepository.findAll();
-    }
-
-    /**
-     * Obtiene el historial médico de un paciente en formato DTO.
-     * Los historiales se ordenan por fecha descendente.
-     *
-     * @param pacienteId ID del paciente
-     * @return Lista de DTOs del historial médico
-     * @throws HistorialException Si el paciente no existe o no tiene historiales
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<HistorialDTO> obtenerHistorialesDTOPorPaciente(Long pacienteId) {
-        List<HistorialMedico> historiales = obtenerHistorialPorPaciente(pacienteId);
-        return historiales.stream()
-                .map(this::convertirADTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Obtiene un historial médico específico por su ID.
-     *
-     * @param historialId ID del historial médico
-     * @return DTO del historial médico
-     * @throws HistorialException Si el historial no existe
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public HistorialDTO obtenerHistorialPorId(Long historialId) {
-        HistorialMedico historial = historialRepository.findById(historialId)
-                .orElseThrow(() -> new HistorialException("Historial no encontrado con ID: " + historialId));
-        return convertirADTO(historial);
-    }
-
-    /**
-     * Obtiene todos los historiales médicos de una fecha específica.
-     *
-     * @param fecha Fecha a buscar
-     * @return Lista de DTOs del historial médico
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<HistorialDTO> obtenerHistorialesPorFecha(LocalDate fecha) {
-        List<HistorialMedico> historiales = historialRepository.findByFecha(fecha);
-        return historiales.stream()
-                .map(this::convertirADTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Obtiene todos los historiales médicos de un odontólogo.
-     *
-     * @param odontologoId ID del odontólogo
-     * @return Lista de DTOs del historial médico
-     * @throws HistorialException Si el odontólogo no existe
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<HistorialDTO> obtenerHistorialesPorOdontologo(Long odontologoId) {
-        User odontologo = obtenerYValidarUsuario(odontologoId, Rol.DOCTOR, "Odontólogo");
-        List<HistorialMedico> historiales = historialRepository.findByOdontologoIdNumber(odontologo.getIdNumber());
-        return historiales.stream()
-                .map(this::convertirADTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Convierte una entidad HistorialMedico a su representación DTO.
-     *
-     * @param historial Entidad HistorialMedico a convertir
-     * @return DTO con la información del historial
-     */
-    private HistorialDTO convertirADTO(HistorialMedico historial) {
-        return new HistorialDTO(
-            historial.getId(),
-            historial.getPaciente().getName() + " " + historial.getPaciente().getLastName(),
-            historial.getOdontologo().getName() + " " + historial.getOdontologo().getLastName(),
-            historial.getFecha(),
-            historial.getDiagnostico(),
-            historial.getTratamiento(),
-            historial.getObservaciones(),
-            historial.getProximaCita(),
-            historial.getCita().getTipoCita().toString()
-        );
-    }
 }

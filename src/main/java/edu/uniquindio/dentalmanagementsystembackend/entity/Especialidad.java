@@ -1,5 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.entity;
 
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -10,6 +11,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Data
@@ -56,4 +59,10 @@ public class Especialidad {
     
     @Version
     private Long version;
+
+    @ManyToMany(mappedBy = "especialidades")
+    private Set<User> doctores = new HashSet<>();
+
+    @OneToMany(mappedBy = "especialidadRequerida", cascade = CascadeType.ALL)
+    private Set<TipoCita> tiposCita = new HashSet<>();
 } 

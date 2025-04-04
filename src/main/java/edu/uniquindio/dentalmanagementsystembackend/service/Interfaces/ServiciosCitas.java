@@ -15,29 +15,6 @@ public interface ServiciosCitas {
      */
     Cita crearCita(CrearCitaDTO dto);
 
-    /**
-     * Edita una cita existente como administrador.
-     * @param dto DTO con la información completa de la cita a editar
-     * @return Cita actualizada
-     */
-    Cita editarCitaAdmin(EditarCitaAdminDTO dto);
-
-    /**
-     * Edita una cita existente como paciente.
-     * @param dto DTO con la información permitida para editar por el paciente
-     * @param userId ID del usuario que realiza la edición
-     * @return Cita actualizada
-     */
-    Cita editarCitaPaciente(EditarCitaPacienteDTO dto, Long userId);
-
-    /**
-     * Cancela una cita por parte del paciente.
-     * @param citaId ID de la cita a cancelar
-     * @param userId ID del paciente que realiza la cancelación
-     * @return Cita cancelada
-     */
-    Cita cancelarCitaPaciente(Long citaId, Long userId);
-
 
 
     
