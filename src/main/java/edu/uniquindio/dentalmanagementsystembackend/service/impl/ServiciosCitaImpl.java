@@ -46,6 +46,15 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     private EmailService emailService;
 
 
+    /**
+     * Crea una nueva cita en el sistema.
+     * @param dto Objeto DTO que contiene la información necesaria para crear la cita
+     * @return La cita creada y guardada en el sistema
+     * @throws HistorialException si:
+     *         - El paciente o doctor no existen o no tienen el rol correcto
+     *         - La fecha es en el pasado
+     *         - El paciente y doctor son la misma persona
+     */
     @Override
     public Cita crearCita(CrearCitaDTO dto) {
 
@@ -69,6 +78,13 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         return citasRepository.save(cita);
     }
 
+    /**
+     * Construye una nueva entidad Cita a partir de los datos proporcionados.
+     * @param paciente Usuario con rol de paciente
+     * @param odontologo Usuario con rol de doctor
+     * @param dto DTO con la información de la cita
+     * @return Nueva instancia de Cita con estado PENDIENTE
+     */
     private Cita construirCita(User paciente, User odontologo, CrearCitaDTO dto) {
         return new Cita(
                 paciente,
@@ -98,18 +114,55 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         return usuario;
     }
 
+    /**
+     * Permite a un paciente cancelar su propia cita.
+     * @param citaId Identificador de la cita a cancelar
+     * @param userId Identificador del paciente que intenta cancelar la cita
+     * @return La cita actualizada con estado CANCELADA
+     * @throws HistorialException si:
+     *         - La cita no existe
+     *         - El usuario no es el dueño de la cita
+     *         - La cita ya pasó
+     *         - No hay 24 horas de anticipación
+     */
     @Override
-    public void eliminarCita(Long citaId) {
-        Cita cita = citasRepository.findById(citaId)
+    public Cita cancelarCitaPaciente(Long citaId, Long userId) {
+        // Obtener la cita existente
+        Cita citaExistente = citasRepository.findById(citaId)
                 .orElseThrow(() -> new HistorialException("No se encontró la cita con ID: " + citaId));
 
-        if (cita.getFechaHora().isBefore(Instant.now())) {
-            throw new HistorialException("No se puede eliminar una cita que ya pasó.");
+        // Validar que la cita no haya pasado
+        if (citaExistente.getFechaHora().isBefore(Instant.now())) {
+            throw new HistorialException("No se puede cancelar una cita que ya pasó.");
         }
 
-        citasRepository.delete(cita);
+        // Validar que la cancelación sea con al menos 24 horas de anticipación
+        if (citaExistente.getFechaHora().isBefore(Instant.now().plusSeconds(24 * 60 * 60))) {
+            throw new HistorialException("Las citas deben cancelarse con al menos 24 horas de anticipación.");
+        }
+
+        // Cambiar el estado de la cita a CANCELADA
+        citaExistente.setEstado(EstadoCitas.CANCELADA);
+
+        // Guardar los cambios
+        Cita citaCancelada = citasRepository.save(citaExistente);
+
+        // Aquí podrías agregar el envío de un correo electrónico de notificación si lo deseas
+        // emailService.enviarCorreoCancelacion(citaCancelada);
+
+        return citaCancelada;
     }
 
+    /**
+     * Permite a un administrador editar todos los aspectos de una cita.
+     * @param dto DTO con la información actualizada de la cita
+     * @return La cita actualizada
+     * @throws HistorialException si:
+     *         - La cita no existe
+     *         - La nueva fecha está en el pasado
+     *         - El nuevo paciente o doctor no existen o no tienen el rol correcto
+     *         - El nuevo paciente y doctor son la misma persona
+     */
     @Override
     public Cita editarCitaAdmin(EditarCitaAdminDTO dto) {
         // Obtener la cita existente
@@ -140,6 +193,17 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         return citasRepository.save(citaExistente);
     }
 
+    /**
+     * Permite a un paciente editar la fecha y hora de su propia cita.
+     * @param dto DTO con la nueva fecha y hora
+     * @param userId Identificador del paciente que intenta editar la cita
+     * @return La cita actualizada
+     * @throws HistorialException si:
+     *         - La cita no existe
+     *         - El usuario no es el dueño de la cita
+     *         - La nueva fecha está en el pasado
+     *         - No hay 24 horas de anticipación para el cambio
+     */
     @Override
     public Cita editarCitaPaciente(EditarCitaPacienteDTO dto, Long userId) {
         // Obtener la cita existente

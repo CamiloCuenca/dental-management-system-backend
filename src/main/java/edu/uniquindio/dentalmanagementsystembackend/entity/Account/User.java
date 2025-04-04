@@ -1,11 +1,16 @@
 package edu.uniquindio.dentalmanagementsystembackend.entity.Account;
 
+import edu.uniquindio.dentalmanagementsystembackend.entity.DisponibilidadDoctor;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Especialidad;
+import edu.uniquindio.dentalmanagementsystembackend.entity.HistorialMedico;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -14,7 +19,7 @@ import java.util.List;
 @ToString
 @EqualsAndHashCode(exclude = "account")
 @Entity
-@Table(name = "usuarios_detalles")
+@Table(name = "users")
 public class User {
 
 
@@ -48,6 +53,17 @@ public class User {
     @OneToMany(mappedBy = "odontologo", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("fecha DESC")
     private List<HistorialMedico> historialesComoOdontologo = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+        name = "doctor_especialidad",
+        joinColumns = @JoinColumn(name = "doctor_id"),
+        inverseJoinColumns = @JoinColumn(name = "especialidad_id")
+    )
+    private Set<Especialidad> especialidades = new HashSet<>();
+    
+    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DisponibilidadDoctor> disponibilidades = new ArrayList<>();
 
     // Métodos de utilidad
     public void agregarHistorialComoPaciente(HistorialMedico historial) {

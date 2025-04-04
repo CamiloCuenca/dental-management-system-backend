@@ -78,10 +78,6 @@ public class HistorialServiceImpl implements HistorialService {
         historial.setProximaCita(dto.proximaCita());
         historial.setCita(cita);
 
-        // Establecer relaciones bidireccionales
-        paciente.agregarHistorialComoPaciente(historial);
-        odontologo.agregarHistorialComoOdontologo(historial);
-
         // Guardar el historial
         return historialRepository.save(historial);
     }

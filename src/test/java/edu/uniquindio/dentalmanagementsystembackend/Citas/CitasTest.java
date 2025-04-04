@@ -8,6 +8,7 @@ import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 // Importa la clase ListaCitasDTO desde el paquete dto
 // Importa la interfaz CitasRepository desde el paquete repository
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaAdminDTO;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
 // Importa la interfaz ServiciosCitas desde el paquete service. Interfaces
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
@@ -55,6 +56,38 @@ public class CitasTest {
 
         serviciosCitas.crearCita(crearCitaDTO);
     }
+
+
+    @Test
+    void cancelarCitaPacienteTest() {
+        Long citaId = 22L;
+        Long userId = 1001277430L;
+
+        serviciosCitas.cancelarCitaPaciente(citaId, userId);
+    }
+
+
+    @Test
+    void editarCitaAdministradorTest(){
+        Long idCita = 21L;
+        Long idPaciente = 111000111L;
+        Long idOdontologo = 111111111L;
+        ZonedDateTime fechaDeseada = ZonedDateTime.of(
+                2025, 5, 15, 9, 30, 0, 0, ZoneId.of("America/Bogota")
+        );
+        Instant fechaHora = fechaDeseada.toInstant();
+        EditarCitaAdminDTO editarCitaAdminDTO = new EditarCitaAdminDTO(
+                idCita,
+                idPaciente,
+                idOdontologo,
+                fechaHora,
+                TipoCita.CONSULTA_GENERAL
+
+        );
+
+        serviciosCitas.editarCitaAdmin(editarCitaAdminDTO);
+    }
+
 
 
 }
