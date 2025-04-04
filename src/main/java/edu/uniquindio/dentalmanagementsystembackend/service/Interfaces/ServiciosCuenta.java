@@ -1,5 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
+import edu.uniquindio.dentalmanagementsystembackend.dto.account.DoctorDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.JWT.TokenDTO;
 
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.*;
@@ -10,6 +11,7 @@ import edu.uniquindio.dentalmanagementsystembackend.exception.InvalidCurrentPass
 import edu.uniquindio.dentalmanagementsystembackend.exception.PasswordMismatchException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.DatabaseOperationException;
 import javax.security.auth.login.AccountNotFoundException;
+import java.util.List;
 
 public interface ServiciosCuenta {
 
@@ -108,6 +110,10 @@ public interface ServiciosCuenta {
     String actualizarUsuario(Long accountId, ActualizarUsuarioDTO actualizarUsuarioDTO) throws Exception, UserNotFoundException;
 
     PerfilDTO obtenerPerfil(Long accountId) throws UserNotFoundException, AccountNotFoundException;
+
+    String generarNuevoToken(Long accountId) throws Exception, UserNotFoundException;
+
+    List<DoctorDTO> obtenerDoctores() throws DatabaseOperationException;
 
 
 }

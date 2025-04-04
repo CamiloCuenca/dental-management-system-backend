@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 // Anotación que indica que esta clase es un servicio de Spring
 @Service
@@ -20,6 +21,7 @@ public class EmailImpl implements EmailService {
     private final String SMTP_USERNAME = "unieventosproyect@gmail.com";
     // Contraseña del servidor SMTP
     private final String SMTP_PASSWORD = "fyncswwbtqwubuja";
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     /**
      * Envía un email electrónico.
@@ -94,7 +96,7 @@ public class EmailImpl implements EmailService {
                 "</body></html>";
 
         // Envío del email con el código de activación
-        sendMail(new EmailDTO(email, "\"Activación de cuenta\"", htmlMessage));
+        sendMail(new EmailDTO(email, "Activación de cuenta", htmlMessage));
     }
 
     /**
@@ -123,8 +125,120 @@ public class EmailImpl implements EmailService {
 
     @Override
     @Async
+    public void enviarCorreoConfirmacionCita(String email, String nombreOdontologo, LocalDateTime fechaHora) {
+        String htmlMessage = "<html><body>" +
+                "<p>Estimado paciente,</p>" +
+                "<p>Su cita con el Dr. " + nombreOdontologo + " ha sido confirmada exitosamente.</p>" +
+                "<p><strong>Fecha y hora:</strong> " + fechaHora.format(formatter) + "</p>" +
+                "<p>Por favor, asegúrese de llegar 15 minutos antes de su cita.</p>" +
+                "<p>Si necesita cancelar o reprogramar su cita, puede hacerlo 24 horas antes.</p>" +
+                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
+                "</body></html>";
+
+        try {
+            sendMail(new EmailDTO(email, "Confirmación de Cita Odontológica", htmlMessage));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    @Async
+    public void enviarCorreoCancelacionCita(String email, String nombreOdontologo, LocalDateTime fechaHora) {
+        String htmlMessage = "<html><body>" +
+                "<p>Estimado paciente,</p>" +
+                "<p>Su cita con el Dr. " + nombreOdontologo + " ha sido cancelada.</p>" +
+                "<p><strong>Fecha y hora original:</strong> " + fechaHora.format(formatter) + "</p>" +
+                "<p>Si desea programar una nueva cita, por favor contáctenos.</p>" +
+                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
+                "</body></html>";
+
+        try {
+            sendMail(new EmailDTO(email, "Cancelación de Cita Odontológica", htmlMessage));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    @Async
+    public void enviarCorreoReprogramacionCita(String email, String nombreOdontologo, LocalDateTime fechaHora) {
+        String htmlMessage = "<html><body>" +
+                "<p>Estimado paciente,</p>" +
+                "<p>Su cita con el Dr. " + nombreOdontologo + " ha sido reprogramada.</p>" +
+                "<p><strong>Nueva fecha y hora:</strong> " + fechaHora.format(formatter) + "</p>" +
+                "<p>Por favor, asegúrese de llegar 15 minutos antes de su cita.</p>" +
+                "<p>Si necesita cancelar o reprogramar su cita, puede hacerlo 24 horas antes.</p>" +
+                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
+                "</body></html>";
+
+        try {
+            sendMail(new EmailDTO(email, "Reprogramación de Cita Odontológica", htmlMessage));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    @Async
+    public void enviarCorreoRecordatorioCita(String email, String nombreOdontologo, LocalDateTime fechaHora) {
+        String htmlMessage = "<html><body>" +
+                "<p>Estimado paciente,</p>" +
+                "<p>Este es un recordatorio de su próxima cita con el Dr. " + nombreOdontologo + ".</p>" +
+                "<p><strong>Fecha y hora:</strong> " + fechaHora.format(formatter) + "</p>" +
+                "<p>Por favor, asegúrese de llegar 15 minutos antes de su cita.</p>" +
+                "<p>Si necesita cancelar o reprogramar su cita, puede hacerlo 24 horas antes.</p>" +
+                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
+                "</body></html>";
+
+        try {
+            sendMail(new EmailDTO(email, "Recordatorio de Cita Odontológica", htmlMessage));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    @Async
+    public void enviarCorreoCitaCompletada(String email, String nombreOdontologo, LocalDateTime fechaHora) {
+        String htmlMessage = "<html><body>" +
+                "<p>Estimado paciente,</p>" +
+                "<p>Su cita con el Dr. " + nombreOdontologo + " ha sido marcada como completada.</p>" +
+                "<p><strong>Fecha y hora:</strong> " + fechaHora.format(formatter) + "</p>" +
+                "<p>Gracias por confiar en nuestros servicios.</p>" +
+                "<p>Si tiene alguna pregunta o necesita programar una nueva cita, no dude en contactarnos.</p>" +
+                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
+                "</body></html>";
+
+        try {
+            sendMail(new EmailDTO(email, "Cita Completada", htmlMessage));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    @Async
+    public void enviarCorreoCitaEmergencia(String email, String nombreOdontologo, LocalDateTime fechaHora) {
+        String htmlMessage = "<html><body>" +
+                "<p>Estimado paciente,</p>" +
+                "<p>Se ha programado una cita de emergencia con el Dr. " + nombreOdontologo + ".</p>" +
+                "<p><strong>Fecha y hora:</strong> " + fechaHora.format(formatter) + "</p>" +
+                "<p>Por favor, llegue lo antes posible a nuestra clínica.</p>" +
+                "<p>Si tiene alguna pregunta, no dude en contactarnos.</p>" +
+                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
+                "</body></html>";
+
+        try {
+            sendMail(new EmailDTO(email, "Cita de Emergencia", htmlMessage));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    @Async
     public void enviarCorreoCita(String email, String nombreOdontologo, String fechaHora) throws Exception {
-        // Generación del contenido HTML para la confirmación de cita
         String htmlMessage = "<html><body>" +
                 "<p>Estimado usuario,</p>" +
                 "<p>Su cita con el Dr. " + nombreOdontologo + " ha sido programada exitosamente.</p>" +
@@ -134,9 +248,6 @@ public class EmailImpl implements EmailService {
                 "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
                 "</body></html>";
 
-        // Envío del correo de confirmación de cita
         sendMail(new EmailDTO(email, "Confirmación de Cita Odontológica", htmlMessage));
     }
-
-
 }

@@ -23,14 +23,14 @@ public class Cita {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "paciente_id", nullable = true)
+    @JoinColumn(name = "paciente_id", nullable = false)
     private User paciente;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.SET_NULL)
-    @JoinColumn(name = "odontologo_id", nullable = true)
+    @JoinColumn(name = "odontologo_id", nullable = false)
     private User odontologo;
 
     @Column(name = "fecha_hora", nullable = false)
@@ -54,8 +54,11 @@ public class Cita {
     }
 
     private void validarOdontologo(User odontologo, TipoCita tipoCita) {
-        if (odontologo != null && odontologo.getAccount().getTipoDoctor() != tipoCita.getTipoDoctorRequerido()) {
-            throw new IllegalArgumentException("El odontólogo seleccionado no tiene la especialidad requerida para esta cita.");
+        if (odontologo != null && odontologo.getAccount() != null) {
+            if (odontologo.getAccount().getTipoDoctor() != tipoCita.getTipoDoctorRequerido()) {
+                throw new IllegalArgumentException("El odontólogo seleccionado no tiene la especialidad requerida para esta cita.");
+            }
         }
     }
+
 }

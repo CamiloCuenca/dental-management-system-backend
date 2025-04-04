@@ -38,4 +38,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return Optional containing the user if found.
      */
     Optional<User> findByIdNumber(String idNumber);
+
+
+
 }

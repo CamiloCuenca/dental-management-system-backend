@@ -4,7 +4,9 @@ package edu.uniquindio.dentalmanagementsystembackend.entity.Account;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Getter
@@ -15,24 +17,23 @@ public class ValidationCode {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id; // Cambiado de Integer a Long
 
     @Column(name = "codigo", nullable = false, length = 10, unique = true)
     private String code;
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime creationDate;
+    @CreationTimestamp
+    @Column(name = "fecha_creacion", nullable = false, updatable = false)
+    private LocalDateTime creationDate; // Hibernate lo maneja automáticamente
 
-    public ValidationCode() {
-        this.creationDate = LocalDateTime.now();
-    }
+    public ValidationCode() {}
 
     public ValidationCode(String code) {
         this.code = code;
-        this.creationDate = LocalDateTime.now();
     }
 
     public boolean isExpired() {
-        return creationDate.plusMinutes(15).isBefore(LocalDateTime.now());
+        return Duration.between(creationDate, LocalDateTime.now()).toMinutes() >= 15;
     }
+
 }

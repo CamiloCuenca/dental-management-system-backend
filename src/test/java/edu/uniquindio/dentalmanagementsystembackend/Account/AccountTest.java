@@ -9,7 +9,9 @@ import edu.uniquindio.dentalmanagementsystembackend.exception.ValidationCodeExpi
 import edu.uniquindio.dentalmanagementsystembackend.exception.InvalidCurrentPasswordException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.PasswordMismatchException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.DatabaseOperationException;
+
 import javax.security.auth.login.AccountNotFoundException;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,11 +38,11 @@ public class AccountTest {
     ServiciosCuenta serviciosCuenta;
 
 
-
     /**
      * Test for user login.
-     * @throws Exception if a general error occurs.
-     * @throws UserNotFoundException if the user is not found.
+     *
+     * @throws Exception                if a general error occurs.
+     * @throws UserNotFoundException    if the user is not found.
      * @throws InvalidPasswordException if the password is invalid.
      * @throws AccountInactiveException if the account is inactive.
      */
@@ -56,9 +58,10 @@ public class AccountTest {
 
     /**
      * Test for creating an account.
-     * @throws Exception if a general error occurs.
+     *
+     * @throws Exception                   if a general error occurs.
      * @throws EmailAlreadyExistsException if the email already exists.
-     * @throws UserAlreadyExistsException if the user already exists.
+     * @throws UserAlreadyExistsException  if the user already exists.
      */
     @Test
     void testGuardarCuentas() throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException, DatabaseOperationException, EmailSendingException {
@@ -77,8 +80,9 @@ public class AccountTest {
 
     /**
      * Test for deleting an account.
-     * @throws Exception if a general error occurs.
-     * @throws UserNotFoundException if the user is not found.
+     *
+     * @throws Exception                if a general error occurs.
+     * @throws UserNotFoundException    if the user is not found.
      * @throws InvalidIdFormatException if the ID format is invalid.
      */
     @Test
@@ -89,14 +93,15 @@ public class AccountTest {
 
     /**
      * Test for activating an account.
-     * @throws Exception if a general error occurs.
-     * @throws AccountAlreadyActiveException if the account is already active.
+     *
+     * @throws Exception                      if a general error occurs.
+     * @throws AccountAlreadyActiveException  if the account is already active.
      * @throws ValidationCodeExpiredException if the validation code has expired.
      */
     @Test
     void testActivarCuenta() throws Exception, AccountAlreadyActiveException, ValidationCodeExpiredException {
         ActivateAccountDTO activateAccountDTO = new ActivateAccountDTO(
-                "40818",
+                "36771",
                 "brandone.acevdoc@uqvirtual.edu.co"
         );
         serviciosCuenta.activateAccount(activateAccountDTO);
@@ -104,7 +109,8 @@ public class AccountTest {
 
     /**
      * Test for sending an activation code.
-     * @throws Exception if a general error occurs.
+     *
+     * @throws Exception              if a general error occurs.
      * @throws EmailNotFoundException if the email is not found.
      */
     @Test
@@ -114,7 +120,8 @@ public class AccountTest {
 
     /**
      * Test for sending a password recovery code.
-     * @throws Exception if a general error occurs.
+     *
+     * @throws Exception              if a general error occurs.
      * @throws EmailNotFoundException if the email is not found.
      */
     @Test
@@ -124,24 +131,26 @@ public class AccountTest {
 
     /**
      * Test for updating the password.
-     * @throws Exception if a general error occurs.
-     * @throws PasswordMismatchException if the passwords do not match.
+     *
+     * @throws Exception                       if a general error occurs.
+     * @throws PasswordMismatchException       if the passwords do not match.
      * @throws InvalidCurrentPasswordException if the current password is invalid.
      */
     @Test
     void testUpdateCode() throws Exception, PasswordMismatchException, InvalidCurrentPasswordException {
         UpdatePasswordDTO updatePasswordDTO = new UpdatePasswordDTO(
-                "Cr@milo123",
+                "contraseña1",
                 "M@mahermosa123",
                 "M@mahermosa123"
         );
-        serviciosCuenta.updatePassword(8L, updatePasswordDTO);
+        serviciosCuenta.updatePassword(15L, updatePasswordDTO);
     }
 
     /**
      * Test for changing the password using a code.
-     * @throws Exception if a general error occurs.
-     * @throws PasswordsDoNotMatchException if the passwords do not match.
+     *
+     * @throws Exception                      if a general error occurs.
+     * @throws PasswordsDoNotMatchException   if the passwords do not match.
      * @throws InvalidValidationCodeException if the validation code is invalid.
      * @throws ValidationCodeExpiredException if the validation code has expired.
      */
@@ -158,13 +167,14 @@ public class AccountTest {
     @Test
     void testActualizarUsuario() throws Exception, UserNotFoundException {
         // Arrange
-        Long accountId = 49L; // ID de una cuenta existente
+        Long accountId = 15L; // ID de una cuenta existente
         ActualizarUsuarioDTO dto = new ActualizarUsuarioDTO(
-            "Nuevo Nombre",
-            "Nuevo Apellido",
-            "3001234561",
-            "Nueva Dirección",
-            LocalDate.of(1990, 1, 1)
+                "Nuevo Nombre",
+                "Nuevo Apellido",
+                "3001234562",
+                "Nueva Dirección",
+                "brandone124@hotmail.com"
+
         );
 
         // Act
@@ -177,16 +187,19 @@ public class AccountTest {
     @Test
     void testObtenerPerfil() throws UserNotFoundException, AccountNotFoundException {
         // Arrange
-        Long accountId = 49L; // ID de una cuenta existente
+        Long accountId = 15L; // ID de una cuenta existente
 
         // Act
         PerfilDTO perfil = serviciosCuenta.obtenerPerfil(accountId);
+
+        System.out.println(perfil);
     }
 
-    
 
-
-    
+    @Test
+    void testObtenerDoctores(){
+        serviciosCuenta.obtenerDoctores();
+    }
 
 
 

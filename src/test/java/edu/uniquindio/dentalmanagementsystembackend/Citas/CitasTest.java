@@ -77,9 +77,9 @@ public class CitasTest {
  void testCrearCita() throws Exception {
      Long idPaciente = 222000222L;
      Long idDoctor = 222222222L; // Example doctor ID
-     LocalDateTime fechaHora = LocalDateTime.of(2025, 11, 15, 10, 0); // Example date and time
+     LocalDateTime fechaHora = LocalDateTime.of(2025, 8, 15, 10, 0); // Example date and time
 
-     CitaDTO cita = new CitaDTO(idPaciente, EstadoCitas.PENDIENTE, TipoCita.CONSULTA_GENERAL, idDoctor, fechaHora);
+     CitaDTO cita = new CitaDTO(idPaciente, EstadoCitas.CONFIRMADA, TipoCita.CONSULTA_GENERAL, idDoctor, fechaHora);
      serviciosCitas.crearCita(cita);
  }
 

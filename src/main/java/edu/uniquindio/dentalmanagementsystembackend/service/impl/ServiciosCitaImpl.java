@@ -3,9 +3,11 @@ package edu.uniquindio.dentalmanagementsystembackend.service.impl;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
+import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoDoctor;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.ListaCitasDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorDisponibilidadDTO;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.Account;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.exception.CitaException;
@@ -20,9 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,7 @@ import java.util.stream.Collectors;
 @Transactional
 @Service
 public class ServiciosCitaImpl implements ServiciosCitas {
+    //hola
 
     // Repositorio para operaciones CRUD de citas
     @Autowired
@@ -49,7 +52,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
 
     // Servicio para envío de correos electrónicos
     @Autowired
-    EmailService emailService;
+    private EmailService emailService;
 
     // ============= MÉTODOS DE CREACIÓN DE CITAS =============
 
@@ -229,7 +232,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
      */
     private void enviarNotificacionCita(User paciente, User doctor, LocalDateTime fechaHora) throws Exception {
         String emailPaciente = paciente.getAccount().getEmail();
-        emailService.enviarCorreoCita(emailPaciente, doctor.getName(), fechaHora.toString());
+        emailService.enviarCorreoConfirmacionCita(emailPaciente, doctor.getName(), fechaHora);
         System.out.println("✅ Cita creada correctamente con el doctor " + doctor.getName() + " en la fecha: " + fechaHora);
     }
 
@@ -438,7 +441,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         validarIdCita(idCita);
         Cita cita = obtenerYValidarCita(idCita);
         validarEstadoCancelacion(cita);
-        cancelarCita(cita);
+        realizarCancelacionCita(cita);
     }
 
     /**
@@ -473,9 +476,15 @@ public class ServiciosCitaImpl implements ServiciosCitas {
      *
      * @param cita Cita a cancelar
      */
-    private void cancelarCita(Cita cita) {
+    private void realizarCancelacionCita(Cita cita) {
         cita.setEstado(EstadoCitas.CANCELADA);
         citasRepository.save(cita);
+        
+        // Enviar notificación de cancelación
+        String emailPaciente = cita.getPaciente().getAccount().getEmail();
+        LocalDateTime fechaHora = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreoCancelacionCita(emailPaciente, cita.getOdontologo().getName(), fechaHora);
+        
         System.out.println("✅ Cita con ID " + cita.getId() + " cancelada correctamente.");
     }
 
@@ -488,24 +497,25 @@ public class ServiciosCitaImpl implements ServiciosCitas {
      */
     @Override
     public List<DoctorDisponibilidadDTO> obtenerFechasDisponiblesDoctores() {
-        List<User> doctores = userRepository.findAll();
-        return doctores.stream()
-                .map(this::crearDisponibilidadDoctor)
-                .collect(Collectors.toList());
-    }
+        try {
+            // Obtener solo los doctores activos
+            List<Account> cuentasDoctores = cuentaRepository.findByRol(Rol.DOCTOR);
 
-    /**
-     * Crea un DTO de disponibilidad para un doctor.
-     *
-     * @param doctor Doctor para el que se crea la disponibilidad
-     * @return DTO con la disponibilidad del doctor
-     */
-    private DoctorDisponibilidadDTO crearDisponibilidadDoctor(User doctor) {
-        List<LocalDateTime> fechasDisponibles = obtenerFechasDisponibles(doctor);
-        if (fechasDisponibles.size() > 5) {
-            fechasDisponibles = fechasDisponibles.subList(0, 5);
+            return cuentasDoctores.stream()
+                    .map(account -> {
+                        User doctor = account.getUser();
+                        List<LocalDateTime> fechasDisponibles = obtenerFechasDisponibles(doctor);
+                        return new DoctorDisponibilidadDTO(
+                                doctor.getIdNumber(),
+                                doctor.getName() + " " + doctor.getLastName(),
+                                account.getTipoDoctor() != null ? account.getTipoDoctor().name() : "OTRO",
+                                fechasDisponibles
+                        );
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new CitaException("Error al obtener las fechas disponibles de los doctores: " + e.getMessage());
         }
-        return new DoctorDisponibilidadDTO(doctor.getIdNumber(), fechasDisponibles);
     }
 
     /**
@@ -517,8 +527,17 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     private List<LocalDateTime> obtenerFechasDisponibles(User doctor) {
         LocalDateTime ahora = LocalDateTime.now();
         LocalDateTime tresMesesAdelante = ahora.plusMonths(3);
+
+        // 1. Obtener las fechas ocupadas
         Set<LocalDateTime> fechasOcupadas = obtenerFechasOcupadas(doctor, ahora, tresMesesAdelante);
-        return generarFechasDisponibles(ahora, tresMesesAdelante, fechasOcupadas);
+
+        // 2. Generar todas las posibles fechas
+        List<LocalDateTime> todasLasFechas = generarTodasLasFechas(ahora, tresMesesAdelante);
+
+        // 3. Filtrar las fechas ocupadas
+        return todasLasFechas.stream()
+                .filter(fecha -> !fechasOcupadas.contains(fecha))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -541,31 +560,223 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     }
 
     /**
-     * Genera las fechas disponibles en un rango de tiempo.
+     * Genera todas las posibles fechas disponibles en un rango de tiempo.
+     * Solo incluye días laborables (lunes a viernes) y horario de atención (8:00-18:00).
      *
      * @param inicio Fecha de inicio del rango
      * @param fin Fecha de fin del rango
-     * @param fechasOcupadas Conjunto de fechas ya ocupadas
      * @return Lista de fechas disponibles
      */
-    private List<LocalDateTime> generarFechasDisponibles(
-            LocalDateTime inicio, 
-            LocalDateTime fin, 
-            Set<LocalDateTime> fechasOcupadas) {
-        List<LocalDateTime> fechasDisponibles = new ArrayList<>();
+    private List<LocalDateTime> generarTodasLasFechas(LocalDateTime inicio, LocalDateTime fin) {
+        List<LocalDateTime> fechas = new ArrayList<>();
         LocalTime horaInicio = LocalTime.of(8, 0);
         LocalTime horaFin = LocalTime.of(18, 0);
 
         for (LocalDateTime fecha = inicio; fecha.isBefore(fin); fecha = fecha.plusDays(1)) {
-            for (LocalDateTime hora = fecha.with(horaInicio); 
-                 hora.isBefore(fecha.with(horaFin)); 
-                 hora = hora.plusMinutes(40)) {
-                if (!fechasOcupadas.contains(hora)) {
-                    fechasDisponibles.add(hora);
+            // Solo incluir días laborables (lunes a viernes)
+            if (fecha.getDayOfWeek().getValue() >= 1 && fecha.getDayOfWeek().getValue() <= 5) {
+                for (LocalDateTime hora = fecha.with(horaInicio);
+                     hora.isBefore(fecha.with(horaFin));
+                     hora = hora.plusMinutes(40)) {
+                    fechas.add(hora);
                 }
             }
         }
 
-        return fechasDisponibles;
+        return fechas;
+    }
+
+    // ============= MÉTODOS DE CONFIRMACIÓN Y ESTADO =============
+
+    @Override
+    @Transactional
+    public void confirmarCita(Long idCita) {
+        validarIdCita(idCita);
+        Cita cita = obtenerYValidarCita(idCita);
+        validarEstadoConfirmacion(cita);
+        cita.setEstado(EstadoCitas.CONFIRMADA);
+        citasRepository.save(cita);
+        enviarNotificacionConfirmacion(cita);
+    }
+
+    @Override
+    @Transactional
+    public void completarCita(Long idCita) {
+        validarIdCita(idCita);
+        Cita cita = obtenerYValidarCita(idCita);
+        validarEstadoCompletar(cita);
+        cita.setEstado(EstadoCitas.COMPLETADA);
+        citasRepository.save(cita);
+        enviarNotificacionCompletada(cita);
+    }
+
+    // ============= MÉTODOS DE BÚSQUEDA AVANZADA =============
+
+    @Override
+    public List<ListaCitasDTO> obtenerCitasPorFecha(LocalDate fecha) {
+        Instant inicioDia = fecha.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant finDia = fecha.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant();
+        List<Cita> citas = citasRepository.findByFechaHoraBetween(inicioDia, finDia);
+        return mapearCitasADTO(citas);
+    }
+
+    @Override
+    public List<ListaCitasDTO> obtenerCitasPorEstado(EstadoCitas estado) {
+        List<Cita> citas = citasRepository.findByEstado(estado);
+        return mapearCitasADTO(citas);
+    }
+
+    // ============= MÉTODOS DE REPROGRAMACIÓN =============
+
+    @Override
+    @Transactional
+    public void reprogramarCita(Long idCita, LocalDateTime nuevaFechaHora) {
+        validarIdCita(idCita);
+        Cita cita = obtenerYValidarCita(idCita);
+        validarFechaCita(nuevaFechaHora);
+        validarDisponibilidadDoctor(cita.getOdontologo(), nuevaFechaHora);
+        validarDisponibilidadPaciente(cita.getPaciente(), nuevaFechaHora);
+        cita.setFechaHora(nuevaFechaHora.atZone(ZoneId.systemDefault()).toInstant());
+        citasRepository.save(cita);
+        enviarNotificacionReprogramacion(cita);
+    }
+
+    // ============= MÉTODOS DE ESTADÍSTICAS =============
+
+    @Override
+    public Map<EstadoCitas, Long> obtenerEstadisticasCitasPorEstado() {
+        List<Cita> todasLasCitas = citasRepository.findAll();
+        return todasLasCitas.stream()
+                .collect(Collectors.groupingBy(
+                    Cita::getEstado,
+                    Collectors.counting()
+                ));
+    }
+
+    @Override
+    public Map<Long, Long> obtenerEstadisticasCitasPorDoctor() {
+        List<Cita> todasLasCitas = citasRepository.findAll();
+        return todasLasCitas.stream()
+                .collect(Collectors.groupingBy(
+                    cita -> Long.parseLong(cita.getOdontologo().getIdNumber()),
+                    Collectors.counting()
+                ));
+    }
+
+    // ============= MÉTODOS DE NOTIFICACIONES =============
+
+    @Override
+    public void enviarRecordatorioCita(Long idCita) {
+        Cita cita = obtenerYValidarCita(idCita);
+        if (cita.getEstado() != EstadoCitas.CONFIRMADA) {
+            throw new CitaException("Solo se pueden enviar recordatorios de citas confirmadas");
+        }
+        enviarNotificacionRecordatorio(cita);
+    }
+
+    @Override
+    public DoctorDisponibilidadDTO obtenerFechasDisponiblesDoctor(String doctorId) {
+        return null;
+    }
+
+
+    @Override
+    public DoctorDisponibilidadDTO obtenerFechasDisponiblesDoctor(Long doctorId) {
+        try {
+            // 1. Obtener y validar el doctor
+            User doctor = userRepository.findById(doctorId)
+                    .orElseThrow(() -> new CitaException("Doctor no encontrado"));
+
+            // 2. Obtener la cuenta del doctor para verificar el tipo
+            Account cuentaDoctor = cuentaRepository.findByUser(doctor)
+                    .orElseThrow(() -> new CitaException("Cuenta de doctor no encontrada"));
+
+            // 3. Verificar que sea un doctor
+            if (cuentaDoctor.getRol() != Rol.DOCTOR) {
+                throw new CitaException("El usuario no es un doctor");
+            }
+
+            // 4. Obtener las fechas disponibles
+            List<LocalDateTime> fechasDisponibles = obtenerFechasDisponibles(doctor);
+
+            // 5. Crear y retornar el DTO
+            return new DoctorDisponibilidadDTO(
+                    doctor.getIdNumber(),
+                    doctor.getName() + " " + doctor.getLastName(),
+                    cuentaDoctor.getTipoDoctor() != null ? cuentaDoctor.getTipoDoctor().name() : "OTRO",
+                    fechasDisponibles
+            );
+        } catch (Exception e) {
+            throw new CitaException("Error al obtener las fechas disponibles del doctor: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<DoctorDisponibilidadDTO> obtenerFechasDisponiblesPorTipoDoctor(Long tipoDoctor) {
+        try {
+            // 1. Obtener todos los doctores del tipo especificado
+            List<Account> cuentasDoctores = cuentaRepository.findByRolAndTipoDoctor(
+                    Rol.DOCTOR,
+                    TipoDoctor.values()[(int) (tipoDoctor - 1)] // Convertir el ID a enum
+            );
+
+            // 2. Mapear cada doctor a su DTO con fechas disponibles
+            return cuentasDoctores.stream()
+                    .map(account -> {
+                        User doctor = account.getUser();
+                        List<LocalDateTime> fechasDisponibles = obtenerFechasDisponibles(doctor);
+                        return new DoctorDisponibilidadDTO(
+                                doctor.getIdNumber(),
+                                doctor.getName() + " " + doctor.getLastName(),
+                                account.getTipoDoctor().name(),
+                                fechasDisponibles
+                        );
+                    })
+                    .collect(Collectors.toList());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new CitaException("Tipo de doctor inválido: " + tipoDoctor);
+        } catch (Exception e) {
+            throw new CitaException("Error al obtener las fechas disponibles por tipo de doctor: " + e.getMessage());
+        }
+    }
+
+    // ============= MÉTODOS PRIVADOS DE VALIDACIÓN =============
+
+    private void validarEstadoConfirmacion(Cita cita) {
+        if (cita.getEstado() != EstadoCitas.PENDIENTE) {
+            throw new CitaException("Solo se pueden confirmar citas pendientes");
+        }
+    }
+
+    private void validarEstadoCompletar(Cita cita) {
+        if (cita.getEstado() != EstadoCitas.CONFIRMADA) {
+            throw new CitaException("Solo se pueden completar citas confirmadas");
+        }
+    }
+
+    // ============= MÉTODOS PRIVADOS DE NOTIFICACIÓN =============
+
+    private void enviarNotificacionConfirmacion(Cita cita) {
+        String emailPaciente = cita.getPaciente().getAccount().getEmail();
+        LocalDateTime fechaHora = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreoConfirmacionCita(emailPaciente, cita.getOdontologo().getName(), fechaHora);
+    }
+
+    private void enviarNotificacionCompletada(Cita cita) {
+        String emailPaciente = cita.getPaciente().getAccount().getEmail();
+        LocalDateTime fechaHora = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreoCitaCompletada(emailPaciente, cita.getOdontologo().getName(), fechaHora);
+    }
+
+    private void enviarNotificacionReprogramacion(Cita cita) {
+        String emailPaciente = cita.getPaciente().getAccount().getEmail();
+        LocalDateTime fechaHora = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreoReprogramacionCita(emailPaciente, cita.getOdontologo().getName(), fechaHora);
+    }
+
+    private void enviarNotificacionRecordatorio(Cita cita) {
+        String emailPaciente = cita.getPaciente().getAccount().getEmail();
+        LocalDateTime fechaHora = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        emailService.enviarCorreoRecordatorioCita(emailPaciente, cita.getOdontologo().getName(), fechaHora);
     }
 }

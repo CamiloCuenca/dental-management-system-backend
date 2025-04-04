@@ -4,6 +4,7 @@ import edu.uniquindio.dentalmanagementsystembackend.Enum.AccountStatus;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 
 import edu.uniquindio.dentalmanagementsystembackend.config.JWTUtils;
+import edu.uniquindio.dentalmanagementsystembackend.dto.account.DoctorDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.JWT.TokenDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.*;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.Account;
@@ -20,16 +21,14 @@ import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.Servicios
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Implementación del servicio de gestión de cuentas de usuario.
@@ -56,14 +55,30 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      * @param account Cuenta del usuario
      * @return Mapa con los claims del token
      */
-    private Map<String, Object> construirClaims(Account account) {
-        return Map.of(
-                "rol", account.getRol(),
-                "nombre", account.getUser().getName(),
-                "id", account.getId(),
-                "idUser", account.getUser().getIdNumber(),
-                "email", account.getEmail()
-        );
+    public Map<String, Object> construirClaims(Account account) {
+        // Versión más robusta con validaciones
+        if (account == null) {
+            throw new IllegalArgumentException("Account no puede ser nulo");
+        }
+
+        Map<String, Object> claims = new LinkedHashMap<>(); // Mantiene orden
+
+        claims.put("sub", account.getEmail()); // Subject estándar JWT
+        claims.put("accountId", account.getId()); // ID principal
+        claims.put("userId", account.getUser() != null ? account.getUser().getIdNumber() : null);
+        claims.put("role", account.getRol()); // Mejor usar "role" que "rol" para estándares
+        claims.put("email", account.getEmail());
+
+        // Datos de usuario opcionales (con null checks)
+        if (account.getUser() != null) {
+            claims.put("given_name", account.getUser().getName()); // Estándar OpenID
+            claims.put("family_name", account.getUser().getLastName());
+        }
+
+        claims.put("iat", System.currentTimeMillis() / 1000); // Fecha emisión
+        claims.put("exp", (System.currentTimeMillis() / 1000) + 3600); // Expiración en 1h
+
+        return Collections.unmodifiableMap(claims); // Map inmutable
     }
 
     /**
@@ -292,42 +307,38 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         }
 
         PerfilDTO perfil = new PerfilDTO(
+                user.getIdNumber(),
                 user.getName(),
                 user.getLastName(),
                 user.getPhoneNumber(),
-                user.getAddress()
+                user.getAddress(),
+                user.getBirthDate(),
+                account.getEmail()
         );
 
         log.info("Perfil obtenido exitosamente: {}", perfil);
         return perfil;
     }
 
-
-    /**
-     * Valida que el número de teléfono no esté en uso por otro usuario.
-     *
-     * @param phoneNumber   Número de teléfono a validar
-     * @param currentUserId ID del usuario actual
-     * @throws IllegalArgumentException si el teléfono ya está en uso
-     */
-    private void validarTelefonoExistente(String phoneNumber, String currentUserId) {
-        Optional<User> existingUser = userRepository.findByPhoneNumber(phoneNumber);
-        if (existingUser.isPresent() && !existingUser.get().getIdNumber().equals(currentUserId)) {
-            throw new IllegalArgumentException("El número de teléfono ya está registrado en otro usuario.");
+    @Override
+    public String generarNuevoToken(Long accountId) throws Exception, UserNotFoundException {
+        // Obtener la cuenta
+        Account account = obtenerCuentaPorId(accountId);
+        if (account == null) {
+            throw new AccountNotFoundException("No se encontró la cuenta con ID: " + accountId);
         }
-    }
 
-    /**
-     * Actualiza los datos de un usuario.
-     *
-     * @param user Usuario a actualizar
-     * @param dto  DTO con los nuevos datos
-     */
-    private void actualizarDatosUsuario(User user, ActualizarPerfilDTO dto) {
-        user.setName(dto.name());
-        user.setLastName(dto.lastName());
-        user.setPhoneNumber(dto.phoneNumber());
-        user.setAddress(dto.address());
+        // Obtener el usuario asociado
+        User user = account.getUser();
+        if (user == null) {
+            throw new UserNotFoundException("La cuenta no tiene un usuario asociado");
+        }
+
+        // Crear el payload del token usando el método existente construirClaims
+        Map<String, Object> claims = construirClaims(account);
+
+        // Generar el token usando el JWTUtils que ya está inyectado
+        return jwtUtils.generateToken(account.getEmail(), claims);
     }
 
     /**
@@ -821,7 +832,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
     @Override
     @Transactional
-    public String actualizarUsuario(Long accountId, ActualizarUsuarioDTO dto) throws Exception, UserNotFoundException {
+    public String actualizarUsuario(Long accountId, ActualizarUsuarioDTO dto) throws UserNotFoundException, AccountNotFoundException {
         Account account = obtenerCuentaPorId(accountId);
         User user = account.getUser();
 
@@ -829,12 +840,36 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
             throw new UserNotFoundException("No se encontró un usuario asociado a la cuenta con ID " + accountId);
         }
 
-        user.setName(dto.name());
-        user.setLastName(dto.lastName());
-        user.setPhoneNumber(dto.phoneNumber());
-        user.setAddress(dto.address());
+        // Validaciones para evitar sobreescribir con valores nulos
+        if (dto.name() != null) user.setName(dto.name());
+        if (dto.lastName() != null) user.setLastName(dto.lastName());
+        if (dto.phoneNumber() != null) user.setPhoneNumber(dto.phoneNumber());
+        if (dto.address() != null) user.setAddress(dto.address());
+        if (dto.email() != null) {
+            account.setEmail(dto.email());
+        }
 
         userRepository.save(user);
+        accountRepository.save(account);  // Guardar account para actualizar el email
+
         return "Usuario actualizado exitosamente.";
+    }
+
+    @Override
+    public List<DoctorDTO> obtenerDoctores() throws DatabaseOperationException {
+        try {
+            return accountRepository.findByRol(Rol.DOCTOR)  // Cambiar de userRepository a accountRepository
+                    .stream()
+                    .map(account -> new DoctorDTO(
+                            account.getUser().getIdNumber(),
+                            account.getUser().getName(),
+                            account.getUser().getLastName(),
+                            account.getEmail(),
+                            account.getTipoDoctor() != null ? account.getTipoDoctor().name() : null  // Obtener el tipo de doctor de la cuenta
+                    ))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new DatabaseOperationException("Error al obtener la lista de doctores");
+        }
     }
 }

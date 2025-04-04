@@ -1,6 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.controller;
 
 
+import edu.uniquindio.dentalmanagementsystembackend.dto.account.DoctorDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.JWT.TokenDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.*;
 import edu.uniquindio.dentalmanagementsystembackend.exception.*;
@@ -10,6 +11,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.security.auth.login.AccountNotFoundException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cuenta")
@@ -48,7 +55,7 @@ public class CuentaController {
         }
     }
 
-    
+
     /**
      * Endpoint for deleting an account.
      * @param accountId ID of the account to delete.
@@ -149,16 +156,63 @@ public class CuentaController {
      * @return ResponseEntity con un mensaje de confirmación.
      */
     @PutMapping("/usuario/{accountId}")
-    public ResponseEntity<String> actualizarUsuario(
+    public ResponseEntity<Map<String, String>> actualizarUsuario(
             @PathVariable Long accountId,
             @RequestBody ActualizarUsuarioDTO actualizarUsuarioDTO) {
         try {
-            return ResponseEntity.ok(accountService.actualizarUsuario(accountId, actualizarUsuarioDTO));
+            // Actualizar la información del usuario
+            String mensaje = accountService.actualizarUsuario(accountId, actualizarUsuarioDTO);
+
+            // Generar nuevo token con la información actualizada
+            String nuevoToken = accountService.generarNuevoToken(accountId);
+
+            // Preparar la respuesta
+            Map<String, String> response = new HashMap<>();
+            response.put("message", mensaje);
+            response.put("token", nuevoToken);
+
+            return ResponseEntity.ok(response);
         } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", e.getMessage()));
+        } catch (AccountNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Error al actualizar la información del usuario"));
         }
     }
+
+    @GetMapping("/perfil/{accountId}")
+    public ResponseEntity<PerfilDTO> obtenerPerfil(@PathVariable Long accountId) {
+        try {
+            PerfilDTO perfil = accountService.obtenerPerfil(accountId);
+            return ResponseEntity.ok(perfil);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
+        } catch (AccountNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
+
+    @GetMapping("/doctores")
+    public ResponseEntity<List<DoctorDTO>> obtenerDoctores() {
+        try {
+            List<DoctorDTO> doctores = accountService.obtenerDoctores();
+            return ResponseEntity.ok(doctores);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
+        } catch (DatabaseOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 }
