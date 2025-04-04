@@ -72,7 +72,7 @@ public class AccountTest {
                 "3153033412",                            // phoneNumber
                 "carrera-15#3",                          // address
                 LocalDate.parse("2000-05-20"),           // fechaNacimiento (LocalDate)
-                "brandone.acevdoc@uqvirtual.edu.co",                   // email
+                "brandone.acevedoc@uqvirtual.edu.co",                   // email
                 "M@mahermosa123"                                   // password
         );
         serviciosCuenta.crearCuenta(crearCuentaDTO);
@@ -101,8 +101,8 @@ public class AccountTest {
     @Test
     void testActivarCuenta() throws Exception, AccountAlreadyActiveException, ValidationCodeExpiredException {
         ActivateAccountDTO activateAccountDTO = new ActivateAccountDTO(
-                "33495",
-                "brandone.acevdoc@uqvirtual.edu.co"
+                "48382",
+                "brandone.acevedoc@uqvirtual.edu.co"
         );
         serviciosCuenta.activateAccount(activateAccountDTO);
     }
