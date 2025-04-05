@@ -233,7 +233,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         Account account = new Account();
         account.setEmail(cuenta.email());
         account.setPassword(hashedPassword);
-        account.setRol(Rol.DOCTOR);
+        account.setRol(Rol.PACIENTE);
         account.setStatus(AccountStatus.INACTIVE);
 
         ValidationCode validationCode = new ValidationCode();

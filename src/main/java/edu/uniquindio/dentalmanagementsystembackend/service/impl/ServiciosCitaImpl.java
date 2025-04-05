@@ -22,6 +22,8 @@ import edu.uniquindio.dentalmanagementsystembackend.util.DateUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +46,9 @@ import java.util.stream.Collectors;
  * incluyendo su creación, consulta, modificación y cancelación.
  */
 @Service
+@org.springframework.transaction.annotation.Transactional
+@RequiredArgsConstructor
+@Slf4j
 public class ServiciosCitaImpl implements ServiciosCitas {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiciosCitaImpl.class);
@@ -83,116 +88,66 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     @Transactional
     public Cita crearCita(CrearCitaDTO dto) {
         try {
-            // Buscar paciente
+            // ✅ VALIDACIONES BÁSICAS: verificar existencia y roles correctos
+
             User paciente = userRepository.findById(dto.pacienteId())
-                    .orElseThrow(() -> new IllegalArgumentException("No se encontró el paciente. Por favor, verifique el ID."));
+                    .orElseThrow(() -> new IllegalArgumentException("Paciente no encontrado."));
 
-            // Buscar odontólogo
             User doctor = userRepository.findById(dto.odontologoId())
-                    .orElseThrow(() -> new IllegalArgumentException("No se encontró el odontólogo. Por favor, verifique el ID."));
+                    .orElseThrow(() -> new IllegalArgumentException("Odontólogo no encontrado."));
 
-            // Validar rol del odontólogo de manera más amigable
             if (!doctor.getAccount().getRol().equals(Rol.DOCTOR)) {
-                throw new IllegalArgumentException("El usuario seleccionado no es un odontólogo. Por favor, seleccione un odontólogo válido.");
+                throw new IllegalArgumentException("El usuario no es un odontólogo.");
             }
 
-            // Buscar tipo de cita
             TipoCita tipoCita = tipoCitaRepository.findById(dto.tipoCitaId())
-                    .orElseThrow(() -> new IllegalArgumentException("No se encontró el tipo de cita. Por favor, seleccione un tipo válido."));
+                    .orElseThrow(() -> new IllegalArgumentException("Tipo de cita no encontrado."));
 
-            // Validar especialidad del odontólogo de manera más flexible
+            // 🔐 VALIDACIONES CRÍTICAS: lógica de negocio que asegura integridad
+
             Especialidad especialidad = tipoCita.getEspecialidadRequerida();
             if (!doctor.getEspecialidades().contains(especialidad)) {
-                throw new IllegalArgumentException(
-                    String.format("El odontólogo %s no tiene la especialidad %s requerida para este tipo de cita. " +
-                        "Por favor, seleccione otro odontólogo con esta especialidad.", 
-                        doctor.getName(), especialidad.getNombre())
-                );
+                throw new IllegalArgumentException("El odontólogo no tiene la especialidad requerida.");
             }
 
-            // Validar disponibilidad con margen de tiempo
             LocalDateTime fecha = LocalDateTime.ofInstant(dto.fechaHora(), ZoneId.systemDefault());
-            
-            // Validar horario de trabajo
+
             List<DisponibilidadDoctor> disponibilidades = disponibilidadDoctorRepository
-                .findByDoctor_IdNumberAndDiaSemanaAndEstado(doctor.getIdNumber(), fecha.getDayOfWeek(), "ACTIVO");
-            
+                    .findByDoctor_IdNumberAndDiaSemanaAndEstado(doctor.getIdNumber(), fecha.getDayOfWeek(), "ACTIVO");
+
             if (disponibilidades.isEmpty()) {
-                throw new IllegalArgumentException(
-                    String.format("El doctor %s no tiene disponibilidad programada para los %s. " +
-                        "Por favor, seleccione otro día de la semana.", 
-                        doctor.getName(), 
-                        fecha.getDayOfWeek().toString().toLowerCase())
-                );
+                throw new IllegalArgumentException("El odontólogo no tiene disponibilidad ese día.");
             }
 
-            // Verificar si la hora está dentro del horario de trabajo
-            boolean dentroHorarioTrabajo = disponibilidades.stream()
-                .anyMatch(disp -> 
-                    !fecha.toLocalTime().isBefore(disp.getHoraInicio()) && 
-                    !fecha.toLocalTime().isAfter(disp.getHoraFin())
-                );
+            boolean dentroHorario = disponibilidades.stream()
+                    .anyMatch(disp ->
+                            !fecha.toLocalTime().isBefore(disp.getHoraInicio()) &&
+                                    !fecha.toLocalTime().isAfter(disp.getHoraFin())
+                    );
 
-            if (!dentroHorarioTrabajo) {
+            if (!dentroHorario) {
                 String horariosDisponibles = disponibilidades.stream()
-                    .map(disp -> String.format("%s - %s", 
-                        disp.getHoraInicio().format(DateTimeFormatter.ofPattern("HH:mm")),
-                        disp.getHoraFin().format(DateTimeFormatter.ofPattern("HH:mm"))))
-                    .collect(Collectors.joining(", "));
-
-                throw new IllegalArgumentException(
-                    String.format("El horario seleccionado está fuera del horario de trabajo del doctor %s. " +
-                        "Horarios disponibles para los %s: %s", 
-                        doctor.getName(),
-                        fecha.getDayOfWeek().toString().toLowerCase(),
-                        horariosDisponibles)
-                );
-            }
-
-            // Verificar si ya existe una cita en ese horario
-            boolean citaExistente = citasRepository.existsByDoctorAndFechaHoraBetween(
-                doctor,
-                fecha.atZone(ZoneId.systemDefault()).toInstant(),
-                fecha.plusMinutes(tipoCita.getDuracionMinutos()).atZone(ZoneId.systemDefault()).toInstant()
-            );
-            
-            if (citaExistente) {
-                throw new IllegalArgumentException(
-                    String.format("Ya existe una cita programada para el doctor %s en el horario %s. " +
-                        "Por favor, seleccione otro horario.", 
-                        doctor.getName(), 
-                        fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
-                );
-            }
-
-            boolean disponible = disponibilidadDoctorRepository.existsByDoctor_IdNumberAndFecha(
-                dto.odontologoId(),
-                fecha.getDayOfWeek(),
-                fecha.toLocalTime()
-            );
-
-            if (!disponible) {
-                // Buscar horarios alternativos disponibles
-                List<LocalTime> horariosAlternativos = encontrarHorariosAlternativos(doctor, fecha.toLocalDate(), tipoCita);
-                
-                if (!horariosAlternativos.isEmpty()) {
-                    String horariosSugeridos = horariosAlternativos.stream()
-                        .map(time -> time.format(DateTimeFormatter.ofPattern("HH:mm")))
+                        .map(disp -> String.format("%s - %s",
+                                disp.getHoraInicio().format(DateTimeFormatter.ofPattern("HH:mm")),
+                                disp.getHoraFin().format(DateTimeFormatter.ofPattern("HH:mm"))))
                         .collect(Collectors.joining(", "));
-                    
-                    throw new IllegalArgumentException(
-                        String.format("El odontólogo no está disponible en el horario solicitado. " +
-                            "Horarios alternativos disponibles para el mismo día: %s", horariosSugeridos)
-                    );
-                } else {
-                    throw new IllegalArgumentException(
-                        "El odontólogo no está disponible en el horario solicitado. " +
-                        "Por favor, seleccione otro día u otro odontólogo."
-                    );
-                }
+
+                throw new IllegalArgumentException(
+                        String.format("Hora fuera del horario de atención del odontólogo. Horarios disponibles: %s",
+                                horariosDisponibles)
+                );
             }
 
-            // Crear cita
+            boolean citaExistente = citasRepository.existsByDoctorAndFechaHoraBetween(
+                    doctor,
+                    fecha.atZone(ZoneId.systemDefault()).toInstant(),
+                    fecha.plusMinutes(tipoCita.getDuracionMinutos()).atZone(ZoneId.systemDefault()).toInstant()
+            );
+
+            if (citaExistente) {
+                throw new IllegalArgumentException("Ya existe una cita en ese horario.");
+            }
+
             Cita cita = new Cita();
             cita.setPaciente(paciente);
             cita.setDoctor(doctor);
@@ -200,10 +155,10 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             cita.setEstado(EstadoCitas.PENDIENTE);
             cita.setTipoCita(tipoCita);
 
-            // Guardar cita
             Cita citaGuardada = citasRepository.save(cita);
 
-            // Enviar correo de confirmación (opcional)
+            // ✉️ ENVÍO DE CORREO (opcional)
+
             try {
                 CitaEmailDTO emailDTO = new CitaEmailDTO(
                         paciente.getAccount().getEmail(),
@@ -219,6 +174,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             }
 
             return citaGuardada;
+
         } catch (IllegalArgumentException e) {
             logger.warn("Error al crear cita: {}", e.getMessage());
             throw e;
@@ -228,40 +184,5 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         }
     }
 
-    /**
-     * Encuentra horarios alternativos disponibles para un doctor en una fecha específica
-     */
-    private List<LocalTime> encontrarHorariosAlternativos(User doctor, LocalDate fecha, TipoCita tipoCita) {
-        List<LocalTime> horariosDisponibles = new ArrayList<>();
-        DayOfWeek diaSemana = fecha.getDayOfWeek();
-        
-        // Obtener todas las disponibilidades del doctor para ese día
-        List<DisponibilidadDoctor> disponibilidades = disponibilidadDoctorRepository
-            .findByDoctor_IdNumberAndDiaSemanaAndEstado(doctor.getIdNumber(), diaSemana, "ACTIVO");
-        
-        for (DisponibilidadDoctor disponibilidad : disponibilidades) {
-            LocalTime horaActual = disponibilidad.getHoraInicio();
-            LocalTime horaFin = disponibilidad.getHoraFin();
-            
-            // Verificar cada intervalo de tiempo
-            while (horaActual.plusMinutes(tipoCita.getDuracionMinutos()).isBefore(horaFin) || 
-                   horaActual.plusMinutes(tipoCita.getDuracionMinutos()).equals(horaFin)) {
-                
-                // Verificar si el horario está disponible
-                boolean horarioDisponible = !citasRepository.existsByDoctorAndFechaHoraBetween(
-                    doctor,
-                    fecha.atTime(horaActual).atZone(ZoneId.systemDefault()).toInstant(),
-                    fecha.atTime(horaActual.plusMinutes(tipoCita.getDuracionMinutos())).atZone(ZoneId.systemDefault()).toInstant()
-                );
-                
-                if (horarioDisponible) {
-                    horariosDisponibles.add(horaActual);
-                }
-                
-                horaActual = horaActual.plusMinutes(30); // Intervalo de 30 minutos
-            }
-        }
-        
-        return horariosDisponibles;
-    }
+
 }

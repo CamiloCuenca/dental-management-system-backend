@@ -79,7 +79,6 @@ public class CitasTest {
 
 
     @Test
-    @Rollback(false)
     void crearCita(){
         String idPaciente = "1001277430";
         String idDoctor = "111111111";

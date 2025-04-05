@@ -101,7 +101,7 @@ public class AccountTest {
     @Test
     void testActivarCuenta() throws Exception, AccountAlreadyActiveException, ValidationCodeExpiredException {
         ActivateAccountDTO activateAccountDTO = new ActivateAccountDTO(
-                "32558",
+                "46522",
                 "brandone.acevedoc@uqvirtual.edu.co"
         );
         serviciosCuenta.activateAccount(activateAccountDTO);
