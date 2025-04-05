@@ -16,4 +16,10 @@ import java.util.Optional;
 
 @Repository
 public interface CitasRepository extends JpaRepository<Cita, Long> {
+
+    List<Cita> findByPaciente_IdNumber(String idPaciente);
+    List<Cita> findByDoctor_IdNumber(String idDoctor);
+    List<Cita> findByFechaHoraBetween(Instant fechaInicio, Instant fechaFin);
+    
+    boolean existsByDoctorAndFechaHoraBetween(User doctor, Instant fechaInicio, Instant fechaFin);
 }

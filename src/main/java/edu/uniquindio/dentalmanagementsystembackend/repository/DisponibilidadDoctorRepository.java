@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Repository
 public interface DisponibilidadDoctorRepository extends JpaRepository<DisponibilidadDoctor, Long> {
@@ -25,5 +26,8 @@ public interface DisponibilidadDoctorRepository extends JpaRepository<Disponibil
         @Param("diaSemana") DayOfWeek diaSemana,
         @Param("hora") LocalTime hora
     );
+
+    List<DisponibilidadDoctor> findByDoctor_IdNumberAndDiaSemanaAndEstado(String idDoctor, DayOfWeek diaSemana, String estado);
+
     // Métodos personalizados si son necesarios
 } 
