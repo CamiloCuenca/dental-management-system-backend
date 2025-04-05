@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, String> {
 
     /**
      * Checks if a user exists by their identification number.
@@ -38,7 +38,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return Optional containing the user if found.
      */
     Optional<User> findByIdNumber(String idNumber);
-
-
 
 }

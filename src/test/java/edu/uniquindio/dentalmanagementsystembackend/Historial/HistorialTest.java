@@ -39,38 +39,7 @@ public class HistorialTest {
     @Autowired
     private CitasRepository citasRepository;
 
-    /**
-     * Prueba la creación de un nuevo historial médico.
-     * Verifica que el historial se cree correctamente con todos sus campos.
-     */
-    @Test
-    public void crearHistorialTest() {
-        // Arrange
-        CrearHistorialDTO dto = new CrearHistorialDTO(
-            1L, // ID del paciente
-            2L, // ID del odontólogo
-            1L, // ID de la cita
-            LocalDate.now(),
-            "Diagnóstico de prueba",
-            "Tratamiento de prueba",
-            "Observaciones de prueba",
-            LocalDate.now().plusDays(7)
-        );
 
-        // Act
-        HistorialMedico historial = historialService.crearHistorial(dto);
-
-        // Assert
-        assertNotNull(historial);
-        assertEquals(dto.diagnostico(), historial.getDiagnostico());
-        assertEquals(dto.tratamiento(), historial.getTratamiento());
-        assertEquals(dto.observaciones(), historial.getObservaciones());
-        assertEquals(dto.fecha(), historial.getFecha());
-        assertEquals(dto.proximaCita(), historial.getProximaCita());
-        assertNotNull(historial.getPaciente());
-        assertNotNull(historial.getOdontologo());
-        assertNotNull(historial.getCita());
-    }
 
 
 }

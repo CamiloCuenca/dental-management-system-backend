@@ -15,6 +15,5 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CitasRepository  extends JpaRepository <Cita,Long>{
-
+public interface CitasRepository extends JpaRepository<Cita, Long> {
 }

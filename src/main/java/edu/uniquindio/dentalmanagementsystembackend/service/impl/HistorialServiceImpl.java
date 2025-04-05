@@ -45,7 +45,6 @@ public class HistorialServiceImpl implements HistorialService {
     @Override
     @Transactional
     public HistorialMedico crearHistorial(CrearHistorialDTO dto) {
-
         // Obtener y validar paciente
         User paciente = obtenerYValidarUsuario(dto.pacienteId(), Rol.PACIENTE, "Paciente");
 
@@ -77,6 +76,8 @@ public class HistorialServiceImpl implements HistorialService {
         historial.setObservaciones(dto.observaciones());
         historial.setProximaCita(dto.proximaCita());
         historial.setCita(cita);
+        historial.setPaciente(paciente);
+        historial.setOdontologo(odontologo);
 
         // Guardar el historial
         return historialRepository.save(historial);
@@ -91,7 +92,7 @@ public class HistorialServiceImpl implements HistorialService {
      * @return Usuario validado
      * @throws HistorialException Si el usuario no existe o no tiene el rol correcto
      */
-    private User obtenerYValidarUsuario(Long usuarioId, Rol rolEsperado, String tipoUsuario) {
+    private User obtenerYValidarUsuario(String usuarioId, Rol rolEsperado, String tipoUsuario) {
         User usuario = userRepository.findById(usuarioId)
                 .orElseThrow(() -> new HistorialException(tipoUsuario + " no encontrado con ID: " + usuarioId));
 

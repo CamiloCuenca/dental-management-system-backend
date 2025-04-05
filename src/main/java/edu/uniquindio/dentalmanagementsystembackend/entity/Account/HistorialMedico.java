@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,8 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"paciente", "odontologo", "cita"})
 @Entity
 @Table(name = "historiales_medicos")
 public class HistorialMedico {
@@ -28,36 +30,31 @@ public class HistorialMedico {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     /**
      * Paciente al que pertenece el historial.
-     * Relación ManyToOne con la entidad User.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "paciente_id", referencedColumnName = "id_number", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @ToString.Exclude
     private User paciente;
 
     /**
      * Odontólogo que creó el historial.
-     * Relación ManyToOne con la entidad User.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "odontologo_id", referencedColumnName = "id_number", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @ToString.Exclude
     private User odontologo;
 
     /**
      * Cita asociada al historial.
-     * Relación ManyToOne con la entidad Cita.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "cita_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @ToString.Exclude
     private Cita cita;
 
     /**
@@ -93,24 +90,16 @@ public class HistorialMedico {
      * Procedimientos realizados en la consulta
      */
     @ElementCollection
-    @CollectionTable(name = "procedimientos_historial")
+    @CollectionTable(name = "procedimientos_historial", joinColumns = @JoinColumn(name = "historial_id"))
+    @Column(name = "procedimiento", nullable = false)
     private List<String> procedimientos = new ArrayList<>();
 
     /**
      * Constructor con todos los campos necesarios para crear un historial médico.
-     *
-     * @param paciente Paciente al que pertenece el historial
-     * @param odontologo Odontólogo que creó el historial
-     * @param cita Cita asociada al historial
-     * @param fecha Fecha de la consulta
-     * @param diagnostico Diagnóstico realizado
-     * @param tratamiento Tratamiento prescrito
-     * @param observaciones Observaciones adicionales
-     * @param proximaCita Fecha de la próxima cita
      */
     public HistorialMedico(User paciente, User odontologo, Cita cita, LocalDate fecha,
-                          String diagnostico, String tratamiento, String observaciones,
-                          LocalDate proximaCita) {
+                           String diagnostico, String tratamiento, String observaciones,
+                           LocalDate proximaCita) {
         this.paciente = paciente;
         this.odontologo = odontologo;
         this.cita = cita;
@@ -123,7 +112,9 @@ public class HistorialMedico {
     }
 
     /**
-     * Agrega un procedimiento al historial
+     * Agrega un procedimiento al historial.
+     *
+     * @param procedimiento Procedimiento a agregar
      */
     public void agregarProcedimiento(String procedimiento) {
         this.procedimientos.add(procedimiento);

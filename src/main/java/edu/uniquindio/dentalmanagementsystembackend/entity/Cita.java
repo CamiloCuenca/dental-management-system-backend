@@ -13,33 +13,38 @@ import java.time.Instant;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"paciente", "odontologo", "tipoCita"})
 @Entity
 @Table(name = "citas")
 public class Cita {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "paciente_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private User paciente;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "odontologo_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private User odontologo;
 
+    @EqualsAndHashCode.Include
     @Column(name = "fecha_hora", nullable = false)
     private Instant fechaHora;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false)
+    @EqualsAndHashCode.Include
+    @Column(name = "estado", nullable = false, length = 20)
     private EstadoCitas estado;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "tipo_cita_id", nullable = false)
     private TipoCita tipoCita;
 

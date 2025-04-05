@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
@@ -36,12 +37,16 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import edu.uniquindio.dentalmanagementsystembackend.util.DateUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 // Anotación que indica que esta clase es una prueba de Spring Boot
 @SpringBootTest
-@Transactional
+@Transactional(propagation = Propagation.REQUIRED)
 public class CitasTest {
 
     // Inyección de dependencias para el repositorio de citas
@@ -68,9 +73,8 @@ public class CitasTest {
     @Autowired
     private EspecialidadRepository especialidadRepository;
 
-    @Test
-    void crearCita() {
+    @PersistenceContext
+    private EntityManager entityManager;
 
-    }
-
+    
 }

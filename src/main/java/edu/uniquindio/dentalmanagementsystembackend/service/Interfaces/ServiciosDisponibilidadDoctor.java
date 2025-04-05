@@ -27,7 +27,7 @@ public interface ServiciosDisponibilidadDoctor {
      * @param doctorId ID del doctor
      * @return Lista de disponibilidades del doctor
      */
-    List<DisponibilidadDoctor> obtenerDisponibilidadesPorDoctor(Long doctorId);
+    List<DisponibilidadDoctor> obtenerDisponibilidadesPorDoctor(String doctorId);
     
     /**
      * Verifica si un doctor está disponible en un día y hora específicos
@@ -36,7 +36,7 @@ public interface ServiciosDisponibilidadDoctor {
      * @param hora Hora a verificar
      * @return true si está disponible, false en caso contrario
      */
-    boolean verificarDisponibilidad(Long doctorId, DayOfWeek diaSemana, LocalTime hora);
+    boolean verificarDisponibilidad(String doctorId, DayOfWeek diaSemana, LocalTime hora);
     
     /**
      * Crea una nueva disponibilidad para un doctor

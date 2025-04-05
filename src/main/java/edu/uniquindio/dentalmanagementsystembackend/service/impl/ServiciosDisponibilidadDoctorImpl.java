@@ -36,7 +36,7 @@ public class ServiciosDisponibilidadDoctorImpl implements ServiciosDisponibilida
     }
 
     @Override
-    public List<DisponibilidadDoctor> obtenerDisponibilidadesPorDoctor(Long doctorId) {
+    public List<DisponibilidadDoctor> obtenerDisponibilidadesPorDoctor(String doctorId) {
         // Verificar que el doctor existe
         User doctor = userRepository.findById(doctorId)
                 .orElseThrow(() -> new RuntimeException("Doctor no encontrado con ID: " + doctorId));
@@ -47,7 +47,7 @@ public class ServiciosDisponibilidadDoctorImpl implements ServiciosDisponibilida
     }
 
     @Override
-    public boolean verificarDisponibilidad(Long doctorId, DayOfWeek diaSemana, LocalTime hora) {
+    public boolean verificarDisponibilidad(String doctorId, DayOfWeek diaSemana, LocalTime hora) {
         // Verificar que el doctor existe
         User doctor = userRepository.findById(doctorId)
                 .orElseThrow(() -> new RuntimeException("Doctor no encontrado con ID: " + doctorId));

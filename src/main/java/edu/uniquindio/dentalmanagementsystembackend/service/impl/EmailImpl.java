@@ -1,6 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.impl;
 
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.EmailDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.email.CitaEmailDTO;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.EmailService;
 import org.simplejavamail.api.email.Email;
 import org.simplejavamail.api.mailer.Mailer;
@@ -60,12 +61,23 @@ public class EmailImpl implements EmailService {
     @Async
     public void sendQrByEmail(String email, String qrUrl) {
         // Construcción del mensaje HTML con el código QR
-        String htmlMessage = "<html><body>" +
-                "<p>Estimado usuario,</p>" +
-                "<p>Gracias por su compra. A continuación encontrará el código QR de su orden:</p>" +
-                "<img src=\"" + qrUrl + "\" alt=\"Código QR\" style=\"display:block; max-width:100%; height:auto;\" />" +
-                "<p>Atentamente,<br/>El equipo de UniEventos</p>" +
-                "</body></html>";
+        String htmlMessage = """
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                    <h2 style="color: #2c3e50;">Código QR de su Orden</h2>
+                    <p>Estimado usuario,</p>
+                    <p>Gracias por su compra. A continuación encontrará el código QR de su orden:</p>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <img src="%s" alt="Código QR" style="display:block; max-width:100%; height:auto; margin: 0 auto;" />
+                    </div>
+                    <p>Atentamente,<br/>El equipo de UniEventos</p>
+                    <hr style="border: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no responda.</p>
+                </div>
+            </body>
+            </html>
+            """.formatted(qrUrl);
 
         // Envío del email con el código QR
         try {
@@ -86,14 +98,25 @@ public class EmailImpl implements EmailService {
     @Override
     public void sendCodevalidation(String email, String validationCode) throws Exception {
         // Construcción del mensaje HTML con el código de validación
-        String htmlMessage = "<html><body>" +
-                "<p>Estimado usuario,</p>" +
-                "<p>Gracias por registrarse en nuestra plataforma. Para activar su cuenta, por favor utilice el siguiente código de activación:</p>" +
-                "<h3>Código de activación: " + validationCode + "</h3>" +
-                "<p>Este código es válido por 15 minutos.</p>" +
-                "<p>Si usted no solicitó este registro, por favor ignore este email.</p>" +
-                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
-                "</body></html>";
+        String htmlMessage = """
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                    <h2 style="color: #2c3e50;">Activación de cuenta</h2>
+                    <p>Estimado usuario,</p>
+                    <p>Gracias por registrarse en nuestra plataforma. Para activar su cuenta, por favor utilice el siguiente código de activación:</p>
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
+                        <h3 style="margin: 0; color: #2c3e50;">Código de activación: %s</h3>
+                    </div>
+                    <p>Este código es válido por 15 minutos.</p>
+                    <p>Si usted no solicitó este registro, por favor ignore este email.</p>
+                    <p>Atentamente,<br/>El equipo de OdontoLogic</p>
+                    <hr style="border: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no responda.</p>
+                </div>
+            </body>
+            </html>
+            """.formatted(validationCode);
 
         // Envío del email con el código de activación
         sendMail(new EmailDTO(email, "Activación de cuenta", htmlMessage));
@@ -110,14 +133,25 @@ public class EmailImpl implements EmailService {
     @Async
     public void sendRecoveryCode(String email, String recoveryCode) throws Exception {
         // Construcción del mensaje HTML con el código de recuperación
-        String htmlMessage = "<html><body>" +
-                "<p>Estimado usuario,</p>" +
-                "<p>Ha solicitado recuperar su contraseña. Utilice el siguiente código de recuperación para restablecer su contraseña:</p>" +
-                "<h3>Código de recuperación: " + recoveryCode + "</h3>" +
-                "<p>Este código es válido por 15 minutos.</p>" +
-                "<p>Si usted no solicitó esta recuperación, por favor ignore este email.</p>" +
-                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
-                "</body></html>";
+        String htmlMessage = """
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                    <h2 style="color: #2c3e50;">Recuperación de contraseña</h2>
+                    <p>Estimado usuario,</p>
+                    <p>Ha solicitado recuperar su contraseña. Utilice el siguiente código de recuperación para restablecer su contraseña:</p>
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
+                        <h3 style="margin: 0; color: #2c3e50;">Código de recuperación: %s</h3>
+                    </div>
+                    <p>Este código es válido por 15 minutos.</p>
+                    <p>Si usted no solicitó esta recuperación, por favor ignore este email.</p>
+                    <p>Atentamente,<br/>El equipo de OdontoLogic</p>
+                    <hr style="border: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no responda.</p>
+                </div>
+            </body>
+            </html>
+            """.formatted(recoveryCode);
 
         // Envío del email con el código de recuperación
         sendMail(new EmailDTO(email, "Recuperación de contraseña", htmlMessage));
@@ -126,14 +160,25 @@ public class EmailImpl implements EmailService {
     @Override
     @Async
     public void enviarCorreoConfirmacionCita(String email, String nombreOdontologo, LocalDateTime fechaHora) {
-        String htmlMessage = "<html><body>" +
-                "<p>Estimado paciente,</p>" +
-                "<p>Su cita con el Dr. " + nombreOdontologo + " ha sido confirmada exitosamente.</p>" +
-                "<p><strong>Fecha y hora:</strong> " + fechaHora.format(formatter) + "</p>" +
-                "<p>Por favor, asegúrese de llegar 15 minutos antes de su cita.</p>" +
-                "<p>Si necesita cancelar o reprogramar su cita, puede hacerlo 24 horas antes.</p>" +
-                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
-                "</body></html>";
+        String htmlMessage = """
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                    <h2 style="color: #2c3e50;">Confirmación de Cita Odontológica</h2>
+                    <p>Estimado paciente,</p>
+                    <p>Su cita con el Dr. %s ha sido confirmada exitosamente.</p>
+                    <ul>
+                        <li><strong>Fecha y hora:</strong> %s</li>
+                    </ul>
+                    <p>Por favor, asegúrese de llegar 15 minutos antes de su cita.</p>
+                    <p>Si necesita cancelar o reprogramar su cita, puede hacerlo 24 horas antes.</p>
+                    <p>Atentamente,<br/>El equipo de OdontoLogic</p>
+                    <hr style="border: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no responda.</p>
+                </div>
+            </body>
+            </html>
+            """.formatted(nombreOdontologo, fechaHora.format(formatter));
 
         try {
             sendMail(new EmailDTO(email, "Confirmación de Cita Odontológica", htmlMessage));
@@ -145,13 +190,24 @@ public class EmailImpl implements EmailService {
     @Override
     @Async
     public void enviarCorreoCancelacionCita(String email, String nombreOdontologo, LocalDateTime fechaHora) {
-        String htmlMessage = "<html><body>" +
-                "<p>Estimado paciente,</p>" +
-                "<p>Su cita con el Dr. " + nombreOdontologo + " ha sido cancelada.</p>" +
-                "<p><strong>Fecha y hora original:</strong> " + fechaHora.format(formatter) + "</p>" +
-                "<p>Si desea programar una nueva cita, por favor contáctenos.</p>" +
-                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
-                "</body></html>";
+        String htmlMessage = """
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                    <h2 style="color: #2c3e50;">Cancelación de Cita Odontológica</h2>
+                    <p>Estimado paciente,</p>
+                    <p>Su cita con el Dr. %s ha sido cancelada.</p>
+                    <ul>
+                        <li><strong>Fecha y hora original:</strong> %s</li>
+                    </ul>
+                    <p>Si desea programar una nueva cita, por favor contáctenos.</p>
+                    <p>Atentamente,<br/>El equipo de OdontoLogic</p>
+                    <hr style="border: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no responda.</p>
+                </div>
+            </body>
+            </html>
+            """.formatted(nombreOdontologo, fechaHora.format(formatter));
 
         try {
             sendMail(new EmailDTO(email, "Cancelación de Cita Odontológica", htmlMessage));
@@ -163,14 +219,25 @@ public class EmailImpl implements EmailService {
     @Override
     @Async
     public void enviarCorreoReprogramacionCita(String email, String nombreOdontologo, LocalDateTime fechaHora) {
-        String htmlMessage = "<html><body>" +
-                "<p>Estimado paciente,</p>" +
-                "<p>Su cita con el Dr. " + nombreOdontologo + " ha sido reprogramada.</p>" +
-                "<p><strong>Nueva fecha y hora:</strong> " + fechaHora.format(formatter) + "</p>" +
-                "<p>Por favor, asegúrese de llegar 15 minutos antes de su cita.</p>" +
-                "<p>Si necesita cancelar o reprogramar su cita, puede hacerlo 24 horas antes.</p>" +
-                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
-                "</body></html>";
+        String htmlMessage = """
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                    <h2 style="color: #2c3e50;">Reprogramación de Cita Odontológica</h2>
+                    <p>Estimado paciente,</p>
+                    <p>Su cita con el Dr. %s ha sido reprogramada.</p>
+                    <ul>
+                        <li><strong>Nueva fecha y hora:</strong> %s</li>
+                    </ul>
+                    <p>Por favor, asegúrese de llegar 15 minutos antes de su cita.</p>
+                    <p>Si necesita cancelar o reprogramar su cita, puede hacerlo 24 horas antes.</p>
+                    <p>Atentamente,<br/>El equipo de OdontoLogic</p>
+                    <hr style="border: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no responda.</p>
+                </div>
+            </body>
+            </html>
+            """.formatted(nombreOdontologo, fechaHora.format(formatter));
 
         try {
             sendMail(new EmailDTO(email, "Reprogramación de Cita Odontológica", htmlMessage));
@@ -182,14 +249,25 @@ public class EmailImpl implements EmailService {
     @Override
     @Async
     public void enviarCorreoRecordatorioCita(String email, String nombreOdontologo, LocalDateTime fechaHora) {
-        String htmlMessage = "<html><body>" +
-                "<p>Estimado paciente,</p>" +
-                "<p>Este es un recordatorio de su próxima cita con el Dr. " + nombreOdontologo + ".</p>" +
-                "<p><strong>Fecha y hora:</strong> " + fechaHora.format(formatter) + "</p>" +
-                "<p>Por favor, asegúrese de llegar 15 minutos antes de su cita.</p>" +
-                "<p>Si necesita cancelar o reprogramar su cita, puede hacerlo 24 horas antes.</p>" +
-                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
-                "</body></html>";
+        String htmlMessage = """
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                    <h2 style="color: #2c3e50;">Recordatorio de Cita Odontológica</h2>
+                    <p>Estimado paciente,</p>
+                    <p>Este es un recordatorio de su próxima cita con el Dr. %s.</p>
+                    <ul>
+                        <li><strong>Fecha y hora:</strong> %s</li>
+                    </ul>
+                    <p>Por favor, asegúrese de llegar 15 minutos antes de su cita.</p>
+                    <p>Si necesita cancelar o reprogramar su cita, puede hacerlo 24 horas antes.</p>
+                    <p>Atentamente,<br/>El equipo de OdontoLogic</p>
+                    <hr style="border: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no responda.</p>
+                </div>
+            </body>
+            </html>
+            """.formatted(nombreOdontologo, fechaHora.format(formatter));
 
         try {
             sendMail(new EmailDTO(email, "Recordatorio de Cita Odontológica", htmlMessage));
@@ -201,14 +279,25 @@ public class EmailImpl implements EmailService {
     @Override
     @Async
     public void enviarCorreoCitaCompletada(String email, String nombreOdontologo, LocalDateTime fechaHora) {
-        String htmlMessage = "<html><body>" +
-                "<p>Estimado paciente,</p>" +
-                "<p>Su cita con el Dr. " + nombreOdontologo + " ha sido marcada como completada.</p>" +
-                "<p><strong>Fecha y hora:</strong> " + fechaHora.format(formatter) + "</p>" +
-                "<p>Gracias por confiar en nuestros servicios.</p>" +
-                "<p>Si tiene alguna pregunta o necesita programar una nueva cita, no dude en contactarnos.</p>" +
-                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
-                "</body></html>";
+        String htmlMessage = """
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                    <h2 style="color: #2c3e50;">Cita Completada</h2>
+                    <p>Estimado paciente,</p>
+                    <p>Su cita con el Dr. %s ha sido marcada como completada.</p>
+                    <ul>
+                        <li><strong>Fecha y hora:</strong> %s</li>
+                    </ul>
+                    <p>Gracias por confiar en nuestros servicios.</p>
+                    <p>Si tiene alguna pregunta o necesita programar una nueva cita, no dude en contactarnos.</p>
+                    <p>Atentamente,<br/>El equipo de OdontoLogic</p>
+                    <hr style="border: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no responda.</p>
+                </div>
+            </body>
+            </html>
+            """.formatted(nombreOdontologo, fechaHora.format(formatter));
 
         try {
             sendMail(new EmailDTO(email, "Cita Completada", htmlMessage));
@@ -220,14 +309,25 @@ public class EmailImpl implements EmailService {
     @Override
     @Async
     public void enviarCorreoCitaEmergencia(String email, String nombreOdontologo, LocalDateTime fechaHora) {
-        String htmlMessage = "<html><body>" +
-                "<p>Estimado paciente,</p>" +
-                "<p>Se ha programado una cita de emergencia con el Dr. " + nombreOdontologo + ".</p>" +
-                "<p><strong>Fecha y hora:</strong> " + fechaHora.format(formatter) + "</p>" +
-                "<p>Por favor, llegue lo antes posible a nuestra clínica.</p>" +
-                "<p>Si tiene alguna pregunta, no dude en contactarnos.</p>" +
-                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
-                "</body></html>";
+        String htmlMessage = """
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                    <h2 style="color: #e74c3c;">Cita de Emergencia</h2>
+                    <p>Estimado paciente,</p>
+                    <p>Se ha programado una cita de emergencia con el Dr. %s.</p>
+                    <ul>
+                        <li><strong>Fecha y hora:</strong> %s</li>
+                    </ul>
+                    <p>Por favor, llegue lo antes posible a nuestra clínica.</p>
+                    <p>Si tiene alguna pregunta, no dude en contactarnos.</p>
+                    <p>Atentamente,<br/>El equipo de OdontoLogic</p>
+                    <hr style="border: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no responda.</p>
+                </div>
+            </body>
+            </html>
+            """.formatted(nombreOdontologo, fechaHora.format(formatter));
 
         try {
             sendMail(new EmailDTO(email, "Cita de Emergencia", htmlMessage));
@@ -238,16 +338,36 @@ public class EmailImpl implements EmailService {
 
     @Override
     @Async
-    public void enviarCorreoCita(String email, String nombreOdontologo, String fechaHora) throws Exception {
-        String htmlMessage = "<html><body>" +
-                "<p>Estimado usuario,</p>" +
-                "<p>Su cita con el Dr. " + nombreOdontologo + " ha sido programada exitosamente.</p>" +
-                "<p><strong>Fecha y hora:</strong> " + fechaHora + "</p>" +
-                "<p>Si necesita cancelar o modificar el tipo de servicio, puede hacerlo 24 horas antes.</p>" +
-                "<p>Para realizar cambios, por favor comuníquese con nuestra clínica.</p>" +
-                "<p>Atentamente,<br/>El equipo de OdontoLogic</p>" +
-                "</body></html>";
+    public void enviarCorreoCita(CitaEmailDTO dto) throws Exception {
+        String htmlMessage = """
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                    <h2 style="color: #2c3e50;">Confirmación de Cita Odontológica</h2>
+                    <p>Estimado(a) %s,</p>
+                    <p>Su cita ha sido programada exitosamente con los siguientes detalles:</p>
+                    <ul>
+                        <li><strong>Doctor:</strong> Dr. %s</li>
+                        <li><strong>Fecha y hora:</strong> %s</li>
+                        <li><strong>Tipo de cita:</strong> %s</li>
+                    </ul>
+                    <p>Si necesita cancelar o modificar su cita, puede hacerlo hasta 24 horas antes.</p>
+                    <p>Para realizar cambios, por favor comuníquese con nuestra clínica.</p>
+                    <hr style="border: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no responda.</p>
+                    <p>Atentamente,<br/>El equipo de OdontoLogic</p>
+                </div>
+            </body>
+            </html>
+            """.formatted(
+                dto.nombrePaciente(),
+                dto.nombreOdontologo(),
+                dto.fechaHora(),
+                dto.tipoCita()
+            );
 
-        sendMail(new EmailDTO(email, "Confirmación de Cita Odontológica", htmlMessage));
+        sendMail(new EmailDTO(dto.emailPaciente(), "Confirmación de Cita Odontológica", htmlMessage));
     }
+
+
 }

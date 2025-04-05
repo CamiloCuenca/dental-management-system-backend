@@ -7,24 +7,20 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
-@EqualsAndHashCode(exclude = "account")
+@ToString(exclude = {"account", "historialesComoPaciente", "historialesComoOdontologo", "disponibilidades"}) // Evita logs sensibles
+@EqualsAndHashCode(exclude = "account") // Evita ciclos
 @Entity
 @Table(name = "users")
 public class User {
 
-
     @Id
-    @Column(name = "id_number", length = 20) // Asegura la longitud según la BD
+    @Column(name = "id_number", length = 20, nullable = false, unique = true)
     private String idNumber; // Cédula como clave primaria
 
     @Column(nullable = false)
@@ -42,8 +38,8 @@ public class User {
     @Column(nullable = false)
     private LocalDate birthDate;
 
+    // ⚠️ Quitado @JoinColumn porque este lado no es el dueño de la relación
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "usuario_id") // Se recomienda para claridad
     private Account account;
 
     @OneToMany(mappedBy = "paciente", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -61,7 +57,7 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "especialidad_id")
     )
     private Set<Especialidad> especialidades = new HashSet<>();
-    
+
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DisponibilidadDoctor> disponibilidades = new ArrayList<>();
 
@@ -78,19 +74,19 @@ public class User {
 
     public List<HistorialMedico> obtenerHistorialesRecientesComoPaciente() {
         return historialesComoPaciente.stream()
-                .sorted((h1, h2) -> h2.getFecha().compareTo(h1.getFecha()))
+                .sorted(Comparator.comparing(HistorialMedico::getFecha).reversed())
                 .toList();
     }
 
     public List<HistorialMedico> obtenerHistorialesRecientesComoOdontologo() {
         return historialesComoOdontologo.stream()
-                .sorted((h1, h2) -> h2.getFecha().compareTo(h1.getFecha()))
+                .sorted(Comparator.comparing(HistorialMedico::getFecha).reversed())
                 .toList();
     }
 
     // Métodos de gestión de especialidades
     public void agregarEspecialidad(Especialidad especialidad) {
-        if (this.account != null && this.account.getRol() == Rol.DOCTOR) {
+        if (esDoctor()) {
             this.especialidades.add(especialidad);
         } else {
             throw new IllegalStateException("Solo los usuarios con rol DOCTOR pueden tener especialidades");
@@ -98,7 +94,7 @@ public class User {
     }
 
     public void removerEspecialidad(Especialidad especialidad) {
-        if (this.account != null && this.account.getRol() == Rol.DOCTOR) {
+        if (esDoctor()) {
             this.especialidades.remove(especialidad);
         } else {
             throw new IllegalStateException("Solo los usuarios con rol DOCTOR pueden gestionar especialidades");
@@ -109,10 +105,16 @@ public class User {
         return this.especialidades.contains(especialidad);
     }
 
-    public Set<Especialidad> getEspecialidades() {
-        if (this.account != null && this.account.getRol() == Rol.DOCTOR) {
+    // Retorna copia segura para evitar modificaciones externas
+    public Set<Especialidad> obtenerEspecialidadesSeguras() {
+        if (esDoctor()) {
             return new HashSet<>(this.especialidades);
         }
-        return new HashSet<>(); // Retorna un conjunto vacío si no es doctor
+        return Collections.emptySet();
+    }
+
+    // Método auxiliar para validación de rol
+    private boolean esDoctor() {
+        return this.account != null && this.account.getRol() == Rol.DOCTOR;
     }
 }
