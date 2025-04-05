@@ -43,7 +43,7 @@ public interface HistorialMedicoRepository extends JpaRepository<HistorialMedico
      * @param odontologoId ID del odontólogo
      * @return Lista de historiales médicos creados por el odontólogo
      */
-    @Query("SELECT h FROM HistorialMedico h WHERE h.odontologo.idNumber = :odontologoId ORDER BY h.fecha DESC")
+    @Query("SELECT h FROM HistorialMedico h WHERE h.doctor.idNumber = :odontologoId ORDER BY h.fecha DESC")
     List<HistorialMedico> findByOdontologoIdNumber(@Param("odontologoId") String odontologoId);
 
     /**

@@ -10,9 +10,6 @@ DELETE FROM especialidades;
 DELETE FROM cuentas;
 DELETE FROM users;
 
--- Reactivar restricciones de claves foráneas
-SET FOREIGN_KEY_CHECKS = 1;
-
 -- Insertar Especialidades
 INSERT INTO especialidades (nombre, descripcion, duracion_promedio, activo, codigo_interno, nivel_complejidad, fecha_creacion) VALUES
     ('Odontología General', 'Servicios básicos de odontología', 30, true, 'ODG001', 1, NOW()),
@@ -164,7 +161,7 @@ INSERT INTO disponibilidad_doctor (doctor_id, dia_semana, hora_inicio, hora_fin,
     ('444444445', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW());
 
 -- Insertar citas para la próxima semana
-INSERT INTO citas (paciente_id, odontologo_id, fecha_hora, estado, tipo_cita_id) VALUES
+INSERT INTO citas (paciente_id, doctor_id, fecha_hora, estado, tipo_cita_id) VALUES
     -- Citas con Odontología General
     ('555555556', '111111111', '2024-04-01 09:00:00', 'PENDIENTE', 1),
     ('666666667', '222222222', '2024-04-02 10:00:00', 'CONFIRMADA', 1),
@@ -193,4 +190,7 @@ INSERT INTO citas (paciente_id, odontologo_id, fecha_hora, estado, tipo_cita_id)
     ('222222224', '777777777', '2024-04-05 13:00:00', 'CONFIRMADA', 4),
     ('333333335', '999999999', '2024-04-05 14:00:00', 'PENDIENTE', 5),
     ('444444446', '111111112', '2024-04-05 15:00:00', 'CONFIRMADA', 6),
-    ('555555556', '333333334', '2024-04-05 16:00:00', 'PENDIENTE', 7); 
+    ('555555556', '333333334', '2024-04-05 16:00:00', 'PENDIENTE', 7);
+
+-- Reactivar restricciones de claves foráneas
+SET FOREIGN_KEY_CHECKS = 1; 

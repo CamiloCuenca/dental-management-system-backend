@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = {"paciente", "odontologo", "cita"})
+@ToString(exclude = {"paciente", "doctor", "cita"})
 @Entity
 @Table(name = "historiales_medicos")
 public class HistorialMedico {
@@ -45,9 +45,9 @@ public class HistorialMedico {
      * Odontólogo que creó el historial.
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "odontologo_id", referencedColumnName = "id_number", nullable = false)
+    @JoinColumn(name = "doctor_id", referencedColumnName = "id_number", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private User odontologo;
+    private User doctor;
 
     /**
      * Cita asociada al historial.
@@ -97,11 +97,11 @@ public class HistorialMedico {
     /**
      * Constructor con todos los campos necesarios para crear un historial médico.
      */
-    public HistorialMedico(User paciente, User odontologo, Cita cita, LocalDate fecha,
+    public HistorialMedico(User paciente, User doctor, Cita cita, LocalDate fecha,
                            String diagnostico, String tratamiento, String observaciones,
                            LocalDate proximaCita) {
         this.paciente = paciente;
-        this.odontologo = odontologo;
+        this.doctor = doctor;
         this.cita = cita;
         this.fecha = fecha;
         this.diagnostico = diagnostico;

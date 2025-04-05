@@ -49,14 +49,14 @@ public class HistorialServiceImpl implements HistorialService {
         User paciente = obtenerYValidarUsuario(dto.pacienteId(), Rol.PACIENTE, "Paciente");
 
         // Obtener y validar odontólogo
-        User odontologo = obtenerYValidarUsuario(dto.odontologoId(), Rol.DOCTOR, "Odontólogo");
+        User doctor = obtenerYValidarUsuario(dto.odontologoId(), Rol.DOCTOR, "Odontólogo");
 
         // Obtener y validar cita
         Cita cita = citasRepository.findById(dto.citaId())
                 .orElseThrow(() -> new HistorialException("Cita no encontrada con ID: " + dto.citaId()));
 
         // Validar que la cita corresponda al paciente y odontólogo
-        validarCitaConUsuario(cita, paciente, odontologo);
+        validarCitaConUsuario(cita, paciente, doctor);
 
         // Validar estado de la cita
         if (cita.getEstado() != EstadoCitas.CONFIRMADA) {
@@ -77,7 +77,7 @@ public class HistorialServiceImpl implements HistorialService {
         historial.setProximaCita(dto.proximaCita());
         historial.setCita(cita);
         historial.setPaciente(paciente);
-        historial.setOdontologo(odontologo);
+        historial.setDoctor(doctor);
 
         // Guardar el historial
         return historialRepository.save(historial);
@@ -114,7 +114,7 @@ public class HistorialServiceImpl implements HistorialService {
         if (!cita.getPaciente().getIdNumber().equals(paciente.getIdNumber())) {
             throw new HistorialException("La cita no corresponde al paciente especificado.");
         }
-        if (!cita.getOdontologo().getIdNumber().equals(odontologo.getIdNumber())) {
+        if (!cita.getDoctor().getIdNumber().equals(odontologo.getIdNumber())) {
             throw new HistorialException("La cita no corresponde al odontólogo especificado.");
         }
     }

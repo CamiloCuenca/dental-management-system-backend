@@ -18,6 +18,7 @@ import edu.uniquindio.dentalmanagementsystembackend.repository.TipoCitaRepositor
 import edu.uniquindio.dentalmanagementsystembackend.repository.UserRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.EmailService;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
+import edu.uniquindio.dentalmanagementsystembackend.util.DateUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -26,8 +27,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -76,7 +79,67 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     @Override
     @Transactional
     public Cita crearCita(CrearCitaDTO dto) {
-            return null;
-       
+
+        // Buscar paciente
+        User paciente = userRepository.findById(dto.pacienteId())
+                .orElseThrow(() -> new IllegalArgumentException("Paciente no encontrado"));
+
+        // Buscar odontólogo
+        User doctor = userRepository.findById(dto.odontologoId())
+                .orElseThrow(() -> new IllegalArgumentException("Odontólogo no encontrado"));
+
+        // Validar rol del odontólogo
+        if (!doctor.getAccount().getRol().equals(Rol.DOCTOR)) {
+            throw new IllegalArgumentException("El usuario no tiene el rol de DOCTOR");
+        }
+
+        // Buscar tipo de cita
+        TipoCita tipoCita = tipoCitaRepository.findById(dto.tipoCitaId())
+                .orElseThrow(() -> new IllegalArgumentException("Tipo de cita no encontrado"));
+
+        // Validar especialidad del odontólogo
+        Especialidad especialidad = tipoCita.getEspecialidadRequerida();
+        if (!doctor.getEspecialidades().contains(especialidad)) {
+            throw new IllegalArgumentException("El odontólogo no tiene la especialidad requerida para este tipo de cita");
+        }
+
+        // Validar disponibilidad
+        LocalDateTime fecha = LocalDateTime.ofInstant(dto.fechaHora(), ZoneId.systemDefault());
+        boolean disponible = disponibilidadDoctorRepository.existsByDoctor_IdNumberAndFecha(
+            dto.odontologoId(),
+            fecha.getDayOfWeek(),
+            fecha.toLocalTime()
+        );
+        if (!disponible) {
+            throw new IllegalArgumentException("El odontólogo no está disponible para esta fecha y hora");
+        }
+
+        // Crear cita
+        Cita cita = new Cita();
+        cita.setPaciente(paciente);
+        cita.setDoctor(doctor);
+        cita.setFechaHora(fecha.atZone(ZoneId.systemDefault()).toInstant());
+        cita.setEstado(EstadoCitas.PENDIENTE);
+        cita.setTipoCita(tipoCita);
+
+        // Guardar cita
+        Cita citaGuardada = citasRepository.save(cita);
+
+        // Enviar correo de confirmación (opcional)
+        try {
+            CitaEmailDTO emailDTO = new CitaEmailDTO(
+                    paciente.getAccount().getEmail(),
+                    paciente.getName(),
+                    tipoCita.getNombre(),
+                    DateUtil.formatearFechaHora(cita.getFechaHora()),
+                    doctor.getName()
+            );
+
+            emailService.enviarCorreoCita(emailDTO);
+        } catch (Exception e) {
+            logger.warn("No se pudo enviar el correo de confirmación: {}", e.getMessage());
+        }
+
+        return citaGuardada;
     }
 }

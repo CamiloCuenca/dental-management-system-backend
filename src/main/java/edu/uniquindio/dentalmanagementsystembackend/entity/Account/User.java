@@ -13,15 +13,15 @@ import java.util.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"account", "historialesComoPaciente", "historialesComoOdontologo", "disponibilidades"}) // Evita logs sensibles
-@EqualsAndHashCode(exclude = "account") // Evita ciclos
+@ToString(exclude = {"account", "historialesComoPaciente", "historialesComoOdontologo", "disponibilidades", "especialidades"})
+@EqualsAndHashCode(of = "idNumber", exclude = {"account", "historialesComoPaciente", "historialesComoOdontologo", "disponibilidades", "especialidades"})
 @Entity
 @Table(name = "users")
 public class User {
 
     @Id
     @Column(name = "id_number", length = 20, nullable = false, unique = true)
-    private String idNumber; // Cédula como clave primaria
+    private String idNumber;
 
     @Column(nullable = false)
     private String name;
@@ -38,7 +38,6 @@ public class User {
     @Column(nullable = false)
     private LocalDate birthDate;
 
-    // ⚠️ Quitado @JoinColumn porque este lado no es el dueño de la relación
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Account account;
 
@@ -46,15 +45,15 @@ public class User {
     @OrderBy("fecha DESC")
     private List<HistorialMedico> historialesComoPaciente = new ArrayList<>();
 
-    @OneToMany(mappedBy = "odontologo", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "doctor", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("fecha DESC")
     private List<HistorialMedico> historialesComoOdontologo = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
-        name = "doctor_especialidad",
-        joinColumns = @JoinColumn(name = "doctor_id"),
-        inverseJoinColumns = @JoinColumn(name = "especialidad_id")
+            name = "doctor_especialidad",
+            joinColumns = @JoinColumn(name = "doctor_id"),
+            inverseJoinColumns = @JoinColumn(name = "especialidad_id")
     )
     private Set<Especialidad> especialidades = new HashSet<>();
 
@@ -69,7 +68,7 @@ public class User {
 
     public void agregarHistorialComoOdontologo(HistorialMedico historial) {
         historialesComoOdontologo.add(historial);
-        historial.setOdontologo(this);
+        historial.setDoctor(this); // ← Corrección aplicada aquí
     }
 
     public List<HistorialMedico> obtenerHistorialesRecientesComoPaciente() {
@@ -105,7 +104,6 @@ public class User {
         return this.especialidades.contains(especialidad);
     }
 
-    // Retorna copia segura para evitar modificaciones externas
     public Set<Especialidad> obtenerEspecialidadesSeguras() {
         if (esDoctor()) {
             return new HashSet<>(this.especialidades);

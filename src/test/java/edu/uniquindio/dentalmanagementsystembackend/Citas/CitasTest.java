@@ -76,5 +76,22 @@ public class CitasTest {
     @PersistenceContext
     private EntityManager entityManager;
 
-    
+
+    @Test
+    void crearCita(){
+        String idPaciente = "1001277430";
+        String idDoctor = "111111111";
+        Long idTipoCita = 1L;
+
+        // Creamos la fecha de la cita: 5 de mayo de 2025 a las 10:30 AM
+        Instant fechaCita = DateUtil.crearFechaHoraBogota(2025, 4, 7, 10, 30);
+
+        CrearCitaDTO crearCitaDTO = new CrearCitaDTO(idPaciente,idDoctor,fechaCita,idTipoCita);
+
+        serviciosCitas.crearCita(crearCitaDTO);
+
+    }
+
+
+
 }
