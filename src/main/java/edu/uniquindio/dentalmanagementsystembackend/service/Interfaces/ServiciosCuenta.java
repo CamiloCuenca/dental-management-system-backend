@@ -11,7 +11,7 @@ import edu.uniquindio.dentalmanagementsystembackend.exception.InvalidCurrentPass
 import edu.uniquindio.dentalmanagementsystembackend.exception.PasswordMismatchException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.DatabaseOperationException;
 import javax.security.auth.login.AccountNotFoundException;
-import java.util.List;
+
 
 public interface ServiciosCuenta {
 
@@ -112,6 +112,8 @@ public interface ServiciosCuenta {
     PerfilDTO obtenerPerfil(Long accountId) throws UserNotFoundException, AccountNotFoundException;
 
     String generarNuevoToken(Long accountId) throws Exception, UserNotFoundException;
+
+    
 
 
 

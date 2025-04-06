@@ -1,6 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.repository;
 
 import edu.uniquindio.dentalmanagementsystembackend.entity.DisponibilidadDoctor;
+import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoDisponibilidad;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,14 +21,15 @@ public interface DisponibilidadDoctorRepository extends JpaRepository<Disponibil
            "AND d.diaSemana = :diaSemana " +
            "AND d.horaInicio <= :hora " +
            "AND d.horaFin > :hora " +
-           "AND d.estado = 'ACTIVO'")
+           "AND d.estado = :estado")
     boolean existsByDoctor_IdNumberAndFecha(
         @Param("doctorId") String doctorId,
         @Param("diaSemana") DayOfWeek diaSemana,
-        @Param("hora") LocalTime hora
+        @Param("hora") LocalTime hora,
+        @Param("estado") EstadoDisponibilidad estado
     );
 
-    List<DisponibilidadDoctor> findByDoctor_IdNumberAndDiaSemanaAndEstado(String idDoctor, DayOfWeek diaSemana, String estado);
+    List<DisponibilidadDoctor> findByDoctor_IdNumberAndDiaSemanaAndEstado(String idDoctor, DayOfWeek diaSemana, EstadoDisponibilidad estado);
 
     // Métodos personalizados si son necesarios
 } 

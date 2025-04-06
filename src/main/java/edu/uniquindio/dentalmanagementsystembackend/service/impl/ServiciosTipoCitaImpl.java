@@ -6,69 +6,39 @@ import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.Servicios
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
 @Service
 @Transactional
+@Slf4j
 public class ServiciosTipoCitaImpl implements ServiciosTipoCita {
 
     @Autowired
     private TipoCitaRepository tipoCitaRepository;
-
+    
     @Override
     public List<TipoCita> listarTiposCita() {
-        return tipoCitaRepository.findAll();
-    }
-
-    @Override
-    public TipoCita obtenerTipoCitaPorId(Long id) {
-        return tipoCitaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tipo de cita no encontrado con ID: " + id));
-    }
-
-    @Override
-    public TipoCita crearTipoCita(TipoCita tipoCita) {
-        // Validar que el nombre no esté vacío
-        if (tipoCita.getNombre() == null || tipoCita.getNombre().trim().isEmpty()) {
-            throw new RuntimeException("El nombre del tipo de cita no puede estar vacío");
+        System.out.println("\n=== Obteniendo lista de tipos de cita ===");
+        try {
+            List<TipoCita> tiposCita = tipoCitaRepository.findAll();
+            
+            if (tiposCita.isEmpty()) {
+                System.out.println("No se encontraron tipos de cita");
+            } else {
+                System.out.println("Se encontraron " + tiposCita.size() + " tipos de cita:");
+                tiposCita.forEach(tipo -> {
+                    System.out.println("- ID: " + tipo.getId() + 
+                                     ", Nombre: " + tipo.getNombre() + 
+                                     ", Duración: " + tipo.getDuracionMinutos() + " minutos");
+                });
+            }
+            
+            return tiposCita;
+        } catch (Exception e) {
+            System.out.println("Error al obtener tipos de cita: " + e.getMessage());
+            throw new RuntimeException("Error al obtener los tipos de cita. Por favor, intente nuevamente.");
         }
-        
-        // Validar que la especialidad requerida no sea nula
-        if (tipoCita.getEspecialidadRequerida() == null) {
-            throw new RuntimeException("La especialidad requerida no puede ser nula");
-        }
-        
-        return tipoCitaRepository.save(tipoCita);
-    }
-
-    @Override
-    public TipoCita actualizarTipoCita(TipoCita tipoCita) {
-        // Verificar que el tipo de cita existe
-        if (!tipoCitaRepository.existsById(tipoCita.getId())) {
-            throw new RuntimeException("Tipo de cita no encontrado con ID: " + tipoCita.getId());
-        }
-        
-        // Validar que el nombre no esté vacío
-        if (tipoCita.getNombre() == null || tipoCita.getNombre().trim().isEmpty()) {
-            throw new RuntimeException("El nombre del tipo de cita no puede estar vacío");
-        }
-        
-        // Validar que la especialidad requerida no sea nula
-        if (tipoCita.getEspecialidadRequerida() == null) {
-            throw new RuntimeException("La especialidad requerida no puede ser nula");
-        }
-        
-        return tipoCitaRepository.save(tipoCita);
-    }
-
-    @Override
-    public void eliminarTipoCita(Long id) {
-        // Verificar que el tipo de cita existe
-        if (!tipoCitaRepository.existsById(id)) {
-            throw new RuntimeException("Tipo de cita no encontrado con ID: " + id);
-        }
-        
-        tipoCitaRepository.deleteById(id);
     }
 } 

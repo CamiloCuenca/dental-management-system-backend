@@ -1,5 +1,8 @@
 package edu.uniquindio.dentalmanagementsystembackend.Enum;
 
+import lombok.Getter;
+
+@Getter
 public enum EstadoDisponibilidad {
     ACTIVO("Disponible para atención", "ACT"),
     VACACIONES("En período de vacaciones", "VAC"),
@@ -15,11 +18,4 @@ public enum EstadoDisponibilidad {
         this.codigo = codigo;
     }
 
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public String getCodigo() {
-        return codigo;
-    }
-} 
+}

@@ -47,7 +47,6 @@ import jakarta.persistence.PersistenceContext;
 
 // Anotación que indica que esta clase es una prueba de Spring Boot
 @SpringBootTest
-@Transactional(propagation = Propagation.REQUIRED)
 public class CitasTest {
 
     // Inyección de dependencias para el repositorio de citas
@@ -79,6 +78,7 @@ public class CitasTest {
 
 
     @Test
+
     void crearCita(){
         String idPaciente = "1001277430";
         String idDoctor = "111111111";
@@ -93,6 +93,14 @@ public class CitasTest {
         // Verificar que sí se guardó
         assertNotNull(cita.getId());
     }
+
+
+    @Test
+    void obtenerDoctoresPorEspecialidad() {
+        Long especialidadId = 1L; // ID de la especialidad de ejemplo
+        List<User> doctores = serviciosCitas.obtenerDoctoresPorEspecialidad(especialidadId);
+    }
+    
 
 
 

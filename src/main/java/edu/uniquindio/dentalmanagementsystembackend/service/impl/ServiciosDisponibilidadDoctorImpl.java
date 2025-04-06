@@ -1,5 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.impl;
 
+import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoDisponibilidad;
 import edu.uniquindio.dentalmanagementsystembackend.entity.DisponibilidadDoctor;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.repository.DisponibilidadDoctorRepository;
@@ -8,14 +9,18 @@ import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.Servicios
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@Slf4j
 public class ServiciosDisponibilidadDoctorImpl implements ServiciosDisponibilidadDoctor {
 
     @Autowired
@@ -23,104 +28,119 @@ public class ServiciosDisponibilidadDoctorImpl implements ServiciosDisponibilida
     
     @Autowired
     private UserRepository userRepository;
-
+    
     @Override
-    public List<DisponibilidadDoctor> listarDisponibilidades() {
-        return disponibilidadDoctorRepository.findAll();
+    public List<LocalDate> obtenerFechasDisponibles(String doctorId, LocalDate fechaInicio, LocalDate fechaFin) {
+        System.out.println("\n=== Obteniendo fechas disponibles para el doctor ID: " + doctorId + " ===");
+        System.out.println("Rango de fechas: " + fechaInicio + " a " + fechaFin);
+        
+        try {
+            // 1. Verificar que el doctor existe
+            User doctor = userRepository.findByIdNumber(doctorId)
+                    .orElseThrow(() -> new IllegalArgumentException("Doctor no encontrado con ID: " + doctorId));
+            
+            System.out.println("Doctor encontrado: " + doctor.getName() + " " + doctor.getLastName());
+            
+            // 2. Obtener las disponibilidades del doctor
+            List<DisponibilidadDoctor> disponibilidades = new ArrayList<>();
+            
+            try {
+                // Obtener disponibilidades para cada día de la semana
+                for (DayOfWeek dia : DayOfWeek.values()) {
+                    System.out.println("Buscando disponibilidades para el día: " + dia);
+                    List<DisponibilidadDoctor> disponibilidadesDia = disponibilidadDoctorRepository
+                            .findByDoctor_IdNumberAndDiaSemanaAndEstado(doctorId, dia, EstadoDisponibilidad.ACTIVO);
+                    System.out.println("Disponibilidades encontradas para " + dia + ": " + disponibilidadesDia.size());
+                    disponibilidades.addAll(disponibilidadesDia);
+                }
+            } catch (Exception e) {
+                System.out.println("Error al buscar disponibilidades: " + e.getMessage());
+                e.printStackTrace();
+                throw new RuntimeException("Error al buscar disponibilidades: " + e.getMessage());
+            }
+            
+            if (disponibilidades.isEmpty()) {
+                System.out.println("El doctor no tiene disponibilidades registradas");
+                return new ArrayList<>();
+            }
+            
+            // 3. Generar lista de fechas disponibles
+            List<LocalDate> fechasDisponibles = new ArrayList<>();
+            LocalDate fechaActual = fechaInicio;
+            
+            while (!fechaActual.isAfter(fechaFin)) {
+                DayOfWeek diaSemana = fechaActual.getDayOfWeek();
+                
+                // Verificar si el doctor tiene disponibilidad para este día de la semana
+                boolean tieneDisponibilidad = disponibilidades.stream()
+                        .anyMatch(d -> d.getDiaSemana() == diaSemana);
+                
+                if (tieneDisponibilidad) {
+                    fechasDisponibles.add(fechaActual);
+                }
+                
+                fechaActual = fechaActual.plusDays(1);
+            }
+            
+            System.out.println("Se encontraron " + fechasDisponibles.size() + " fechas disponibles");
+            fechasDisponibles.forEach(fecha -> System.out.println("- " + fecha));
+            
+            return fechasDisponibles;
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            System.out.println("Error inesperado: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error al obtener las fechas disponibles: " + e.getMessage());
+        }
     }
-
+    
     @Override
-    public DisponibilidadDoctor obtenerDisponibilidadPorId(Long id) {
-        return disponibilidadDoctorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Disponibilidad no encontrada con ID: " + id));
-    }
-
-    @Override
-    public List<DisponibilidadDoctor> obtenerDisponibilidadesPorDoctor(String doctorId) {
-        // Verificar que el doctor existe
-        User doctor = userRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor no encontrado con ID: " + doctorId));
+    public List<LocalTime> obtenerHorariosDisponibles(String doctorId, LocalDate fecha) {
+        System.out.println("\n=== Obteniendo horarios disponibles para el doctor ID: " + doctorId + " ===");
+        System.out.println("Fecha: " + fecha);
         
-        return disponibilidadDoctorRepository.findAll().stream()
-                .filter(disp -> disp.getDoctor().getIdNumber().equals(doctor.getIdNumber()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public boolean verificarDisponibilidad(String doctorId, DayOfWeek diaSemana, LocalTime hora) {
-        // Verificar que el doctor existe
-        User doctor = userRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor no encontrado con ID: " + doctorId));
-        
-        return disponibilidadDoctorRepository.findAll().stream()
-                .anyMatch(disp -> disp.getDoctor().getIdNumber().equals(doctor.getIdNumber()) &&
-                        disp.getDiaSemana() == diaSemana &&
-                        !hora.isBefore(disp.getHoraInicio()) &&
-                        !hora.isAfter(disp.getHoraFin()));
-    }
-
-    @Override
-    public DisponibilidadDoctor crearDisponibilidad(DisponibilidadDoctor disponibilidad) {
-        // Validar que el doctor existe
-        if (disponibilidad.getDoctor() == null || disponibilidad.getDoctor().getIdNumber() == null) {
-            throw new RuntimeException("El doctor no puede ser nulo");
+        try {
+            // 1. Verificar que el doctor existe
+            User doctor = userRepository.findByIdNumber(doctorId)
+                    .orElseThrow(() -> new IllegalArgumentException("Doctor no encontrado con ID: " + doctorId));
+            
+            System.out.println("Doctor encontrado: " + doctor.getName() + " " + doctor.getLastName());
+            
+            // 2. Obtener la disponibilidad para el día de la semana
+            DayOfWeek diaSemana = fecha.getDayOfWeek();
+            List<DisponibilidadDoctor> disponibilidades = disponibilidadDoctorRepository
+                    .findByDoctor_IdNumberAndDiaSemanaAndEstado(doctorId, diaSemana, EstadoDisponibilidad.ACTIVO);
+            
+            if (disponibilidades.isEmpty()) {
+                System.out.println("El doctor no tiene disponibilidad para el día " + diaSemana);
+                return new ArrayList<>();
+            }
+            
+            DisponibilidadDoctor disponibilidad = disponibilidades.get(0);
+            
+            // 3. Generar lista de horarios disponibles
+            List<LocalTime> horariosDisponibles = new ArrayList<>();
+            LocalTime horaActual = disponibilidad.getHoraInicio();
+            LocalTime horaFin = disponibilidad.getHoraFin();
+            
+            while (horaActual.isBefore(horaFin)) {
+                horariosDisponibles.add(horaActual);
+                horaActual = horaActual.plusMinutes(30); // Intervalos de 30 minutos
+            }
+            
+            System.out.println("Se encontraron " + horariosDisponibles.size() + " horarios disponibles");
+            horariosDisponibles.forEach(hora -> System.out.println("- " + hora));
+            
+            return horariosDisponibles;
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            System.out.println("Error inesperado: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error al obtener los horarios disponibles: " + e.getMessage());
         }
-        
-        // Validar que el día de la semana no sea nulo
-        if (disponibilidad.getDiaSemana() == null) {
-            throw new RuntimeException("El día de la semana no puede ser nulo");
-        }
-        
-        // Validar que las horas no sean nulas
-        if (disponibilidad.getHoraInicio() == null || disponibilidad.getHoraFin() == null) {
-            throw new RuntimeException("Las horas de inicio y fin no pueden ser nulas");
-        }
-        
-        // Validar que la hora de inicio sea anterior a la hora de fin
-        if (disponibilidad.getHoraInicio().isAfter(disponibilidad.getHoraFin())) {
-            throw new RuntimeException("La hora de inicio debe ser anterior a la hora de fin");
-        }
-        
-        return disponibilidadDoctorRepository.save(disponibilidad);
-    }
-
-    @Override
-    public DisponibilidadDoctor actualizarDisponibilidad(DisponibilidadDoctor disponibilidad) {
-        // Verificar que la disponibilidad existe
-        if (!disponibilidadDoctorRepository.existsById(disponibilidad.getId())) {
-            throw new RuntimeException("Disponibilidad no encontrada con ID: " + disponibilidad.getId());
-        }
-        
-        // Validar que el doctor existe
-        if (disponibilidad.getDoctor() == null || disponibilidad.getDoctor().getIdNumber() == null) {
-            throw new RuntimeException("El doctor no puede ser nulo");
-        }
-        
-        // Validar que el día de la semana no sea nulo
-        if (disponibilidad.getDiaSemana() == null) {
-            throw new RuntimeException("El día de la semana no puede ser nulo");
-        }
-        
-        // Validar que las horas no sean nulas
-        if (disponibilidad.getHoraInicio() == null || disponibilidad.getHoraFin() == null) {
-            throw new RuntimeException("Las horas de inicio y fin no pueden ser nulas");
-        }
-        
-        // Validar que la hora de inicio sea anterior a la hora de fin
-        if (disponibilidad.getHoraInicio().isAfter(disponibilidad.getHoraFin())) {
-            throw new RuntimeException("La hora de inicio debe ser anterior a la hora de fin");
-        }
-        
-        return disponibilidadDoctorRepository.save(disponibilidad);
-    }
-
-    @Override
-    public void eliminarDisponibilidad(Long id) {
-        // Verificar que la disponibilidad existe
-        if (!disponibilidadDoctorRepository.existsById(id)) {
-            throw new RuntimeException("Disponibilidad no encontrada con ID: " + id);
-        }
-        
-        disponibilidadDoctorRepository.deleteById(id);
     }
 } 

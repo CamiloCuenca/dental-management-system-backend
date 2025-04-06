@@ -20,6 +20,7 @@ import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.EmailServ
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCuenta;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -854,6 +855,14 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
 
         return "Usuario actualizado exitosamente.";
     }
+
+
+    
+
+
+
+
+
 
 
 }

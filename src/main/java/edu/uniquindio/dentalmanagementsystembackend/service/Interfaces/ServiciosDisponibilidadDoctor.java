@@ -4,57 +4,26 @@ import edu.uniquindio.dentalmanagementsystembackend.entity.DisponibilidadDoctor;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
 public interface ServiciosDisponibilidadDoctor {
     
     /**
-     * Obtiene todas las disponibilidades de doctores
-     * @return Lista de disponibilidades
-     */
-    List<DisponibilidadDoctor> listarDisponibilidades();
-    
-    /**
-     * Obtiene una disponibilidad por su ID
-     * @param id ID de la disponibilidad
-     * @return Disponibilidad encontrada
-     */
-    DisponibilidadDoctor obtenerDisponibilidadPorId(Long id);
-    
-    /**
-     * Obtiene todas las disponibilidades de un doctor específico
+     * Obtiene las fechas disponibles para un doctor en un rango de fechas
      * @param doctorId ID del doctor
-     * @return Lista de disponibilidades del doctor
+     * @param fechaInicio Fecha de inicio del rango
+     * @param fechaFin Fecha de fin del rango
+     * @return Lista de fechas disponibles
      */
-    List<DisponibilidadDoctor> obtenerDisponibilidadesPorDoctor(String doctorId);
+    List<LocalDate> obtenerFechasDisponibles(String doctorId, LocalDate fechaInicio, LocalDate fechaFin);
     
     /**
-     * Verifica si un doctor está disponible en un día y hora específicos
+     * Obtiene los horarios disponibles para un doctor en una fecha específica
      * @param doctorId ID del doctor
-     * @param diaSemana Día de la semana
-     * @param hora Hora a verificar
-     * @return true si está disponible, false en caso contrario
+     * @param fecha Fecha para la que se quieren obtener los horarios
+     * @return Lista de horarios disponibles
      */
-    boolean verificarDisponibilidad(String doctorId, DayOfWeek diaSemana, LocalTime hora);
-    
-    /**
-     * Crea una nueva disponibilidad para un doctor
-     * @param disponibilidad Disponibilidad a crear
-     * @return Disponibilidad creada
-     */
-    DisponibilidadDoctor crearDisponibilidad(DisponibilidadDoctor disponibilidad);
-    
-    /**
-     * Actualiza una disponibilidad existente
-     * @param disponibilidad Disponibilidad a actualizar
-     * @return Disponibilidad actualizada
-     */
-    DisponibilidadDoctor actualizarDisponibilidad(DisponibilidadDoctor disponibilidad);
-    
-    /**
-     * Elimina una disponibilidad por su ID
-     * @param id ID de la disponibilidad a eliminar
-     */
-    void eliminarDisponibilidad(Long id);
+    List<LocalTime> obtenerHorariosDisponibles(String doctorId, LocalDate fecha);
 } 

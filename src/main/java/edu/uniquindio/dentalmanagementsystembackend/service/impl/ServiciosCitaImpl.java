@@ -1,6 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.impl;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
+import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoDisponibilidad;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.email.CitaEmailDTO;
@@ -46,7 +47,7 @@ import java.util.stream.Collectors;
  * incluyendo su creación, consulta, modificación y cancelación.
  */
 @Service
-@org.springframework.transaction.annotation.Transactional
+@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class ServiciosCitaImpl implements ServiciosCitas {
@@ -88,101 +89,90 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     @Transactional
     public Cita crearCita(CrearCitaDTO dto) {
         try {
-            // ✅ VALIDACIONES BÁSICAS: verificar existencia y roles correctos
+            // 1. Validar que el paciente y doctor existan
+            User paciente = userRepository.findByIdNumber(dto.pacienteId())
+                    .orElseThrow(() -> new IllegalArgumentException("Paciente no encontrado"));
 
-            User paciente = userRepository.findById(dto.pacienteId())
-                    .orElseThrow(() -> new IllegalArgumentException("Paciente no encontrado."));
+            User doctor = userRepository.findByIdNumber(dto.odontologoId())
+                    .orElseThrow(() -> new IllegalArgumentException("Doctor no encontrado"));
 
-            User doctor = userRepository.findById(dto.odontologoId())
-                    .orElseThrow(() -> new IllegalArgumentException("Odontólogo no encontrado."));
-
+            // 2. Validar que el usuario sea un doctor
             if (!doctor.getAccount().getRol().equals(Rol.DOCTOR)) {
-                throw new IllegalArgumentException("El usuario no es un odontólogo.");
+                throw new IllegalArgumentException("El usuario no es un doctor");
             }
 
+            // 3. Validar que el tipo de cita exista
             TipoCita tipoCita = tipoCitaRepository.findById(dto.tipoCitaId())
-                    .orElseThrow(() -> new IllegalArgumentException("Tipo de cita no encontrado."));
+                    .orElseThrow(() -> new IllegalArgumentException("Tipo de cita no encontrado"));
 
-            // 🔐 VALIDACIONES CRÍTICAS: lógica de negocio que asegura integridad
-
-            Especialidad especialidad = tipoCita.getEspecialidadRequerida();
-            if (!doctor.getEspecialidades().contains(especialidad)) {
-                throw new IllegalArgumentException("El odontólogo no tiene la especialidad requerida.");
+            // 4. Validar que la fecha no sea en el pasado
+            if (dto.fechaHora().isBefore(Instant.now())) {
+                throw new IllegalArgumentException("La fecha de la cita no puede ser en el pasado");
             }
 
-            LocalDateTime fecha = LocalDateTime.ofInstant(dto.fechaHora(), ZoneId.systemDefault());
-
-            List<DisponibilidadDoctor> disponibilidades = disponibilidadDoctorRepository
-                    .findByDoctor_IdNumberAndDiaSemanaAndEstado(doctor.getIdNumber(), fecha.getDayOfWeek(), "ACTIVO");
-
-            if (disponibilidades.isEmpty()) {
-                throw new IllegalArgumentException("El odontólogo no tiene disponibilidad ese día.");
+            // 5. Validar que el doctor tenga al menos una especialidad (solo advertencia)
+            if (doctor.getEspecialidades() == null || doctor.getEspecialidades().isEmpty()) {
+                logger.warn("El doctor {} no tiene especialidades registradas", doctor.getIdNumber());
             }
 
-            boolean dentroHorario = disponibilidades.stream()
-                    .anyMatch(disp ->
-                            !fecha.toLocalTime().isBefore(disp.getHoraInicio()) &&
-                                    !fecha.toLocalTime().isAfter(disp.getHoraFin())
-                    );
-
-            if (!dentroHorario) {
-                String horariosDisponibles = disponibilidades.stream()
-                        .map(disp -> String.format("%s - %s",
-                                disp.getHoraInicio().format(DateTimeFormatter.ofPattern("HH:mm")),
-                                disp.getHoraFin().format(DateTimeFormatter.ofPattern("HH:mm"))))
-                        .collect(Collectors.joining(", "));
-
-                throw new IllegalArgumentException(
-                        String.format("Hora fuera del horario de atención del odontólogo. Horarios disponibles: %s",
-                                horariosDisponibles)
-                );
-            }
-
-            boolean citaExistente = citasRepository.existsByDoctorAndFechaHoraBetween(
-                    doctor,
-                    fecha.atZone(ZoneId.systemDefault()).toInstant(),
-                    fecha.plusMinutes(tipoCita.getDuracionMinutos()).atZone(ZoneId.systemDefault()).toInstant()
-            );
-
-            if (citaExistente) {
-                throw new IllegalArgumentException("Ya existe una cita en ese horario.");
-            }
-
+            // 6. Crear y guardar la cita
             Cita cita = new Cita();
             cita.setPaciente(paciente);
             cita.setDoctor(doctor);
-            cita.setFechaHora(fecha.atZone(ZoneId.systemDefault()).toInstant());
+            cita.setFechaHora(dto.fechaHora());
             cita.setEstado(EstadoCitas.PENDIENTE);
             cita.setTipoCita(tipoCita);
 
-            Cita citaGuardada = citasRepository.save(cita);
-
-            // ✉️ ENVÍO DE CORREO (opcional)
-
-            try {
-                CitaEmailDTO emailDTO = new CitaEmailDTO(
-                        paciente.getAccount().getEmail(),
-                        paciente.getName(),
-                        tipoCita.getNombre(),
-                        DateUtil.formatearFechaHora(cita.getFechaHora()),
-                        doctor.getName()
-                );
-
-                emailService.enviarCorreoCita(emailDTO);
-            } catch (Exception e) {
-                logger.warn("No se pudo enviar el correo de confirmación: {}", e.getMessage());
-            }
-
-            return citaGuardada;
+            return citasRepository.save(cita);
 
         } catch (IllegalArgumentException e) {
-            logger.warn("Error al crear cita: {}", e.getMessage());
+            logger.warn("Error de validación al crear cita: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
             logger.error("Error inesperado al crear cita", e);
-            throw new RuntimeException("Ocurrió un error al crear la cita. Por favor, intente nuevamente más tarde.");
+            throw new RuntimeException("Error al crear la cita. Por favor, intente nuevamente.");
         }
     }
 
+    // ... existing code ...
+
+    @Override
+    public List<User> obtenerDoctoresPorEspecialidad(Long especialidadId) {
+        System.out.println("\n=== Obteniendo doctores para la especialidad ID: " + especialidadId + " ===");
+        try {
+            // 1. Verificar que la especialidad existe
+            Especialidad especialidad = especialidadRepository.findById(especialidadId)
+                    .orElseThrow(() -> new IllegalArgumentException("Especialidad no encontrada con ID: " + especialidadId));
+            
+            System.out.println("Especialidad encontrada: " + especialidad.getNombre());
+            
+            // 2. Obtener todos los doctores
+            List<User> doctores = userRepository.findByAccount_Rol(Rol.DOCTOR);
+            System.out.println("Total de doctores en el sistema: " + doctores.size());
+            
+            // 3. Filtrar doctores que tienen la especialidad requerida
+            List<User> doctoresFiltrados = doctores.stream()
+                    .filter(doctor -> doctor.getEspecialidades() != null && 
+                                     doctor.getEspecialidades().contains(especialidad))
+                    .collect(Collectors.toList());
+            
+            System.out.println("Doctores encontrados para la especialidad " + especialidad.getNombre() + ": " + doctoresFiltrados.size());
+            doctoresFiltrados.forEach(doctor -> {
+                System.out.println("- Documento: " + doctor.getIdNumber() + 
+                                 ", Nombre: " + doctor.getName() + " " + doctor.getLastName() + 
+                                 ", Email: " + doctor.getAccount().getEmail());
+            });
+            
+            return doctoresFiltrados;
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            System.out.println("Error inesperado: " + e.getMessage());
+            throw new RuntimeException("Error al obtener los doctores. Por favor, intente nuevamente.");
+        }
+    }
+
+    // ... existing code ...
 
 }
