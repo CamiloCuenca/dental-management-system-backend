@@ -1,8 +1,12 @@
 package edu.uniquindio.dentalmanagementsystembackend.controller;
 
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorEspecialidadDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaAdminDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaPacienteDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.FechaDisponibleDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.HorarioDisponibleDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.TipoCitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.entity.TipoCita;
@@ -36,49 +40,49 @@ public class CitasController {
     public ResponseEntity<Cita> crearCita(@RequestBody CrearCitaDTO dto) {
         return ResponseEntity.ok(serviciosCitas.crearCita(dto));
     }
-    
+
     /**
      * Obtiene todos los tipos de cita disponibles
      * @return Lista de tipos de cita
      */
     @GetMapping("/tipos")
-    public ResponseEntity<List<TipoCita>> obtenerTiposCita() {
+    public ResponseEntity<List<TipoCitaDTO>> obtenerTiposCita() {
         return ResponseEntity.ok(serviciosTipoCita.listarTiposCita());
     }
-    
+
     /**
      * Obtiene los doctores disponibles para una especialidad específica
      * @param especialidadId ID de la especialidad
      * @return Lista de doctores con la especialidad especificada
      */
     @GetMapping("/doctores/{especialidadId}")
-    public ResponseEntity<List<User>> obtenerDoctoresPorEspecialidad(@PathVariable Long especialidadId) {
+    public ResponseEntity<List<DoctorEspecialidadDTO>> obtenerDoctoresPorEspecialidad(@PathVariable Long especialidadId) {
         return ResponseEntity.ok(serviciosCitas.obtenerDoctoresPorEspecialidad(especialidadId));
     }
-    
+
     /**
      * Obtiene las fechas disponibles para un doctor en un rango de fechas
      * @param doctorId ID del doctor
      * @param fechaInicio Fecha de inicio del rango
      * @param fechaFin Fecha de fin del rango
-     * @return Lista de fechas disponibles
+     * @return Lista de fechas disponibles con sus horarios
      */
     @GetMapping("/disponibilidad/fechas/{doctorId}")
-    public ResponseEntity<List<LocalDate>> obtenerFechasDisponibles(
+    public ResponseEntity<List<FechaDisponibleDTO>> obtenerFechasDisponibles(
             @PathVariable String doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
         return ResponseEntity.ok(serviciosDisponibilidadDoctor.obtenerFechasDisponibles(doctorId, fechaInicio, fechaFin));
     }
-    
+
     /**
      * Obtiene los horarios disponibles para un doctor en una fecha específica
      * @param doctorId ID del doctor
-     * @param fecha Fecha para la que se quieren los horarios
+     * @param fecha Fecha para la que se quieren obtener los horarios
      * @return Lista de horarios disponibles
      */
     @GetMapping("/disponibilidad/horarios/{doctorId}")
-    public ResponseEntity<List<LocalTime>> obtenerHorariosDisponibles(
+    public ResponseEntity<List<HorarioDisponibleDTO>> obtenerHorariosDisponibles(
             @PathVariable String doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
         return ResponseEntity.ok(serviciosDisponibilidadDoctor.obtenerHorariosDisponibles(doctorId, fecha));

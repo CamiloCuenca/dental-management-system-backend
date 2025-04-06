@@ -19,6 +19,7 @@ import edu.uniquindio.dentalmanagementsystembackend.repository.UserRepository;
 // Importa la clase ListaCitasDTO desde el paquete dto
 // Importa la interfaz CitasRepository desde el paquete repository
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorEspecialidadDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaAdminDTO;
 // Importa la interfaz ServiciosCitas desde el paquete service. Interfaces
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
@@ -98,7 +99,7 @@ public class CitasTest {
     @Test
     void obtenerDoctoresPorEspecialidad() {
         Long especialidadId = 1L; // ID de la especialidad de ejemplo
-        List<User> doctores = serviciosCitas.obtenerDoctoresPorEspecialidad(especialidadId);
+        List<DoctorEspecialidadDTO> doctores = serviciosCitas.obtenerDoctoresPorEspecialidad(especialidadId);
     }
 
 

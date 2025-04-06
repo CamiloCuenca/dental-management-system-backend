@@ -1,5 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.impl;
 
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.TipoCitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.repository.TipoCitaRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosTipoCita;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -19,7 +21,7 @@ public class ServiciosTipoCitaImpl implements ServiciosTipoCita {
     private TipoCitaRepository tipoCitaRepository;
     
     @Override
-    public List<TipoCita> listarTiposCita() {
+    public List<TipoCitaDTO> listarTiposCita() {
         System.out.println("\n=== Obteniendo lista de tipos de cita ===");
         try {
             List<TipoCita> tiposCita = tipoCitaRepository.findAll();
@@ -35,7 +37,14 @@ public class ServiciosTipoCitaImpl implements ServiciosTipoCita {
                 });
             }
             
-            return tiposCita;
+            return tiposCita.stream()
+                    .map(tipo -> new TipoCitaDTO(
+                            tipo.getId(),
+                            tipo.getNombre(),
+                            tipo.getDuracionMinutos(),
+                            tipo.getDescripcion()
+                    ))
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             System.out.println("Error al obtener tipos de cita: " + e.getMessage());
             throw new RuntimeException("Error al obtener los tipos de cita. Por favor, intente nuevamente.");

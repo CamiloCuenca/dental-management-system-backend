@@ -1,9 +1,8 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
-import edu.uniquindio.dentalmanagementsystembackend.entity.DisponibilidadDoctor;
-import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.FechaDisponibleDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.HorarioDisponibleDTO;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -15,9 +14,9 @@ public interface ServiciosDisponibilidadDoctor {
      * @param doctorId ID del doctor
      * @param fechaInicio Fecha de inicio del rango
      * @param fechaFin Fecha de fin del rango
-     * @return Lista de fechas disponibles
+     * @return Lista de fechas disponibles con sus horarios
      */
-    List<LocalDate> obtenerFechasDisponibles(String doctorId, LocalDate fechaInicio, LocalDate fechaFin);
+    List<FechaDisponibleDTO> obtenerFechasDisponibles(String doctorId, LocalDate fechaInicio, LocalDate fechaFin);
     
     /**
      * Obtiene los horarios disponibles para un doctor en una fecha específica
@@ -25,5 +24,5 @@ public interface ServiciosDisponibilidadDoctor {
      * @param fecha Fecha para la que se quieren obtener los horarios
      * @return Lista de horarios disponibles
      */
-    List<LocalTime> obtenerHorariosDisponibles(String doctorId, LocalDate fecha);
+    List<HorarioDisponibleDTO> obtenerHorariosDisponibles(String doctorId, LocalDate fecha);
 } 

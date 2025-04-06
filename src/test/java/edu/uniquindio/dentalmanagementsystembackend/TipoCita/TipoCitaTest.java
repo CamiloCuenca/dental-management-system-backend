@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import jakarta.transaction.Transactional;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.TipoCitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosTipoCita;
 
@@ -19,6 +20,7 @@ public class TipoCitaTest {
 
     @Test
     void listarTiposCita() {
-        List<TipoCita> tiposCita = serviciosTipoCita.listarTiposCita();
+        List<TipoCitaDTO> tiposCita = serviciosTipoCita.listarTiposCita();
+
     }
 }
