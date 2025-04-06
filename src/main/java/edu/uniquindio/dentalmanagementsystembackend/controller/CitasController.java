@@ -1,5 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.controller;
 
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorEspecialidadDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaAdminDTO;
@@ -94,7 +95,7 @@ public class CitasController {
      * @return Lista de citas del paciente
      */
     @GetMapping("/paciente/{idPaciente}")
-    public ResponseEntity<List<Cita>> obtenerCitasPorPaciente(@PathVariable String idPaciente) {
+    public ResponseEntity<List<CitaDTO>> obtenerCitasPorPaciente(@PathVariable String idPaciente) {
         return ResponseEntity.ok(serviciosCitas.obtenerCitasPorPaciente(idPaciente));
     }
 
@@ -104,7 +105,7 @@ public class CitasController {
      * @return Lista de citas del doctor
      */
     @GetMapping("/doctor/{idDoctor}")
-    public ResponseEntity<List<Cita>> obtenerCitasPorDoctor(@PathVariable String idDoctor) {
+    public ResponseEntity<List<CitaDTO>> obtenerCitasPorDoctor(@PathVariable String idDoctor) {
         return ResponseEntity.ok(serviciosCitas.obtenerCitasPorDoctor(idDoctor));
     }
 

@@ -5,6 +5,7 @@ import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorEspecialidadD
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaAdminDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaPacienteDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.FechaDisponibleDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Especialidad;
@@ -33,14 +34,14 @@ public interface ServiciosCitas {
      * @param idPaciente ID del paciente
      * @return Lista de citas del paciente
      */
-    List<Cita> obtenerCitasPorPaciente(String idPaciente);
+    List<CitaDTO> obtenerCitasPorPaciente(String idPaciente);
 
     /**
      * Obtiene todas las citas de un doctor
      * @param idDoctor ID del doctor
      * @return Lista de citas del doctor
      */
-    List<Cita> obtenerCitasPorDoctor(String idDoctor);
+    List<CitaDTO> obtenerCitasPorDoctor(String idDoctor);
 
     /**
      * Edita una cita (solo administrador)

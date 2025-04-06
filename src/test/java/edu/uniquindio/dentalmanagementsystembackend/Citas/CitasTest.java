@@ -4,6 +4,7 @@ package edu.uniquindio.dentalmanagementsystembackend.Citas;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.*;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.Account;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
@@ -18,9 +19,6 @@ import edu.uniquindio.dentalmanagementsystembackend.repository.TipoCitaRepositor
 import edu.uniquindio.dentalmanagementsystembackend.repository.UserRepository;
 // Importa la clase ListaCitasDTO desde el paquete dto
 // Importa la interfaz CitasRepository desde el paquete repository
-import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaDTO;
-import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorEspecialidadDTO;
-import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaAdminDTO;
 // Importa la interfaz ServiciosCitas desde el paquete service. Interfaces
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,37 +103,60 @@ public class CitasTest {
 
     @Test
     void obtenerCitasPorPaciente() {
-        // TODO: Implementar test
+       String idPaciente = "1001277430"; // ID del paciente de ejemplo
+        List<CitaDTO> citas = serviciosCitas.obtenerCitasPorPaciente(idPaciente);
+        assertNotNull(citas);
+        assertFalse(citas.isEmpty());
     }
 
     @Test
     void obtenerCitasPorDoctor() {
-        // TODO: Implementar test
+        String idDoctor = "111111111"; // ID del doctor de ejemplo
+        List<CitaDTO> citas = serviciosCitas.obtenerCitasPorDoctor(idDoctor);
     }
 
     @Test
     void editarCitaAdmin() {
-        // TODO: Implementar test
+       Long idCita = 28L; // ID de la cita a editar
+        EditarCitaAdminDTO editarCitaAdminDTO = new EditarCitaAdminDTO(
+                idCita,
+                "1001277430", // ID del paciente
+                "111111111", // ID del doctor
+                DateUtil.crearFechaHoraBogota(2025, 4, 14, 11, 30) // Nueva fecha y hora de la cita
+        );
+
+
+        Cita citaEditada = serviciosCitas.editarCitaAdmin(idCita, editarCitaAdminDTO);
+
     }
 
     @Test
     void editarCitaPaciente() {
-        // TODO: Implementar test
+        Long idCita = 28L; // ID de la cita a editar
+        EditarCitaPacienteDTO editarCitaPacienteDTO = new EditarCitaPacienteDTO(
+                idCita,
+                DateUtil.crearFechaHoraBogota(2025, 4, 21, 11, 30) // Nueva fecha y hora de la cita
+        );
+        serviciosCitas.editarCitaPaciente(idCita, editarCitaPacienteDTO);
     }
 
     @Test
     void cancelarCita() {
-        // TODO: Implementar test
+        Long idCita = 28L;
+        serviciosCitas.cancelarCita(idCita);
+
     }
 
     @Test
     void confirmarCita() {
-        // TODO: Implementar test
+        Long idCita = 28L;
+        serviciosCitas.confirmarCita(idCita);
     }
 
     @Test
     void completarCita() {
-        // TODO: Implementar test
+        Long idCita = 28L;
+        serviciosCitas.completarCita(idCita);
     }
 
 

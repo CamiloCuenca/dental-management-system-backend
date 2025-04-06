@@ -11,6 +11,7 @@ import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaPacienteD
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.FechaDisponibleDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.HorarioDisponibleDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.email.CitaEmailDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.entity.DisponibilidadDoctor;
@@ -261,12 +262,26 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     }
 
     @Override
-    public List<Cita> obtenerCitasPorPaciente(String idPaciente) {
+    public List<CitaDTO> obtenerCitasPorPaciente(String idPaciente) {
         System.out.println("\n=== Obteniendo citas para el paciente ID: " + idPaciente + " ===");
         try {
             List<Cita> citas = citasRepository.findByPaciente_IdNumber(idPaciente);
             System.out.println("Se encontraron " + citas.size() + " citas para el paciente");
-            return citas;
+            
+            return citas.stream()
+                    .map(cita -> new CitaDTO(
+                            cita.getId(),
+                            cita.getPaciente().getIdNumber(),
+                            cita.getPaciente().getName() + " " + cita.getPaciente().getLastName(),
+                            cita.getDoctor().getIdNumber(),
+                            cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
+                            cita.getFechaHora(),
+                            cita.getEstado(),
+                            cita.getTipoCita().getId(),
+                            cita.getTipoCita().getNombre(),
+                            cita.getTipoCita().getDuracionMinutos()
+                    ))
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Error al obtener las citas del paciente", e);
             throw new RuntimeException("Error al obtener las citas. Por favor, intente nuevamente.");
@@ -274,12 +289,26 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     }
 
     @Override
-    public List<Cita> obtenerCitasPorDoctor(String idDoctor) {
+    public List<CitaDTO> obtenerCitasPorDoctor(String idDoctor) {
         System.out.println("\n=== Obteniendo citas para el doctor ID: " + idDoctor + " ===");
         try {
             List<Cita> citas = citasRepository.findByDoctor_IdNumber(idDoctor);
             System.out.println("Se encontraron " + citas.size() + " citas para el doctor");
-            return citas;
+            
+            return citas.stream()
+                    .map(cita -> new CitaDTO(
+                            cita.getId(),
+                            cita.getPaciente().getIdNumber(),
+                            cita.getPaciente().getName() + " " + cita.getPaciente().getLastName(),
+                            cita.getDoctor().getIdNumber(),
+                            cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
+                            cita.getFechaHora(),
+                            cita.getEstado(),
+                            cita.getTipoCita().getId(),
+                            cita.getTipoCita().getNombre(),
+                            cita.getTipoCita().getDuracionMinutos()
+                    ))
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Error al obtener las citas del doctor", e);
             throw new RuntimeException("Error al obtener las citas. Por favor, intente nuevamente.");

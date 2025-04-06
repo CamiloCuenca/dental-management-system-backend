@@ -5,8 +5,8 @@ import java.time.Instant;
 
 public record EditarCitaAdminDTO(
         @NotNull Long citaId,
-        @NotNull Long pacienteId,
-        @NotNull Long odontologoId,
+        @NotNull String pacienteId,
+        @NotNull String odontologoId,
         @NotNull Instant fechaHora
 ) {
 } 
