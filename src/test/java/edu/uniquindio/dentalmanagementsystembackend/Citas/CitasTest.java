@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 import edu.uniquindio.dentalmanagementsystembackend.util.DateUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -56,20 +57,20 @@ public class CitasTest {
     // Inyección de dependencias para el servicio de citas
     @Autowired
     private ServiciosCitas serviciosCitas;
-    
+
     // Inyección de dependencias para otros repositorios necesarios
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private CuentaRepository cuentaRepository;
-    
+
     @Autowired
     private TipoCitaRepository tipoCitaRepository;
-    
+
     @Autowired
     private DisponibilidadDoctorRepository disponibilidadDoctorRepository;
-    
+
     @Autowired
     private EspecialidadRepository especialidadRepository;
 
@@ -78,15 +79,14 @@ public class CitasTest {
 
 
     @Test
-
-    void crearCita(){
+    void crearCita() {
         String idPaciente = "1001277430";
         String idDoctor = "111111111";
         Long idTipoCita = 1L;
 
         Instant fechaCita = DateUtil.crearFechaHoraBogota(2025, 4, 7, 11, 30);
 
-        CrearCitaDTO crearCitaDTO = new CrearCitaDTO(idPaciente,idDoctor,fechaCita,idTipoCita);
+        CrearCitaDTO crearCitaDTO = new CrearCitaDTO(idPaciente, idDoctor, fechaCita, idTipoCita);
 
         Cita cita = serviciosCitas.crearCita(crearCitaDTO);
 
@@ -100,8 +100,42 @@ public class CitasTest {
         Long especialidadId = 1L; // ID de la especialidad de ejemplo
         List<User> doctores = serviciosCitas.obtenerDoctoresPorEspecialidad(especialidadId);
     }
-    
 
+
+    @Test
+    void obtenerCitasPorPaciente() {
+        // TODO: Implementar test
+    }
+
+    @Test
+    void obtenerCitasPorDoctor() {
+        // TODO: Implementar test
+    }
+
+    @Test
+    void editarCitaAdmin() {
+        // TODO: Implementar test
+    }
+
+    @Test
+    void editarCitaPaciente() {
+        // TODO: Implementar test
+    }
+
+    @Test
+    void cancelarCita() {
+        // TODO: Implementar test
+    }
+
+    @Test
+    void confirmarCita() {
+        // TODO: Implementar test
+    }
+
+    @Test
+    void completarCita() {
+        // TODO: Implementar test
+    }
 
 
 }

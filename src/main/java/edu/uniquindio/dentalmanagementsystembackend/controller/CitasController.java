@@ -1,6 +1,8 @@
 package edu.uniquindio.dentalmanagementsystembackend.controller;
 
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaAdminDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaPacienteDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.entity.TipoCita;
@@ -80,5 +82,84 @@ public class CitasController {
             @PathVariable String doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
         return ResponseEntity.ok(serviciosDisponibilidadDoctor.obtenerHorariosDisponibles(doctorId, fecha));
+    }
+
+    /**
+     * Obtiene todas las citas de un paciente
+     * @param idPaciente ID del paciente
+     * @return Lista de citas del paciente
+     */
+    @GetMapping("/paciente/{idPaciente}")
+    public ResponseEntity<List<Cita>> obtenerCitasPorPaciente(@PathVariable String idPaciente) {
+        return ResponseEntity.ok(serviciosCitas.obtenerCitasPorPaciente(idPaciente));
+    }
+
+    /**
+     * Obtiene todas las citas de un doctor
+     * @param idDoctor ID del doctor
+     * @return Lista de citas del doctor
+     */
+    @GetMapping("/doctor/{idDoctor}")
+    public ResponseEntity<List<Cita>> obtenerCitasPorDoctor(@PathVariable String idDoctor) {
+        return ResponseEntity.ok(serviciosCitas.obtenerCitasPorDoctor(idDoctor));
+    }
+
+    /**
+     * Edita una cita (solo administrador)
+     * @param idCita ID de la cita a editar
+     * @param dto DTO con la información actualizada
+     * @return Cita actualizada
+     */
+    @PutMapping("/editar/{idCita}")
+    public ResponseEntity<Cita> editarCitaAdmin(
+            @PathVariable Long idCita,
+            @RequestBody EditarCitaAdminDTO dto) {
+        return ResponseEntity.ok(serviciosCitas.editarCitaAdmin(idCita, dto));
+    }
+
+    /**
+     * Edita una cita (paciente)
+     * @param idCita ID de la cita a editar
+     * @param dto DTO con la información actualizada
+     * @return Cita actualizada
+     */
+    @PutMapping("/paciente/editar/{idCita}")
+    public ResponseEntity<Cita> editarCitaPaciente(
+            @PathVariable Long idCita,
+            @RequestBody EditarCitaPacienteDTO dto) {
+        return ResponseEntity.ok(serviciosCitas.editarCitaPaciente(idCita, dto));
+    }
+
+    /**
+     * Cancela una cita
+     * @param idCita ID de la cita a cancelar
+     * @return Mensaje de confirmación
+     */
+    @PutMapping("/cancelar/{idCita}")
+    public ResponseEntity<String> cancelarCita(@PathVariable Long idCita) {
+        serviciosCitas.cancelarCita(idCita);
+        return ResponseEntity.ok("Cita cancelada exitosamente");
+    }
+
+    /**
+     * Confirma una cita
+     * @param idCita ID de la cita a confirmar
+     * @return Mensaje de confirmación
+     */
+    @PutMapping("/confirmar/{idCita}")
+    public ResponseEntity<String> confirmarCita(@PathVariable Long idCita) {
+        serviciosCitas.confirmarCita(idCita);
+        return ResponseEntity.ok("Cita confirmada exitosamente");
+    }
+
+    /**
+     * Marca una cita como completada
+     * @param idCita ID de la cita a marcar como completada
+     * @return Mensaje de confirmación
+     */
+    @PutMapping("/completar/{idCita}")
+    public ResponseEntity<String> completarCita(@PathVariable Long idCita) {
+        serviciosCitas.completarCita(idCita);
+        return ResponseEntity.ok("Cita marcada como completada exitosamente");
     }
 } 
