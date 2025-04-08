@@ -579,8 +579,8 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             LocalDateTime fechaHoraLocal = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
             CitaEmailDTO emailDTO = new CitaEmailDTO(
                     cita.getPaciente().getAccount().getEmail(),
-                    cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
                     cita.getPaciente().getName() + " " + cita.getPaciente().getLastName(),
+                    cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
                     cita.getTipoCita().getNombre(),
                     fechaHoraLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
             );
