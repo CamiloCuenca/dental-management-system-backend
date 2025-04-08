@@ -167,4 +167,24 @@ public class ServiciosDisponibilidadDoctorImpl implements ServiciosDisponibilida
             throw new RuntimeException("Error al obtener los horarios disponibles: " + e.getMessage());
         }
     }
+
+    @Override
+    public boolean validarDisponibilidadDoctor(String doctorId, LocalDate fecha, LocalTime hora) {
+        try {
+            // Obtener el día de la semana de la fecha
+            DayOfWeek diaSemana = fecha.getDayOfWeek();
+            
+            // Buscar disponibilidades del doctor para ese día
+            List<DisponibilidadDoctor> disponibilidades = disponibilidadDoctorRepository
+                    .findByDoctor_IdNumberAndDiaSemanaAndEstado(doctorId, diaSemana, EstadoDisponibilidad.ACTIVO);
+            
+            // Verificar si hay disponibilidad para la hora especificada
+            return disponibilidades.stream()
+                    .anyMatch(d -> !hora.isBefore(d.getHoraInicio()) && hora.isBefore(d.getHoraFin()));
+                    
+        } catch (Exception e) {
+            log.error("Error al validar disponibilidad del doctor", e);
+            return false;
+        }
+    }
 } 

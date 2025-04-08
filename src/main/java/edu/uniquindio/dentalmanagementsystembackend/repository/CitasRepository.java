@@ -22,4 +22,6 @@ public interface CitasRepository extends JpaRepository<Cita, Long> {
     List<Cita> findByFechaHoraBetween(Instant fechaInicio, Instant fechaFin);
     
     boolean existsByDoctorAndFechaHoraBetween(User doctor, Instant fechaInicio, Instant fechaFin);
+
+    boolean existsByDoctorAndFechaHora(User doctor, Instant fechaHora);
 }

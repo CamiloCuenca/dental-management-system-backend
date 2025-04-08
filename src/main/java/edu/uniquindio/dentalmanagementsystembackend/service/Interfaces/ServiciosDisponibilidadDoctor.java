@@ -25,4 +25,6 @@ public interface ServiciosDisponibilidadDoctor {
      * @return Lista de horarios disponibles
      */
     List<HorarioDisponibleDTO> obtenerHorariosDisponibles(String doctorId, LocalDate fecha);
+
+    boolean validarDisponibilidadDoctor(String doctorId, LocalDate fecha, LocalTime hora);
 } 

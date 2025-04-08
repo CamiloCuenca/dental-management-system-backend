@@ -1,13 +1,17 @@
 package edu.uniquindio.dentalmanagementsystembackend.dto.cita;
 
-import jakarta.validation.constraints.NotNull;
-
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 public record CrearCitaDTO(
-        @NotNull String pacienteId,
-        @NotNull String odontologoId,
-        @NotNull Instant fechaHora,
-        @NotNull Long tipoCitaId
+        String pacienteId,
+        String doctorId,
+        LocalDate fecha,
+        LocalTime hora,
+        Long tipoCitaId
 ) {
+    public LocalDateTime getFechaHora() {
+        return LocalDateTime.of(fecha, hora);
+    }
 }

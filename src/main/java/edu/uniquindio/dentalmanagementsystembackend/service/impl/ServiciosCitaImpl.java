@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosDisponibilidadDoctor;
+
 /**
  * Implementación del servicio de gestión de citas dentales.
  * Esta clase maneja toda la lógica de negocio relacionada con las citas,
@@ -89,110 +91,78 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private ServiciosDisponibilidadDoctor serviciosDisponibilidadDoctor;
+
     @PersistenceContext
     private EntityManager entityManager;
 
     @Override
     @Transactional
-    public Cita crearCita(CrearCitaDTO dto) {
+    public Cita crearCita(CrearCitaDTO crearCitaDTO) {
         System.out.println("\n=== Creando nueva cita ===");
-        System.out.println("Paciente ID: " + dto.pacienteId());
-        System.out.println("Doctor ID: " + dto.odontologoId());
-        System.out.println("Tipo de cita ID: " + dto.tipoCitaId());
-        System.out.println("Fecha y hora: " + dto.fechaHora());
-        
+        System.out.println("Paciente ID: " + crearCitaDTO.pacienteId());
+        System.out.println("Doctor ID: " + crearCitaDTO.doctorId());
+        System.out.println("Fecha: " + crearCitaDTO.fecha());
+        System.out.println("Hora: " + crearCitaDTO.hora());
+        System.out.println("Tipo de cita ID: " + crearCitaDTO.tipoCitaId());
+
         try {
-            // 1. Validar que el paciente y doctor existan
-            User paciente = userRepository.findByIdNumber(dto.pacienteId())
-                    .orElseThrow(() -> new IllegalArgumentException("Paciente no encontrado"));
+            // Validar que el paciente exista
+            User paciente = userRepository.findByIdNumber(crearCitaDTO.pacienteId())
+                    .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
 
-            User doctor = userRepository.findByIdNumber(dto.odontologoId())
-                    .orElseThrow(() -> new IllegalArgumentException("Doctor no encontrado"));
+            // Validar que el doctor exista
+            User doctor = userRepository.findByIdNumber(crearCitaDTO.doctorId())
+                    .orElseThrow(() -> new RuntimeException("Doctor no encontrado"));
 
-            // 2. Validar que el usuario sea un doctor
+            // Validar que el usuario sea un doctor
             if (!doctor.getAccount().getRol().equals(Rol.DOCTOR)) {
-                throw new IllegalArgumentException("El usuario no es un doctor");
+                throw new RuntimeException("El usuario especificado no es un doctor");
             }
 
-            // 3. Validar que el tipo de cita exista
-            TipoCita tipoCita = tipoCitaRepository.findById(dto.tipoCitaId())
-                    .orElseThrow(() -> new IllegalArgumentException("Tipo de cita no encontrado"));
-
-            // 4. Validar que la fecha no sea en el pasado
-            if (dto.fechaHora().isBefore(Instant.now())) {
-                throw new IllegalArgumentException("La fecha de la cita no puede ser en el pasado");
+            // Validar que la fecha no sea en el pasado
+            LocalDateTime fechaHoraCita = crearCitaDTO.getFechaHora();
+            if (fechaHoraCita.isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("No se pueden crear citas en fechas pasadas");
             }
 
-            // 5. Validar que el doctor tenga al menos una especialidad (solo advertencia)
-            if (doctor.getEspecialidades() == null || doctor.getEspecialidades().isEmpty()) {
-                logger.warn("El doctor {} no tiene especialidades registradas", doctor.getIdNumber());
+            // Validar disponibilidad del doctor
+            if (!serviciosDisponibilidadDoctor.validarDisponibilidadDoctor(
+                    crearCitaDTO.doctorId(),
+                    crearCitaDTO.fecha(),
+                    crearCitaDTO.hora())) {
+                throw new RuntimeException("El doctor no está disponible en ese horario");
             }
 
-            // 6. Validar disponibilidad del doctor
-            LocalDateTime fechaHoraLocal = dto.fechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            DayOfWeek diaSemana = fechaHoraLocal.getDayOfWeek();
-            LocalTime horaCita = fechaHoraLocal.toLocalTime();
-
-            // Verificar si el doctor tiene disponibilidad para ese día y hora
-            List<DisponibilidadDoctor> disponibilidades = disponibilidadDoctorRepository
-                    .findByDoctor_IdNumberAndDiaSemanaAndEstado(dto.odontologoId(), diaSemana, EstadoDisponibilidad.ACTIVO);
-
-            if (disponibilidades.isEmpty()) {
-                throw new IllegalArgumentException("El doctor no tiene disponibilidad para el día seleccionado");
+            // Validar que no exista otra cita en el mismo horario
+            if (citasRepository.existsByDoctorAndFechaHora(doctor, fechaHoraCita.atZone(ZoneId.systemDefault()).toInstant())) {
+                throw new RuntimeException("Ya existe una cita programada para ese horario");
             }
 
-            // Verificar si la hora de la cita está dentro del horario de disponibilidad
-            boolean horaValida = disponibilidades.stream()
-                    .anyMatch(d -> !horaCita.isBefore(d.getHoraInicio()) && horaCita.isBefore(d.getHoraFin()));
+            // Obtener el tipo de cita
+            TipoCita tipoCita = tipoCitaRepository.findById(crearCitaDTO.tipoCitaId())
+                    .orElseThrow(() -> new RuntimeException("Tipo de cita no encontrado"));
 
-            if (!horaValida) {
-                throw new IllegalArgumentException("La hora seleccionada no está dentro del horario de disponibilidad del doctor");
-            }
-
-            // Verificar si ya existe una cita en ese horario
-            boolean existeCita = citasRepository.existsByDoctorAndFechaHoraBetween(
-                    doctor,
-                    dto.fechaHora(),
-                    dto.fechaHora().plusSeconds(tipoCita.getDuracionMinutos() * 60)
-            );
-
-            if (existeCita) {
-                throw new IllegalArgumentException("Ya existe una cita programada en ese horario");
-            }
-
-            // 7. Crear y guardar la cita
+            // Crear la cita
             Cita cita = new Cita();
             cita.setPaciente(paciente);
             cita.setDoctor(doctor);
-            cita.setFechaHora(dto.fechaHora());
+            cita.setFechaHora(fechaHoraCita.atZone(ZoneId.systemDefault()).toInstant());
             cita.setEstado(EstadoCitas.PENDIENTE);
             cita.setTipoCita(tipoCita);
 
-            cita = citasRepository.save(cita);
-            
-            System.out.println("Cita creada exitosamente con ID: " + cita.getId());
-            
-            // 8. Enviar correo de confirmación (opcional)
-            try {
-                CitaEmailDTO emailDTO = new CitaEmailDTO(
-                        paciente.getAccount().getEmail(),
-                        doctor.getName() + " " + doctor.getLastName(),
-                        paciente.getName() + " " + paciente.getLastName(),
-                        tipoCita.getNombre(),
-                        fechaHoraLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
-                );
-                emailService.enviarCorreoCita(emailDTO);
-            } catch (Exception e) {
-                logger.warn("No se pudo enviar el correo de confirmación: {}", e.getMessage());
-            }
+            // Guardar la cita
+            Cita citaGuardada = citasRepository.save(cita);
+            System.out.println("Cita creada exitosamente con ID: " + citaGuardada.getId());
 
-            return cita;
-        } catch (IllegalArgumentException e) {
-            logger.warn("Error de validación al crear cita: {}", e.getMessage());
-            throw e;
+            // Enviar correo de confirmación
+            enviarCorreoConfirmacionCita(citaGuardada);
+
+            return citaGuardada;
         } catch (Exception e) {
-            logger.error("Error inesperado al crear cita", e);
-            throw new RuntimeException("Error al crear la cita. Por favor, intente nuevamente.");
+            logger.error("Error al crear la cita", e);
+            throw new RuntimeException("Error al crear la cita: " + e.getMessage());
         }
     }
 
@@ -601,6 +571,22 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             System.out.println("Error inesperado: " + e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Error al obtener las fechas disponibles: " + e.getMessage());
+        }
+    }
+
+    private void enviarCorreoConfirmacionCita(Cita cita) {
+        try {
+            LocalDateTime fechaHoraLocal = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            CitaEmailDTO emailDTO = new CitaEmailDTO(
+                    cita.getPaciente().getAccount().getEmail(),
+                    cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
+                    cita.getPaciente().getName() + " " + cita.getPaciente().getLastName(),
+                    cita.getTipoCita().getNombre(),
+                    fechaHoraLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+            );
+            emailService.enviarCorreoCita(emailDTO);
+        } catch (Exception e) {
+            logger.warn("No se pudo enviar el correo de confirmación: {}", e.getMessage());
         }
     }
 }

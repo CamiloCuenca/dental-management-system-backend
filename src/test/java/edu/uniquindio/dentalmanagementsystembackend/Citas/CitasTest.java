@@ -83,9 +83,10 @@ public class CitasTest {
         String idDoctor = "111111111";
         Long idTipoCita = 1L;
 
-        Instant fechaCita = DateUtil.crearFechaHoraBogota(2025, 4, 7, 11, 30);
+        LocalDate fecha = LocalDate.of(2025, 4, 14);
+        LocalTime hora = LocalTime.of(11, 30);
 
-        CrearCitaDTO crearCitaDTO = new CrearCitaDTO(idPaciente, idDoctor, fechaCita, idTipoCita);
+        CrearCitaDTO crearCitaDTO = new CrearCitaDTO(idPaciente, idDoctor, fecha, hora, idTipoCita);
 
         Cita cita = serviciosCitas.crearCita(crearCitaDTO);
 
