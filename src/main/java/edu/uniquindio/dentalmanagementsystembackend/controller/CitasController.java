@@ -37,7 +37,7 @@ public class CitasController {
      * @param dto DTO con la información de la cita
      * @return Cita creada
      */
-    @PostMapping
+    @PostMapping("/crear")
     public ResponseEntity<Cita> crearCita(@RequestBody CrearCitaDTO dto) {
         return ResponseEntity.ok(serviciosCitas.crearCita(dto));
     }
