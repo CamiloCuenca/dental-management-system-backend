@@ -54,4 +54,9 @@ public interface HistorialMedicoRepository extends JpaRepository<HistorialMedico
         @Param("fechaInicio") LocalDate fechaInicio,
         @Param("fechaFin") LocalDate fechaFin
     );
+
+    @Query("SELECT h FROM HistorialMedico h WHERE h.paciente.idNumber = :id")
+    List<HistorialMedico> buscarHistorialesPorIdPaciente(@Param("id") String id);
+
+
 } 

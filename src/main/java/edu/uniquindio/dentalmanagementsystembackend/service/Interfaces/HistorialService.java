@@ -6,6 +6,7 @@ import edu.uniquindio.dentalmanagementsystembackend.entity.Account.HistorialMedi
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public interface HistorialService {
 
@@ -15,6 +16,13 @@ public interface HistorialService {
      * @return HistorialMedico creado
      */
     HistorialMedico crearHistorial(CrearHistorialDTO dto);
+
+    /**
+     * Retorna los historiales médicos agrupados por año para un paciente específico.
+     * @param idPaciente ID del paciente
+     * @return Mapa con el año como clave y la lista de historiales de ese año como valor
+     */
+    Map<Integer, List<HistorialDTO>> listarHistorialesPorPacienteAgrupadosPorAnio(String idPaciente);
 
 
 } 

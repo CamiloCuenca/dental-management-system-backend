@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -118,6 +119,29 @@ public class HistorialServiceImpl implements HistorialService {
             throw new HistorialException("La cita no corresponde al odontólogo especificado.");
         }
     }
+
+    @Override
+    public Map<Integer, List<HistorialDTO>> listarHistorialesPorPacienteAgrupadosPorAnio(String idPaciente) {
+        List<HistorialMedico> historiales = historialRepository.buscarHistorialesPorIdPaciente(idPaciente);
+
+        return historiales.stream()
+                .map(this::convertirADTO)
+                .collect(Collectors.groupingBy(h -> h.fecha().getYear()));
+    }
+
+    private HistorialDTO convertirADTO(HistorialMedico historial) {
+        return new HistorialDTO(
+                historial.getId(),
+                historial.getPaciente().getName(),
+                historial.getDoctor().getName(),
+                historial.getFecha(),
+                historial.getDiagnostico(),
+                historial.getTratamiento(),
+                historial.getObservaciones(),
+                historial.getCita().getTipoCita().getNombre()
+        );
+    }
+
 
 
 }
