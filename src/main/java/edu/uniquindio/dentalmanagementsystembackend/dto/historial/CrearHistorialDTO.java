@@ -13,13 +13,13 @@ public record CrearHistorialDTO(
      * ID del paciente al que pertenece el historial.
      */
     @NotNull(message = "El ID del paciente no puede ser nulo")
-    Long pacienteId,
+    String pacienteId,
     
     /**
      * ID del odontólogo que crea el historial.
      */
     @NotNull(message = "El ID del odontólogo no puede ser nulo")
-    Long odontologoId,
+    String odontologoId,
     
     /**
      * ID de la cita asociada al historial.

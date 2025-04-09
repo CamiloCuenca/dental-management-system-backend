@@ -172,10 +172,7 @@ public class CuentaController {
             response.put("token", nuevoToken);
 
             return ResponseEntity.ok(response);
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", e.getMessage()));
-        } catch (AccountNotFoundException e) {
+        } catch (UserNotFoundException | AccountNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
@@ -189,10 +186,7 @@ public class CuentaController {
         try {
             PerfilDTO perfil = accountService.obtenerPerfil(accountId);
             return ResponseEntity.ok(perfil);
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(null);
-        } catch (AccountNotFoundException e) {
+        } catch (UserNotFoundException | AccountNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(null);
         } catch (Exception e) {
@@ -201,18 +195,7 @@ public class CuentaController {
         }
     }
 
-    @GetMapping("/doctores")
-    public ResponseEntity<List<DoctorDTO>> obtenerDoctores() {
-        try {
-            List<DoctorDTO> doctores = accountService.obtenerDoctores();
-            return ResponseEntity.ok(doctores);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Collections.emptyList());
-        } catch (DatabaseOperationException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 
 
 }

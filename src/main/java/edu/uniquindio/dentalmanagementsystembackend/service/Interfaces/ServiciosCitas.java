@@ -1,116 +1,88 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
-import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
-import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
-import edu.uniquindio.dentalmanagementsystembackend.dto.cita.ListaCitasDTO;
-
-import java.util.List;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorEspecialidadDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaAdminDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaPacienteDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.FechaDisponibleDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
-import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorDisponibilidadDTO;
-import jakarta.transaction.Transactional;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Especialidad;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
 
 public interface ServiciosCitas {
 
     /**
-     * Método para crear (agendar) una cita odontológica.
-     * @param citaDTO DTO con la información de la cita a crear.
+     * Crea una nueva cita
+     * @param dto DTO con la información de la cita
+     * @return Cita creada
      */
-    void crearCita(CitaDTO citaDTO) throws Exception;
+    Cita crearCita(CrearCitaDTO dto);
 
     /**
-     * Método para obtener la lista de citas de un paciente.
-     * @param idPaciente Número de identificación del paciente.
-     * @return Lista de citas del paciente.
+     * Obtiene los doctores disponibles para una especialidad específica
+     * @param especialidadId ID de la especialidad
+     * @return Lista de doctores con la especialidad especificada
      */
-    List<ListaCitasDTO> obtenerCitasPorPaciente(Long idPaciente);
+    List<DoctorEspecialidadDTO> obtenerDoctoresPorEspecialidad(Long especialidadId);
 
     /**
-     * Método para obtener todas las citas.
-     * @return Lista de todas las citas.
+     * Obtiene todas las citas de un paciente
+     * @param idPaciente ID del paciente
+     * @return Lista de citas del paciente
      */
-    List<ListaCitasDTO> obtenerTodasLasCitas();
+    List<CitaDTO> obtenerCitasPorPaciente(String idPaciente);
 
     /**
-     * Método para editar el tipo de una cita.
-     * @param idCita Número de identificación de la cita.
-     * @param nuevoTipoCita Nuevo tipo de cita.
+     * Obtiene todas las citas de un doctor
+     * @param idDoctor ID del doctor
+     * @return Lista de citas del doctor
      */
-    void editarCita(Long idCita, TipoCita nuevoTipoCita);
+    List<CitaDTO> obtenerCitasPorDoctor(String idDoctor);
 
     /**
-     * Método para cancelar una cita.
-     * @param idCita Número de identificación de la cita.
+     * Edita una cita (solo administrador)
+     * @param idCita ID de la cita a editar
+     * @param dto DTO con la información actualizada
+     * @return Cita actualizada
+     */
+    Cita editarCitaAdmin(Long idCita, EditarCitaAdminDTO dto);
+
+    /**
+     * Edita una cita (solo paciente)
+     * @param idCita ID de la cita a editar
+     * @param dto DTO con la información actualizada
+     * @return Cita actualizada
+     */
+    Cita editarCitaPaciente(Long idCita, EditarCitaPacienteDTO dto);
+
+    /**
+     * Cancela una cita
+     * @param idCita ID de la cita a cancelar
      */
     void cancelarCita(Long idCita);
 
     /**
-     * Método para obtener las fechas más cercanas disponibles de todos los doctores.
-     * @return Lista de objetos con el ID del doctor y las fechas disponibles.
-     */
-    List<DoctorDisponibilidadDTO> obtenerFechasDisponiblesDoctores();
-
-    /**
-     * Método para confirmar una cita.
-     * @param idCita Número de identificación de la cita.
+     * Confirma una cita
+     * @param idCita ID de la cita a confirmar
      */
     void confirmarCita(Long idCita);
 
     /**
-     * Método para marcar una cita como completada.
-     * @param idCita Número de identificación de la cita.
+     * Marca una cita como completada
+     * @param idCita ID de la cita a completar
      */
     void completarCita(Long idCita);
 
     /**
-     * Método para obtener citas por fecha específica.
-     * @param fecha Fecha para filtrar las citas.
-     * @return Lista de citas para la fecha especificada.
+     * Obtiene las fechas disponibles para un doctor en un rango de fechas
+     * @param doctorId ID del doctor
+     * @param fechaInicio Fecha de inicio del rango
+     * @param fechaFin Fecha de fin del rango
+     * @return Lista de fechas disponibles con sus horarios
      */
-    List<ListaCitasDTO> obtenerCitasPorFecha(LocalDate fecha);
-
-    /**
-     * Método para obtener citas por estado.
-     * @param estado Estado de las citas a buscar.
-     * @return Lista de citas con el estado especificado.
-     */
-    List<ListaCitasDTO> obtenerCitasPorEstado(EstadoCitas estado);
-
-
-    /**
-     * Método para reprogramar una cita.
-     * @param idCita Número de identificación de la cita.
-     * @param nuevaFechaHora Nueva fecha y hora para la cita.
-     */
-    void reprogramarCita(Long idCita, LocalDateTime nuevaFechaHora);
-
-    /**
-     * Método para obtener estadísticas de citas por estado.
-     * @return Mapa con el conteo de citas por cada estado.
-     */
-    Map<EstadoCitas, Long> obtenerEstadisticasCitasPorEstado();
-
-    /**
-     * Método para obtener estadísticas de citas por doctor.
-     * @return Mapa con el conteo de citas por cada doctor.
-     */
-    Map<Long, Long> obtenerEstadisticasCitasPorDoctor();
-
-    /**
-     * Método para enviar recordatorio de cita.
-     * @param idCita Número de identificación de la cita.
-     */
-    void enviarRecordatorioCita(Long idCita);
-
-
-    DoctorDisponibilidadDTO obtenerFechasDisponiblesDoctor(String doctorId);
-
-    DoctorDisponibilidadDTO obtenerFechasDisponiblesDoctor(Long doctorId);
-
-    List<DoctorDisponibilidadDTO> obtenerFechasDisponiblesPorTipoDoctor(Long tipoDoctor);
-
+    List<FechaDisponibleDTO> obtenerFechasDisponibles(String doctorId, LocalDate fechaInicio, LocalDate fechaFin);
 }
-

@@ -14,7 +14,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(Exception e) {
-        return ResponseEntity.internalServerError().body("Ocurrió un error inesperado.");
+    public ResponseEntity<Object> handleException(Exception e) {
+        e.printStackTrace(); // útil para ver el error en consola
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                new ErrorDetails(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        e.getClass().getSimpleName(),
+                        e.getMessage()
+                )
+        );
     }
+
 }

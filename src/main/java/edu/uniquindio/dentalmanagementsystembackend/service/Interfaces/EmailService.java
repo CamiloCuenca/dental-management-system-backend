@@ -1,6 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.EmailDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.email.CitaEmailDTO;
 import java.time.LocalDateTime;
 
 public interface EmailService {
@@ -87,6 +88,6 @@ public interface EmailService {
      */
     void enviarCorreoCitaEmergencia(String email, String nombreOdontologo, LocalDateTime fechaHora);
 
-    void enviarCorreoCita(String email, String nombreOdontologo, String fechaHora)  throws Exception;
+    void enviarCorreoCita(CitaEmailDTO dto) throws Exception;
 
 }

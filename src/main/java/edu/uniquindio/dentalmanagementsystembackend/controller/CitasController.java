@@ -1,19 +1,27 @@
 package edu.uniquindio.dentalmanagementsystembackend.controller;
 
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
-import edu.uniquindio.dentalmanagementsystembackend.dto.cita.ListaCitasDTO;
-import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorDisponibilidadDTO;
-import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
-import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorEspecialidadDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaAdminDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaPacienteDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.FechaDisponibleDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.HorarioDisponibleDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.TipoCitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
+import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
+import edu.uniquindio.dentalmanagementsystembackend.entity.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
+import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosTipoCita;
+import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosDisponibilidadDoctor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/citas")
@@ -21,97 +29,142 @@ import java.util.Map;
 public class CitasController {
 
     private final ServiciosCitas serviciosCitas;
-
+    private final ServiciosTipoCita serviciosTipoCita;
+    private final ServiciosDisponibilidadDoctor serviciosDisponibilidadDoctor;
+    
+    /**
+     * Crea una nueva cita
+     * @param dto DTO con la información de la cita
+     * @return Cita creada
+     */
     @PostMapping("/crear")
-    public ResponseEntity<Void> crearCita(@RequestBody CitaDTO citaDTO) throws Exception {
-        serviciosCitas.crearCita(citaDTO);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Cita> crearCita(@RequestBody CrearCitaDTO dto) {
+        return ResponseEntity.ok(serviciosCitas.crearCita(dto));
     }
 
+    /**
+     * Obtiene todos los tipos de cita disponibles
+     * @return Lista de tipos de cita
+     */
+    @GetMapping("/tipos")
+    public ResponseEntity<List<TipoCitaDTO>> obtenerTiposCita() {
+        return ResponseEntity.ok(serviciosTipoCita.listarTiposCita());
+    }
+
+    /**
+     * Obtiene los doctores disponibles para una especialidad específica
+     * @param especialidadId ID de la especialidad
+     * @return Lista de doctores con la especialidad especificada
+     */
+    @GetMapping("/doctores/{especialidadId}")
+    public ResponseEntity<List<DoctorEspecialidadDTO>> obtenerDoctoresPorEspecialidad(@PathVariable Long especialidadId) {
+        return ResponseEntity.ok(serviciosCitas.obtenerDoctoresPorEspecialidad(especialidadId));
+    }
+
+    /**
+     * Obtiene las fechas disponibles para un doctor en un rango de fechas
+     * @param doctorId ID del doctor
+     * @param fechaInicio Fecha de inicio del rango
+     * @param fechaFin Fecha de fin del rango
+     * @return Lista de fechas disponibles con sus horarios
+     */
+    @GetMapping("/disponibilidad/fechas/{doctorId}")
+    public ResponseEntity<List<FechaDisponibleDTO>> obtenerFechasDisponibles(
+            @PathVariable String doctorId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+        return ResponseEntity.ok(serviciosDisponibilidadDoctor.obtenerFechasDisponibles(doctorId, fechaInicio, fechaFin));
+    }
+
+    /**
+     * Obtiene los horarios disponibles para un doctor en una fecha específica
+     * @param doctorId ID del doctor
+     * @param fecha Fecha para la que se quieren obtener los horarios
+     * @return Lista de horarios disponibles
+     */
+    @GetMapping("/disponibilidad/horarios/{doctorId}")
+    public ResponseEntity<List<HorarioDisponibleDTO>> obtenerHorariosDisponibles(
+            @PathVariable String doctorId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        return ResponseEntity.ok(serviciosDisponibilidadDoctor.obtenerHorariosDisponibles(doctorId, fecha));
+    }
+
+    /**
+     * Obtiene todas las citas de un paciente
+     * @param idPaciente ID del paciente
+     * @return Lista de citas del paciente
+     */
     @GetMapping("/paciente/{idPaciente}")
-    public ResponseEntity<List<ListaCitasDTO>> obtenerCitasPorPaciente(@PathVariable Long idPaciente) {
+    public ResponseEntity<List<CitaDTO>> obtenerCitasPorPaciente(@PathVariable String idPaciente) {
         return ResponseEntity.ok(serviciosCitas.obtenerCitasPorPaciente(idPaciente));
     }
 
-    @GetMapping("/todas")
-    public ResponseEntity<List<ListaCitasDTO>> obtenerTodasLasCitas() {
-        return ResponseEntity.ok(serviciosCitas.obtenerTodasLasCitas());
+    /**
+     * Obtiene todas las citas de un doctor
+     * @param idDoctor ID del doctor
+     * @return Lista de citas del doctor
+     */
+    @GetMapping("/doctor/{idDoctor}")
+    public ResponseEntity<List<CitaDTO>> obtenerCitasPorDoctor(@PathVariable String idDoctor) {
+        return ResponseEntity.ok(serviciosCitas.obtenerCitasPorDoctor(idDoctor));
     }
 
-    @PutMapping("/{idCita}/tipo")
-    public ResponseEntity<Void> editarCita(
+    /**
+     * Edita una cita (solo administrador)
+     * @param idCita ID de la cita a editar
+     * @param dto DTO con la información actualizada
+     * @return Cita actualizada
+     */
+    @PutMapping("/editar/{idCita}")
+    public ResponseEntity<Cita> editarCitaAdmin(
             @PathVariable Long idCita,
-            @RequestParam TipoCita nuevoTipoCita) {
-        serviciosCitas.editarCita(idCita, nuevoTipoCita);
-        return ResponseEntity.ok().build();
+            @RequestBody EditarCitaAdminDTO dto) {
+        return ResponseEntity.ok(serviciosCitas.editarCitaAdmin(idCita, dto));
     }
 
-    @PutMapping("/{idCita}/cancelar")
-    public ResponseEntity<Void> cancelarCita(@PathVariable Long idCita) {
+    /**
+     * Edita una cita (paciente)
+     * @param idCita ID de la cita a editar
+     * @param dto DTO con la información actualizada
+     * @return Cita actualizada
+     */
+    @PutMapping("/paciente/editar/{idCita}")
+    public ResponseEntity<Cita> editarCitaPaciente(
+            @PathVariable Long idCita,
+            @RequestBody EditarCitaPacienteDTO dto) {
+        return ResponseEntity.ok(serviciosCitas.editarCitaPaciente(idCita, dto));
+    }
+
+    /**
+     * Cancela una cita
+     * @param idCita ID de la cita a cancelar
+     * @return Mensaje de confirmación
+     */
+    @PutMapping("/cancelar/{idCita}")
+    public ResponseEntity<String> cancelarCita(@PathVariable Long idCita) {
         serviciosCitas.cancelarCita(idCita);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Cita cancelada exitosamente");
     }
 
-    @GetMapping("/disponibilidad/doctores")
-    public ResponseEntity<List<DoctorDisponibilidadDTO>> obtenerFechasDisponiblesDoctores() {
-        return ResponseEntity.ok(serviciosCitas.obtenerFechasDisponiblesDoctores());
-    }
-
-    @PutMapping("/{idCita}/confirmar")
-    public ResponseEntity<Void> confirmarCita(@PathVariable Long idCita) {
+    /**
+     * Confirma una cita
+     * @param idCita ID de la cita a confirmar
+     * @return Mensaje de confirmación
+     */
+    @PutMapping("/confirmar/{idCita}")
+    public ResponseEntity<String> confirmarCita(@PathVariable Long idCita) {
         serviciosCitas.confirmarCita(idCita);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Cita confirmada exitosamente");
     }
 
-    @PutMapping("/{idCita}/completar")
-    public ResponseEntity<Void> completarCita(@PathVariable Long idCita) {
+    /**
+     * Marca una cita como completada
+     * @param idCita ID de la cita a marcar como completada
+     * @return Mensaje de confirmación
+     */
+    @PutMapping("/completar/{idCita}")
+    public ResponseEntity<String> completarCita(@PathVariable Long idCita) {
         serviciosCitas.completarCita(idCita);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/fecha/{fecha}")
-    public ResponseEntity<List<ListaCitasDTO>> obtenerCitasPorFecha(@PathVariable LocalDate fecha) {
-        return ResponseEntity.ok(serviciosCitas.obtenerCitasPorFecha(fecha));
-    }
-
-    @GetMapping("/estado/{estado}")
-    public ResponseEntity<List<ListaCitasDTO>> obtenerCitasPorEstado(@PathVariable EstadoCitas estado) {
-        return ResponseEntity.ok(serviciosCitas.obtenerCitasPorEstado(estado));
-    }
-
-    @PutMapping("/{idCita}/reprogramar")
-    public ResponseEntity<Void> reprogramarCita(
-            @PathVariable Long idCita,
-            @RequestParam LocalDateTime nuevaFechaHora) {
-        serviciosCitas.reprogramarCita(idCita, nuevaFechaHora);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/estadisticas/estado")
-    public ResponseEntity<Map<EstadoCitas, Long>> obtenerEstadisticasCitasPorEstado() {
-        return ResponseEntity.ok(serviciosCitas.obtenerEstadisticasCitasPorEstado());
-    }
-
-    @GetMapping("/estadisticas/doctor")
-    public ResponseEntity<Map<Long, Long>> obtenerEstadisticasCitasPorDoctor() {
-        return ResponseEntity.ok(serviciosCitas.obtenerEstadisticasCitasPorDoctor());
-    }
-
-    @PostMapping("/{idCita}/recordatorio")
-    public ResponseEntity<Void> enviarRecordatorioCita(@PathVariable Long idCita) {
-        serviciosCitas.enviarRecordatorioCita(idCita);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/disponibilidad/doctor/{doctorId}")
-    public ResponseEntity<DoctorDisponibilidadDTO> obtenerFechasDisponiblesDoctor(
-            @PathVariable Long doctorId) {
-        return ResponseEntity.ok(serviciosCitas.obtenerFechasDisponiblesDoctor(doctorId));
-    }
-
-    @GetMapping("/disponibilidad/tipo-doctor/{tipoDoctor}")
-    public ResponseEntity<List<DoctorDisponibilidadDTO>> obtenerFechasDisponiblesPorTipoDoctor(
-            @PathVariable Long tipoDoctor) {
-        return ResponseEntity.ok(serviciosCitas.obtenerFechasDisponiblesPorTipoDoctor(tipoDoctor));
+        return ResponseEntity.ok("Cita marcada como completada exitosamente");
     }
 } 

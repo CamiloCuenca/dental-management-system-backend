@@ -20,6 +20,7 @@ import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.EmailServ
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCuenta;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -233,7 +234,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         Account account = new Account();
         account.setEmail(cuenta.email());
         account.setPassword(hashedPassword);
-        account.setRol(Rol.DOCTOR);
+        account.setRol(Rol.PACIENTE);
         account.setStatus(AccountStatus.INACTIVE);
 
         ValidationCode validationCode = new ValidationCode();
@@ -855,21 +856,13 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         return "Usuario actualizado exitosamente.";
     }
 
-    @Override
-    public List<DoctorDTO> obtenerDoctores() throws DatabaseOperationException {
-        try {
-            return accountRepository.findByRol(Rol.DOCTOR)  // Cambiar de userRepository a accountRepository
-                    .stream()
-                    .map(account -> new DoctorDTO(
-                            account.getUser().getIdNumber(),
-                            account.getUser().getName(),
-                            account.getUser().getLastName(),
-                            account.getEmail(),
-                            account.getTipoDoctor() != null ? account.getTipoDoctor().name() : null  // Obtener el tipo de doctor de la cuenta
-                    ))
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            throw new DatabaseOperationException("Error al obtener la lista de doctores");
-        }
-    }
+
+    
+
+
+
+
+
+
+
 }
