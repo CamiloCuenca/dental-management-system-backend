@@ -43,11 +43,7 @@ public record HistorialDTO(
      */
     String observaciones,
     
-    /**
-     * Fecha programada para la próxima cita.
-     */
-    LocalDate proximaCita,
-    
+
     /**
      * Tipo de cita asociada al historial.
      */
