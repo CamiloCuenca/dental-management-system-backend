@@ -133,10 +133,15 @@ public class CitasTest {
 
     @Test
     void editarCitaPaciente() {
-        Long idCita = 28L; // ID de la cita a editar
+        Long idCita = 24L; // ID de la cita a editar
+        LocalDate fecha = LocalDate.of(2025, 4, 14);
+        LocalTime hora = LocalTime.of(11, 30);
+
         EditarCitaPacienteDTO editarCitaPacienteDTO = new EditarCitaPacienteDTO(
                 idCita,
-                DateUtil.crearFechaHoraBogota(2025, 4, 21, 11, 30) // Nueva fecha y hora de la cita
+                fecha,
+                hora
+
         );
         serviciosCitas.editarCitaPaciente(idCita, editarCitaPacienteDTO);
     }
