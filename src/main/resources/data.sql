@@ -192,5 +192,44 @@ INSERT INTO citas (paciente_id, doctor_id, fecha_hora, estado, tipo_cita_id) VAL
     ('444444446', '111111112', '2024-04-05 15:00:00', 'CONFIRMADA', 6),
     ('555555556', '333333334', '2024-04-05 16:00:00', 'PENDIENTE', 7);
 
+-- Insertar registros de historial médico asociados a las citas existentes
+INSERT INTO historiales_medicos (fecha, proxima_cita, cita_id, doctor_id, paciente_id, diagnostico, observaciones, tratamiento) VALUES
+                                                                                                                                    -- Historiales para Odontología General
+                                                                                                                                    ('2024-04-01', '2024-07-01', 1, '111111111', '555555556', 'Caries moderada en primer molar inferior derecho', 'Paciente con alta sensibilidad al frío', 'Obturación con resina compuesta y aplicación de flúor'),
+                                                                                                                                    ('2024-04-02', '2024-07-02', 2, '222222222', '666666667', 'Gingivitis leve', 'Sangrado al cepillado', 'Limpieza profesional y técnica de cepillado mejorada'),
+
+                                                                                                                                    -- Historiales para Higiene Dental
+                                                                                                                                    ('2024-04-01', '2024-06-01', 3, '333333333', '777777778', 'Acumulación de sarro moderado', 'Manchas de café visibles', 'Profilaxis completa y pulido dental'),
+                                                                                                                                    ('2024-04-02', '2024-06-02', 4, '444444444', '888888889', 'Halitosis', 'Lengua saburral', 'Limpieza profunda y recomendación de raspador lingual'),
+
+                                                                                                                                    -- Historiales para Cirugía Oral
+                                                                                                                                    ('2024-04-03', '2024-04-10', 5, '555555555', '999999990', 'Tercer molar inferior impactado', 'Inflamación pericoronaria', 'Extracción quirúrgica con sutura reabsorbible'),
+                                                                                                                                    ('2024-04-04', '2024-04-11', 6, '666666666', '101010102', 'Raíz residual en zona 37', 'Tejido gingival sano', 'Apicectomía y curetaje'),
+
+                                                                                                                                    -- Historiales para Endodoncia
+                                                                                                                                    ('2024-04-01', '2024-05-01', 7, '777777777', '111111113', 'Necrosis pulpar en diente 36', 'Fístula vestibular', 'Tratamiento de conductos en tres sesiones'),
+                                                                                                                                    ('2024-04-02', '2024-05-02', 8, '888888888', '222222224', 'Fractura coronaria con exposición pulpar', 'Dolor espontáneo', 'Pulpectomía completa y reconstrucción'),
+
+                                                                                                                                    -- Historiales para Ortodoncia
+                                                                                                                                    ('2024-04-03', '2024-05-15', 9, '999999999', '333333335', 'Maloclusión clase II división 1', 'Hábito de succión digital', 'Colocación de brackets metálicos superiores'),
+                                                                                                                                    ('2024-04-04', '2024-05-18', 10, '101010101', '444444446', 'Apiñamiento moderado inferior', 'Encías retraídas en zona anterior', 'Alineadores transparentes'),
+
+                                                                                                                                    -- Historiales para Periodoncia
+                                                                                                                                    ('2024-04-01', '2024-05-01', 11, '111111112', '555555556', 'Bolsa periodontal de 5mm en sector posterior', 'Movilidad grado I', 'Raspado y alisado radicular'),
+                                                                                                                                    ('2024-04-02', '2024-05-02', 12, '222222223', '666666667', 'Recesión gingival en caninos', 'Sensibilidad radicular', 'Injerto de tejido conectivo'),
+
+                                                                                                                                    -- Historiales para Odontología Estética
+                                                                                                                                    ('2024-04-03', NULL, 13, '333333334', '777777778', 'Diastema interincisivo superior', 'Paciente desea cierre estético', 'Carillas de porcelana'),
+                                                                                                                                    ('2024-04-04', '2024-05-04', 14, '444444445', '888888889', 'Fluorosis moderada', 'Manchas blancas difusas', 'Microabrasión y blanqueamiento profesional'),
+
+                                                                                                                                    -- Historiales adicionales
+                                                                                                                                    ('2024-04-05', '2024-07-05', 15, '111111111', '999999990', 'Caries oclusal superficial', 'Paciente con buena higiene', 'Sellante de fosas y fisuras'),
+                                                                                                                                    ('2024-04-05', '2024-06-05', 16, '333333333', '101010102', 'Hipoplasia del esmalte', 'Defectos en incisivos', 'Restauración con ionómero de vidrio'),
+                                                                                                                                    ('2024-04-05', '2024-04-12', 17, '555555555', '111111113', 'Quiste dentígero asociado a canino', 'Asintomático', 'Enucleación quirúrgica'),
+                                                                                                                                    ('2024-04-05', '2024-05-20', 18, '777777777', '222222224', 'Reabsorción radicular interna', 'Traumatismo previo', 'Control radiográfico cada 6 meses'),
+                                                                                                                                    ('2024-04-05', '2024-05-25', 19, '999999999', '333333335', 'Mordida cruzada posterior', 'Asimetría facial leve', 'Expansor palatino'),
+                                                                                                                                    ('2024-04-05', '2024-05-05', 20, '111111112', '444444446', 'Furca grado II en molar inferior', 'Pérdida ósea vertical', 'Regeneración tisular guiada'),
+                                                                                                                                    ('2024-04-05', NULL, 21, '333333334', '555555556', 'Abrasión cervical generalizada', 'Cepillado traumático', 'Restauraciones con resina fluida');
+
 -- Reactivar restricciones de claves foráneas
 SET FOREIGN_KEY_CHECKS = 1; 

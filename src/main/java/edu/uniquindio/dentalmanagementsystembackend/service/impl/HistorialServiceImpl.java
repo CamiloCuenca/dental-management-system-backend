@@ -156,8 +156,8 @@ public class HistorialServiceImpl implements HistorialService {
     private HistorialDTO convertirADTO(HistorialMedico historial) {
         return new HistorialDTO(
                 historial.getId(),
-                historial.getPaciente().getName()+historial.getPaciente().getLastName(),
-                historial.getDoctor().getName()+historial.getDoctor().getLastName(),
+                historial.getPaciente().getName()+" "+historial.getPaciente().getLastName(),
+                historial.getDoctor().getName()+" "+historial.getDoctor().getLastName(),
                 historial.getFecha(),
                 historial.getDiagnostico(),
                 historial.getTratamiento(),
