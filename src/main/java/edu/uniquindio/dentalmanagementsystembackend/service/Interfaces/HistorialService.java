@@ -1,5 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
+import edu.uniquindio.dentalmanagementsystembackend.dto.historial.ActualizarHistorial;
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.CrearHistorialDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.HistorialDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.HistorialMedico;
@@ -24,5 +25,15 @@ public interface HistorialService {
      */
     Map<Integer, List<HistorialDTO>> listarHistorialesPorPacienteAgrupadosPorAnio(String idPaciente);
 
+    /**
+     * Actualiza un historial médico específico por su ID.
+     * @param id
+     */
+    void ActualizarHistorial (Long id, ActualizarHistorial nuevoHistorial);
 
+    /**
+     * Elimina un historial médico específico por su ID.
+     * @param id
+     */
+    void eliminarHistorial(Long id);
 } 
