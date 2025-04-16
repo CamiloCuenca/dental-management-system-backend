@@ -149,7 +149,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             cita.setPaciente(paciente);
             cita.setDoctor(doctor);
             cita.setFechaHora(fechaHoraCita.atZone(ZoneId.systemDefault()).toInstant());
-            cita.setEstado(EstadoCitas.PENDIENTE);
+            cita.setEstado(EstadoCitas.CONFIRMADA);
             cita.setTipoCita(tipoCita);
 
             // Guardar la cita

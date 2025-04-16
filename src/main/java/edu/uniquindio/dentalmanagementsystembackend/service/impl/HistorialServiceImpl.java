@@ -2,6 +2,7 @@ package edu.uniquindio.dentalmanagementsystembackend.service.impl;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
+import edu.uniquindio.dentalmanagementsystembackend.dto.historial.ActualizarHistorial;
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.CrearHistorialDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.HistorialDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.HistorialMedico;
@@ -127,6 +128,29 @@ public class HistorialServiceImpl implements HistorialService {
         return historiales.stream()
                 .map(this::convertirADTO)
                 .collect(Collectors.groupingBy(h -> h.fecha().getYear()));
+    }
+
+    @Override
+    public void ActualizarHistorial(Long id, ActualizarHistorial nuevoHistorial) {
+        // Validar que el historial existe
+        HistorialMedico historial = historialRepository.findById(id)
+                .orElseThrow(() -> new HistorialException("Historial no encontrado con ID: " + id));
+
+        //Acttualizar datos del historial
+        historial.setDiagnostico(nuevoHistorial.diagnostico());
+        historial.setTratamiento(nuevoHistorial.tratamiento());
+        historial.setObservaciones(nuevoHistorial.observaciones());
+
+        // Guardar los cambios en el historial
+        historialRepository.save(historial);
+    }
+
+    @Override
+    public void eliminarHistorial(Long id) {
+        // Validar que el historial existe
+        HistorialMedico historial = historialRepository.findById(id)
+                .orElseThrow(() -> new HistorialException("Historial no encontrado con ID: " + id));
+        // TODO: Analizar si se puede eliminar el historial o agregar a la BD un nuevo campo para representar la supuesta eliminacion del historial
     }
 
     private HistorialDTO convertirADTO(HistorialMedico historial) {
