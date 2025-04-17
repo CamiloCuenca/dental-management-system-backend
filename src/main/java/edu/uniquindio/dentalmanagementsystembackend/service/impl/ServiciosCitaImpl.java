@@ -654,13 +654,28 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     private void enviarCorreoConfirmacionCita(Cita cita) {
         try {
             LocalDateTime fechaHoraLocal = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            CitaEmailDTO emailDTO = new CitaEmailDTO(
-                    cita.getPaciente().getAccount().getEmail(),
-                    cita.getPaciente().getName() + " " + cita.getPaciente().getLastName(),
-                    cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
-                    cita.getTipoCita().getNombre(),
-                    fechaHoraLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
-            );
+            CitaEmailDTO emailDTO;
+            
+            if (cita.isEsAutenticada()) {
+                // Para citas autenticadas
+                emailDTO = new CitaEmailDTO(
+                        cita.getPaciente().getAccount().getEmail(),
+                        cita.getPaciente().getName() + " " + cita.getPaciente().getLastName(),
+                        cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
+                        cita.getTipoCita().getNombre(),
+                        fechaHoraLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                );
+            } else {
+                // Para citas no autenticadas
+                emailDTO = new CitaEmailDTO(
+                        cita.getEmailNoAutenticado(),
+                        cita.getNombrePacienteNoAutenticado(),
+                        cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
+                        cita.getTipoCita().getNombre(),
+                        fechaHoraLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                );
+            }
+            
             emailService.enviarCorreoCita(emailDTO);
         } catch (Exception e) {
             logger.warn("No se pudo enviar el correo de confirmación: {}", e.getMessage());

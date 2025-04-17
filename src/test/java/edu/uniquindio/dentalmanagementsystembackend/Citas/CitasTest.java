@@ -173,12 +173,12 @@ public class CitasTest {
         Long idTipoCita = 15L;
 
         LocalDate fecha = LocalDate.of(2025, 4, 21);
-        LocalTime hora = LocalTime.of(11, 30);
+        LocalTime hora = LocalTime.of(13, 30);
         CrearCitaNoAutenticadaDTO crearCitaNoAutenticadaDTO = new CrearCitaNoAutenticadaDTO(
                 "Brandon",
                 idPaciente,
                 "3153033412",
-                "sneid123@hotmail.com",
+                "brandone.acevedoc@uqvirtual.edu.co",
                 idDoctor,
                 fecha,
                 hora,
