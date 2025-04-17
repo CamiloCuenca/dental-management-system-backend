@@ -137,7 +137,8 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             }
 
             // Validar que no exista otra cita en el mismo horario
-            if (citasRepository.existsByDoctorAndFechaHora(doctor, fechaHoraCita.atZone(ZoneId.systemDefault()).toInstant())) {
+            if (citasRepository.existsByDoctorAndFechaHora(doctor,
+                    fechaHoraCita.atZone(ZoneId.systemDefault()).toInstant())) {
                 throw new RuntimeException("Ya existe una cita programada para ese horario");
             }
 
@@ -203,7 +204,8 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             }
 
             // Validar que no exista otra cita en el mismo horario
-            if (citasRepository.existsByDoctorAndFechaHora(doctor, fechaHoraCita.atZone(ZoneId.systemDefault()).toInstant())) {
+            if (citasRepository.existsByDoctorAndFechaHora(doctor,
+                    fechaHoraCita.atZone(ZoneId.systemDefault()).toInstant())) {
                 throw new RuntimeException("Ya existe una cita programada para ese horario");
             }
 
@@ -220,8 +222,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                     doctor,
                     fechaHoraCita.atZone(ZoneId.systemDefault()).toInstant(),
                     EstadoCitas.PENDIENTE,
-                    tipoCita
-            );
+                    tipoCita);
 
             // Guardar la cita
             Cita citaGuardada = citasRepository.save(cita);
@@ -243,7 +244,8 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         try {
             // 1. Verificar que la especialidad existe
             Especialidad especialidad = especialidadRepository.findById(especialidadId)
-                    .orElseThrow(() -> new IllegalArgumentException("Especialidad no encontrada con ID: " + especialidadId));
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("Especialidad no encontrada con ID: " + especialidadId));
 
             System.out.println("Especialidad encontrada: " + especialidad.getNombre());
 
@@ -257,7 +259,8 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                             doctor.getEspecialidades().contains(especialidad))
                     .collect(Collectors.toList());
 
-            System.out.println("Doctores encontrados para la especialidad " + especialidad.getNombre() + ": " + doctoresFiltrados.size());
+            System.out.println("Doctores encontrados para la especialidad " + especialidad.getNombre() + ": "
+                    + doctoresFiltrados.size());
 
             // 4. Convertir a DTOs
             List<DoctorEspecialidadDTO> doctoresDTO = doctoresFiltrados.stream()
@@ -268,12 +271,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                         // Obtener disponibilidad para cada día de la semana
                         for (DayOfWeek dia : DayOfWeek.values()) {
                             List<DisponibilidadDoctor> disponibilidadesDia = disponibilidadDoctorRepository
-                                    .findByDoctor_IdNumberAndDiaSemanaAndEstado(doctor.getIdNumber(), dia, EstadoDisponibilidad.ACTIVO);
+                                    .findByDoctor_IdNumberAndDiaSemanaAndEstado(doctor.getIdNumber(), dia,
+                                            EstadoDisponibilidad.ACTIVO);
 
                             // Convertir a DTOs
-                            disponibilidadesDia.forEach(d ->
-                                    disponibilidadDTO.add(new DisponibilidadDTO(d.getDiaSemana(), d.getHoraInicio(), d.getHoraFin()))
-                            );
+                            disponibilidadesDia.forEach(d -> disponibilidadDTO
+                                    .add(new DisponibilidadDTO(d.getDiaSemana(), d.getHoraInicio(), d.getHoraFin())));
                         }
 
                         // Crear DTO del doctor
@@ -282,14 +285,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                                 doctor.getName(),
                                 doctor.getLastName(),
                                 especialidad.getNombre(),
-                                disponibilidadDTO
-                        );
+                                disponibilidadDTO);
                     })
                     .collect(Collectors.toList());
 
-            doctoresDTO.forEach(doctor ->
-                    System.out.println("- " + doctor.nombre() + " " + doctor.apellido() + " (ID: " + doctor.id() + ")")
-            );
+            doctoresDTO.forEach(doctor -> System.out
+                    .println("- " + doctor.nombre() + " " + doctor.apellido() + " (ID: " + doctor.id() + ")"));
 
             return doctoresDTO;
         } catch (IllegalArgumentException e) {
@@ -320,8 +321,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                             cita.getEstado(),
                             cita.getTipoCita().getId(),
                             cita.getTipoCita().getNombre(),
-                            cita.getTipoCita().getDuracionMinutos()
-                    ))
+                            cita.getTipoCita().getDuracionMinutos()))
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Error al obtener las citas del paciente", e);
@@ -347,8 +347,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                             cita.getEstado(),
                             cita.getTipoCita().getId(),
                             cita.getTipoCita().getNombre(),
-                            cita.getTipoCita().getDuracionMinutos()
-                    ))
+                            cita.getTipoCita().getDuracionMinutos()))
                     .collect(Collectors.toList());
         } catch (Exception e) {
             logger.error("Error al obtener las citas del doctor", e);
@@ -467,8 +466,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                 emailService.enviarCorreoCancelacionCita(
                         cita.getPaciente().getAccount().getEmail(),
                         cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
-                        fechaHoraLocal
-                );
+                        fechaHoraLocal);
             } catch (Exception e) {
                 logger.warn("No se pudo enviar el correo de cancelación: {}", e.getMessage());
             }
@@ -505,8 +503,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                 emailService.enviarCorreoConfirmacionCita(
                         cita.getPaciente().getAccount().getEmail(),
                         cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
-                        fechaHoraLocal
-                );
+                        fechaHoraLocal);
             } catch (Exception e) {
                 logger.warn("No se pudo enviar el correo de confirmación: {}", e.getMessage());
             }
@@ -543,8 +540,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                 emailService.enviarCorreoCitaCompletada(
                         cita.getPaciente().getAccount().getEmail(),
                         cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
-                        fechaHoraLocal
-                );
+                        fechaHoraLocal);
             } catch (Exception e) {
                 logger.warn("No se pudo enviar el correo de cita completada: {}", e.getMessage());
             }
@@ -558,7 +554,8 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     }
 
     @Override
-    public List<FechaDisponibleDTO> obtenerFechasDisponibles(String doctorId, LocalDate fechaInicio, LocalDate fechaFin) {
+    public List<FechaDisponibleDTO> obtenerFechasDisponibles(String doctorId, LocalDate fechaInicio,
+            LocalDate fechaFin) {
         System.out.println("\n=== Obteniendo fechas disponibles para el doctor ID: " + doctorId + " ===");
         System.out.println("Rango de fechas: " + fechaInicio + " a " + fechaFin);
 
@@ -617,8 +614,8 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                             boolean existeCita = citasRepository.existsByDoctorAndFechaHoraBetween(
                                     doctor,
                                     fechaActual.atTime(horaActual).atZone(ZoneId.systemDefault()).toInstant(),
-                                    fechaActual.atTime(horaActual.plusMinutes(30)).atZone(ZoneId.systemDefault()).toInstant()
-                            );
+                                    fechaActual.atTime(horaActual.plusMinutes(30)).atZone(ZoneId.systemDefault())
+                                            .toInstant());
 
                             horariosDisponibles.add(new HorarioDisponibleDTO(horaActual, !existeCita));
                             horaActual = horaActual.plusMinutes(30); // Intervalos de 30 minutos
@@ -655,7 +652,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         try {
             LocalDateTime fechaHoraLocal = cita.getFechaHora().atZone(ZoneId.systemDefault()).toLocalDateTime();
             CitaEmailDTO emailDTO;
-            
+
             if (cita.isEsAutenticada()) {
                 // Para citas autenticadas
                 emailDTO = new CitaEmailDTO(
@@ -664,7 +661,6 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                         cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
                         fechaHoraLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
                         cita.getTipoCita().getNombre()
-
                 );
             } else {
                 // Para citas no autenticadas
@@ -674,10 +670,9 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                         cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
                         fechaHoraLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
                         cita.getTipoCita().getNombre()
-
                 );
             }
-            
+
             emailService.enviarCorreoCita(emailDTO);
         } catch (Exception e) {
             logger.warn("No se pudo enviar el correo de confirmación: {}", e.getMessage());
