@@ -90,4 +90,25 @@ public class HistorialTest {
         pdfGenerator.historialPDF(idPaciente);
 
     }
+
+    @Test
+    public void testListarHistorialesPorPacienteYAnio() {
+        // ID del paciente y año para la prueba
+        String idPaciente = "555555556";
+        int anio = 2024;
+
+        // Llamar al servicio para listar los historiales por paciente y año
+        List<HistorialDTO> historiales = historialService.listarHistorialesPorPacienteYAnio(idPaciente, anio);
+
+        // Verificar que se obtuvieron los historiales
+        assertNotNull(historiales);
+        assertFalse(historiales.isEmpty());
+
+        // Verificar que todos los historiales sean del año especificado
+        for (HistorialDTO historial : historiales) {
+            assertEquals(anio, historial.fecha().getYear());
+        }
+
+        System.out.println(historiales);
+    }
 }

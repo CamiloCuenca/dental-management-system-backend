@@ -147,6 +147,15 @@ public class HistorialServiceImpl implements HistorialService {
     }
 
     @Override
+    public List<HistorialDTO> listarHistorialesPorPacienteYAnio(String idPaciente, int anio) {
+        List<HistorialMedico> historiales = historialRepository.buscarHistorialesPorIdPaciente(idPaciente);
+        return historiales.stream()
+                .filter(historial -> historial.getFecha().getYear() == anio)
+                .map(this::convertirADTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void ActualizarHistorial(Long id, ActualizarHistorial nuevoHistorial) {
         // Validar que el historial existe
         HistorialMedico historial = historialRepository.findById(id)

@@ -25,6 +25,15 @@ public interface HistorialService {
      */
     Map<Integer, List<HistorialDTO>> listarHistorialesPorPacienteAgrupadosPorAnio(String idPaciente);
 
+    //Crea un servicio paresido al anteiror pero que devuelve el de un año en especifico
+    /**
+     * Retorna los historiales médicos de un paciente específico para un año dado.
+     * @param idPaciente ID del paciente
+     * @param anio Año para filtrar los historiales
+     * @return Lista de historiales médicos del paciente para el año especificado
+     */
+    List<HistorialDTO> listarHistorialesPorPacienteYAnio(String idPaciente, int anio);
+
     /**
      * Actualiza un historial médico específico por su ID.
      * @param id
