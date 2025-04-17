@@ -83,7 +83,7 @@ public class CitasTest {
         String idDoctor = "111111111";
         Long idTipoCita = 1L;
 
-        LocalDate fecha = LocalDate.of(2025, 4, 14);
+        LocalDate fecha = LocalDate.of(2025, 4, 21);
         LocalTime hora = LocalTime.of(11, 30);
 
         CrearCitaDTO crearCitaDTO = new CrearCitaDTO(idPaciente, idDoctor, fecha, hora, idTipoCita);
@@ -102,39 +102,13 @@ public class CitasTest {
     }
 
 
-    @Test
-    void obtenerCitasPorPaciente() {
-       String idPaciente = "1001277430"; // ID del paciente de ejemplo
-        List<CitaDTO> citas = serviciosCitas.obtenerCitasPorPaciente(idPaciente);
-        assertNotNull(citas);
-        assertFalse(citas.isEmpty());
-    }
-
-    @Test
-    void obtenerCitasPorDoctor() {
-        String idDoctor = "111111111"; // ID del doctor de ejemplo
-        List<CitaDTO> citas = serviciosCitas.obtenerCitasPorDoctor(idDoctor);
-    }
-
-    @Test
-    void editarCitaAdmin() {
-       Long idCita = 28L; // ID de la cita a editar
-        EditarCitaAdminDTO editarCitaAdminDTO = new EditarCitaAdminDTO(
-                idCita,
-                "1001277430", // ID del paciente
-                "111111111", // ID del doctor
-                DateUtil.crearFechaHoraBogota(2025, 4, 14, 11, 30) // Nueva fecha y hora de la cita
-        );
 
 
-        Cita citaEditada = serviciosCitas.editarCitaAdmin(idCita, editarCitaAdminDTO);
-
-    }
 
     @Test
     void editarCitaPaciente() {
-        Long idCita = 24L; // ID de la cita a editar
-        LocalDate fecha = LocalDate.of(2025, 4, 14);
+        Long idCita = 31L; // ID de la cita a editar
+        LocalDate fecha = LocalDate.of(2025, 4, 28);
         LocalTime hora = LocalTime.of(11, 30);
 
         EditarCitaPacienteDTO editarCitaPacienteDTO = new EditarCitaPacienteDTO(
@@ -148,20 +122,20 @@ public class CitasTest {
 
     @Test
     void cancelarCita() {
-        Long idCita = 28L;
+        Long idCita = 31L;
         serviciosCitas.cancelarCita(idCita);
 
     }
 
     @Test
     void confirmarCita() {
-        Long idCita = 28L;
+        Long idCita = 31L;
         serviciosCitas.confirmarCita(idCita);
     }
 
     @Test
     void completarCita() {
-        Long idCita = 28L;
+        Long idCita = 31L;
         serviciosCitas.completarCita(idCita);
     }
 
@@ -170,7 +144,7 @@ public class CitasTest {
 
         String idPaciente = "1001277430";
         String idDoctor = "111111111";
-        Long idTipoCita = 15L;
+        Long idTipoCita = 1L;
 
         LocalDate fecha = LocalDate.of(2025, 4, 21);
         LocalTime hora = LocalTime.of(13, 30);
@@ -186,6 +160,32 @@ public class CitasTest {
         );
         serviciosCitas.crearCitaNoAutenticada(crearCitaNoAutenticadaDTO);
     }
+
+    
+
+    @Test
+    void editarCitaNoAutenticadaAdmin() {
+        String idPaciente = "1001277430";
+        String idDoctor = "111111111";
+        Long idCita = 1L;
+
+        LocalDate fecha = LocalDate.of(2025, 4, 14);
+        LocalTime hora = LocalTime.of(11, 30);
+        EditarCitaNoAutenticadaAdminDTO editarCitaNoAutenticadaAdminDTO = new EditarCitaNoAutenticadaAdminDTO(
+                idPaciente,
+                idDoctor,
+                "3153033412",
+                "brandone.acevedoc@uqvirtual.edu.co",
+                "111111111",
+                fecha,
+                hora,
+                1L
+        );
+        serviciosCitas.editarCitaNoAutenticadaAdmin(idCita, editarCitaNoAutenticadaAdminDTO);
+    }
+
+    
+    
 
 
 }

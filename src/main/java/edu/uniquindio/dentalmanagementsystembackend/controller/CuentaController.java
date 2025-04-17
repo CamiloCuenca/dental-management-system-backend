@@ -100,6 +100,8 @@ public class CuentaController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } catch (AccountAlreadyActiveException e) {
+            throw new RuntimeException(e);
         }
     }
 

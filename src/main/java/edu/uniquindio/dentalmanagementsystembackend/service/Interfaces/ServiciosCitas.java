@@ -6,7 +6,9 @@ import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorEspecialidadD
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaAdminDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaPacienteDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.FechaDisponibleDTO;
+import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaNoAutenticadaAdminDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Especialidad;
@@ -36,28 +38,6 @@ public interface ServiciosCitas {
      * @return Lista de doctores con la especialidad especificada
      */
     List<DoctorEspecialidadDTO> obtenerDoctoresPorEspecialidad(Long especialidadId);
-
-    /**
-     * Obtiene todas las citas de un paciente
-     * @param idPaciente ID del paciente
-     * @return Lista de citas del paciente
-     */
-    List<CitaDTO> obtenerCitasPorPaciente(String idPaciente);
-
-    /**
-     * Obtiene todas las citas de un doctor
-     * @param idDoctor ID del doctor
-     * @return Lista de citas del doctor
-     */
-    List<CitaDTO> obtenerCitasPorDoctor(String idDoctor);
-
-    /**
-     * Edita una cita (solo administrador)
-     * @param idCita ID de la cita a editar
-     * @param dto DTO con la información actualizada
-     * @return Cita actualizada
-     */
-    Cita editarCitaAdmin(Long idCita, EditarCitaAdminDTO dto);
 
     /**
      * Edita una cita (solo paciente)
@@ -93,4 +73,25 @@ public interface ServiciosCitas {
      * @return Lista de fechas disponibles con sus horarios
      */
     List<FechaDisponibleDTO> obtenerFechasDisponibles(String doctorId, LocalDate fechaInicio, LocalDate fechaFin);
+
+    /**
+     * Edita una cita no autenticada como administrador
+     * @param idCita ID de la cita a editar
+     * @param dto DTO con los nuevos datos de la cita
+     * @return La cita editada
+     */
+    Cita editarCitaNoAutenticadaAdmin(Long idCita, EditarCitaNoAutenticadaAdminDTO dto);
+
+    /**
+     * Cancela una cita no autenticada como administrador
+     * @param idCita ID de la cita a cancelar
+     */
+    void cancelarCitaNoAutenticadaAdmin(Long idCita);
+
+    /**
+     * Cambia el estado de una cita no autenticada como administrador
+     * @param idCita ID de la cita
+     * @param nuevoEstado Nuevo estado de la cita
+     */
+    void cambiarEstadoCitaNoAutenticadaAdmin(Long idCita, EstadoCitas nuevoEstado);
 }

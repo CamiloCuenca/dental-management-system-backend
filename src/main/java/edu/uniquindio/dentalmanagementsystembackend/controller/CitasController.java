@@ -90,39 +90,6 @@ public class CitasController {
     }
 
     /**
-     * Obtiene todas las citas de un paciente
-     * @param idPaciente ID del paciente
-     * @return Lista de citas del paciente
-     */
-    @GetMapping("/paciente/{idPaciente}")
-    public ResponseEntity<List<CitaDTO>> obtenerCitasPorPaciente(@PathVariable String idPaciente) {
-        return ResponseEntity.ok(serviciosCitas.obtenerCitasPorPaciente(idPaciente));
-    }
-
-    /**
-     * Obtiene todas las citas de un doctor
-     * @param idDoctor ID del doctor
-     * @return Lista de citas del doctor
-     */
-    @GetMapping("/doctor/{idDoctor}")
-    public ResponseEntity<List<CitaDTO>> obtenerCitasPorDoctor(@PathVariable String idDoctor) {
-        return ResponseEntity.ok(serviciosCitas.obtenerCitasPorDoctor(idDoctor));
-    }
-
-    /**
-     * Edita una cita (solo administrador)
-     * @param idCita ID de la cita a editar
-     * @param dto DTO con la información actualizada
-     * @return Cita actualizada
-     */
-    @PutMapping("/editar/{idCita}")
-    public ResponseEntity<Cita> editarCitaAdmin(
-            @PathVariable Long idCita,
-            @RequestBody EditarCitaAdminDTO dto) {
-        return ResponseEntity.ok(serviciosCitas.editarCitaAdmin(idCita, dto));
-    }
-
-    /**
      * Edita una cita (paciente)
      * @param idCita ID de la cita a editar
      * @param dto DTO con la información actualizada

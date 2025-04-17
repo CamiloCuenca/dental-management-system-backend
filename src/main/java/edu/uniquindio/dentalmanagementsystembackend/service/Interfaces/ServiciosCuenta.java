@@ -65,8 +65,9 @@ public interface ServiciosCuenta {
      * @return String con un mensaje de confirmación.
      * @throws Exception si ocurre un error general.
      * @throws EmailNotFoundException si el correo electrónico no se encuentra.
+     * @throws AccountAlreadyActiveException si la cuenta ya está activa.
      */
-    String sendActiveCode(String email) throws Exception, EmailNotFoundException;
+    String sendActiveCode(String email) throws Exception, EmailNotFoundException, AccountAlreadyActiveException;
 
     /**
      * Cambia el código de la contraseña.
@@ -107,10 +108,33 @@ public interface ServiciosCuenta {
      * @throws Exception si ocurre un error general.
      * @throws UserNotFoundException si el usuario no se encuentra.
      */
+
+    /**
+     * Actualiza la información del usuario.
+     * @param accountId ID de la cuenta.
+     * @param actualizarUsuarioDTO DTO con la información actualizada del usuario.
+     * @return String con un mensaje de confirmación.
+     * @throws Exception si ocurre un error general.
+     * @throws UserNotFoundException si el usuario no se encuentra.
+     * */
     String actualizarUsuario(Long accountId, ActualizarUsuarioDTO actualizarUsuarioDTO) throws Exception, UserNotFoundException;
 
+    /**
+     * Obtiene el perfil del usuario.
+     * @param accountId ID de la cuenta.
+     * @return PerfilDTO con la información del usuario.
+     * @throws UserNotFoundException si el usuario no se encuentra.
+     * @throws AccountNotFoundException si la cuenta no se encuentra.
+     */
     PerfilDTO obtenerPerfil(Long accountId) throws UserNotFoundException, AccountNotFoundException;
 
+    /**
+     * Genera un nuevo token para la cuenta.
+     * @param accountId ID de la cuenta.
+     * @return String con un mensaje de confirmación.
+     * @throws Exception si ocurre un error general.
+     * @throws UserNotFoundException si el usuario no se encuentra.
+     */
     String generarNuevoToken(Long accountId) throws Exception, UserNotFoundException;
 
     
