@@ -1,7 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.entity;
 
 import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
-import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,42 +13,43 @@ import java.time.Instant;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
+@Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"paciente", "doctor", "tipoCita"})
 @Entity
 @Table(name = "citas")
 public class Cita {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     @Column(name = "id", nullable = false)
-    private Integer id;
+    private Long id;
 
-    // Relación con User para obtener detalles del paciente
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL)  // Permite mantener historial de citas
-    @JoinColumn(name = "paciente_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "paciente_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private User paciente;
 
-    // Relación con User para obtener detalles del odontólogo
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @OnDelete(action = OnDeleteAction.SET_NULL)  // Evita eliminación en cascada
-    @JoinColumn(name = "odontologo_id", nullable = false)
-    private User odontologo;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private User doctor;
 
     @Column(name = "fecha_hora", nullable = false)
     private Instant fechaHora;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false)
+    @Column(name = "estado", nullable = false, length = 20)
     private EstadoCitas estado;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "TipoCita", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tipo_cita_id", nullable = false)
     private TipoCita tipoCita;
 
-
-    public Cita(User paciente, User odontologo, Instant fechaHora, EstadoCitas estado , TipoCita tipoCita) {
+    public Cita(User paciente, User doctor, Instant fechaHora, EstadoCitas estado, TipoCita tipoCita) {
         this.paciente = paciente;
-        this.odontologo = odontologo;
+        this.doctor = doctor;
         this.fechaHora = fechaHora;
         this.estado = estado;
         this.tipoCita = tipoCita;

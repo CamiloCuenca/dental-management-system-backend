@@ -1,16 +1,22 @@
 package edu.uniquindio.dentalmanagementsystembackend.controller;
 
 
+import edu.uniquindio.dentalmanagementsystembackend.dto.account.DoctorDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.JWT.TokenDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.*;
 import edu.uniquindio.dentalmanagementsystembackend.exception.*;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCuenta;
+import edu.uniquindio.dentalmanagementsystembackend.exception.DatabaseOperationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cuenta")
@@ -43,44 +49,12 @@ public class CuentaController {
     public ResponseEntity<String> crearCuenta(@RequestBody CrearCuentaDTO cuentaDTO) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(accountService.crearCuenta(cuentaDTO));
-        } catch (EmailAlreadyExistsException | UserAlreadyExistsException | Exception e) {
+        } catch (EmailAlreadyExistsException | UserAlreadyExistsException | Exception | DatabaseOperationException |
+                 EmailSendingException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
-    /**
-     * Endpoint for retrieving a user profile.
-     * @param accountId ID of the account to retrieve.
-     * @return ResponseEntity with the user profile if found, or appropriate error status if it fails.
-     */
-    @GetMapping("/perfil/{accountId}")
-    public ResponseEntity<PerfilDTO> obtenerPerfil(@PathVariable Long accountId) {
-        try {
-            return ResponseEntity.ok(accountService.obtenerPerfil(accountId));
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        } catch (InvalidIdFormatException | Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
-
-    /**
-     * Endpoint for updating a user profile.
-     * @param accountId ID of the account to update.
-     * @param actualizarPerfilDTO Data transfer object containing updated profile details.
-     * @return ResponseEntity with no content if update is successful, or appropriate error status if it fails.
-     */
-    @PutMapping("/perfil/{accountId}")
-    public ResponseEntity<Void> actualizarPerfil(@PathVariable Long accountId, @RequestBody ActualizarPerfilDTO actualizarPerfilDTO) {
-        try {
-            accountService.actualizarPerfil(accountId, actualizarPerfilDTO);
-            return ResponseEntity.noContent().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (InvalidIdFormatException | Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-    }
 
     /**
      * Endpoint for deleting an account.
@@ -174,5 +148,54 @@ public class CuentaController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
+    /**
+     * Endpoint para actualizar la información del usuario.
+     * @param accountId ID de la cuenta.
+     * @param actualizarUsuarioDTO DTO con la información actualizada del usuario.
+     * @return ResponseEntity con un mensaje de confirmación.
+     */
+    @PutMapping("/usuario/{accountId}")
+    public ResponseEntity<Map<String, String>> actualizarUsuario(
+            @PathVariable Long accountId,
+            @RequestBody ActualizarUsuarioDTO actualizarUsuarioDTO) {
+        try {
+            // Actualizar la información del usuario
+            String mensaje = accountService.actualizarUsuario(accountId, actualizarUsuarioDTO);
+
+            // Generar nuevo token con la información actualizada
+            String nuevoToken = accountService.generarNuevoToken(accountId);
+
+            // Preparar la respuesta
+            Map<String, String> response = new HashMap<>();
+            response.put("message", mensaje);
+            response.put("token", nuevoToken);
+
+            return ResponseEntity.ok(response);
+        } catch (UserNotFoundException | AccountNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Error al actualizar la información del usuario"));
+        }
+    }
+
+    @GetMapping("/perfil/{accountId}")
+    public ResponseEntity<PerfilDTO> obtenerPerfil(@PathVariable Long accountId) {
+        try {
+            PerfilDTO perfil = accountService.obtenerPerfil(accountId);
+            return ResponseEntity.ok(perfil);
+        } catch (UserNotFoundException | AccountNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
+
+
+
 
 }

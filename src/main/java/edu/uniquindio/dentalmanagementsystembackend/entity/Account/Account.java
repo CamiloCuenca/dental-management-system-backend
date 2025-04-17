@@ -5,13 +5,14 @@ import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
+@ToString(exclude = {"password", "user", "registrationValidationCode", "recoveryCode"})
 @Builder
 @Entity
 @Table(name = "cuentas")
@@ -28,20 +29,26 @@ public class Account {
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Rol rol;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private AccountStatus status;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id", referencedColumnName = "id_number", unique = true)
     private User user;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "validation_code_id")
     private ValidationCode registrationValidationCode;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "Recovery_Code_id")
-    private RecoveryCode recoveryCode ;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "recovery_code_id")
+    private RecoveryCode recoveryCode;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt; // Fecha de creación automática
 }

@@ -1,5 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
+import edu.uniquindio.dentalmanagementsystembackend.dto.account.DoctorDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.JWT.TokenDTO;
 
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.*;
@@ -8,6 +9,9 @@ import edu.uniquindio.dentalmanagementsystembackend.exception.InvalidIdFormatExc
 import edu.uniquindio.dentalmanagementsystembackend.exception.ValidationCodeExpiredException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.InvalidCurrentPasswordException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.PasswordMismatchException;
+import edu.uniquindio.dentalmanagementsystembackend.exception.DatabaseOperationException;
+import javax.security.auth.login.AccountNotFoundException;
+
 
 public interface ServiciosCuenta {
 
@@ -31,27 +35,10 @@ public interface ServiciosCuenta {
      * @throws EmailAlreadyExistsException si el correo electrónico ya está registrado.
      * @throws UserAlreadyExistsException si el usuario ya existe.
      */
-    String crearCuenta(CrearCuentaDTO cuenta) throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException;
+    String crearCuenta(CrearCuentaDTO cuenta) throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException, DatabaseOperationException, EmailSendingException;
 
-    /**
-     * Obtiene el perfil del paciente basado en su identificación.
-     * @param id Número de identificación del paciente.
-     * @return PerfilDTO con la información del usuario.
-     * @throws Exception si el usuario no existe.
-     * @throws UserNotFoundException si el usuario no se encuentra.
-     * @throws InvalidIdFormatException si el formato del ID es inválido.
-     */
-    PerfilDTO obtenerPerfil(Long id) throws Exception, UserNotFoundException, InvalidIdFormatException;
+  
 
-    /**
-     * Actualiza los datos personales del usuario.
-     * @param id Número de identificación del usuario.
-     * @param actualizarPerfilDTO DTO con los datos a actualizar.
-     * @throws Exception si el usuario no existe o hay algún error en la actualización.
-     * @throws UserNotFoundException si el usuario no se encuentra.
-     * @throws InvalidIdFormatException si el formato del ID es inválido.
-     */
-    void actualizarPerfil(Long id, ActualizarPerfilDTO actualizarPerfilDTO) throws Exception, UserNotFoundException, InvalidIdFormatException;
 
     /**
      * Desactiva la cuenta del usuario.
@@ -111,6 +98,23 @@ public interface ServiciosCuenta {
      * @throws EmailNotFoundException si el correo electrónico no se encuentra.
      */
     String sendPasswordRecoveryCode(String correo) throws Exception, EmailNotFoundException;
+
+    /**
+     * Actualiza la información del usuario.
+     * @param accountId ID de la cuenta.
+     * @param actualizarUsuarioDTO DTO con la información actualizada del usuario.
+     * @return String con un mensaje de confirmación.
+     * @throws Exception si ocurre un error general.
+     * @throws UserNotFoundException si el usuario no se encuentra.
+     */
+    String actualizarUsuario(Long accountId, ActualizarUsuarioDTO actualizarUsuarioDTO) throws Exception, UserNotFoundException;
+
+    PerfilDTO obtenerPerfil(Long accountId) throws UserNotFoundException, AccountNotFoundException;
+
+    String generarNuevoToken(Long accountId) throws Exception, UserNotFoundException;
+
+    
+
 
 
 
