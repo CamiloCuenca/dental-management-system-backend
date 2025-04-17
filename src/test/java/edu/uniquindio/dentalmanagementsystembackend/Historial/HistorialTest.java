@@ -1,5 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.Historial;
 
+import com.itextpdf.text.DocumentException;
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.CrearHistorialDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.HistorialDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.HistorialMedico;
@@ -83,7 +84,7 @@ public class HistorialTest {
     }
 
     @Test
-    public void pdfHistorial (){
+    public void pdfHistorial () throws DocumentException {
         // ID del paciente para la prueba
         String idPaciente = "555555556";
 
