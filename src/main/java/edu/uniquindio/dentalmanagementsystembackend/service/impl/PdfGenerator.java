@@ -267,4 +267,87 @@ public class PdfGenerator {
 
         card.addCell(lineCell);
     }
+
+
+
+    public byte[] historialPDFPorAnio(String id, int anio) throws DocumentException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.A4, 40, 40, 80, 40); // Márgenes: izquierda, derecha, arriba, abajo
+
+        try {
+            PdfWriter writer = PdfWriter.getInstance(document, outputStream);
+
+            // Configurar eventos para header y footer (reutilizado del método original)
+            writer.setPageEvent(new PdfPageEventHelper() {
+                @Override
+                public void onEndPage(PdfWriter writer, Document document) {
+                    try {
+                        agregarHeader(writer, document);
+                        agregarFooter(writer, document, id);
+                    } catch (DocumentException e) {
+                        throw new RuntimeException("Error al agregar header/footer", e);
+                    }
+                }
+            });
+
+            document.open();
+
+            // Obtener datos del historial para el año específico
+            List<HistorialDTO> historiales = historialService.listarHistorialesPorPacienteYAnio(id, anio);
+
+            if (historiales.isEmpty()) {
+                agregarMensajeSinHistorial(document);
+            } else {
+                // Adaptación del contenido principal para un solo año
+                agregarContenidoPrincipalPorAnio(document, id, anio, historiales);
+            }
+
+            document.close();
+            return outputStream.toByteArray();
+
+        } catch (Exception e) {
+            if (document.isOpen()) {
+                document.close();
+            }
+            throw new DocumentException("Error al generar el PDF: " + e.getMessage());
+        }
+    }
+
+    // Método auxiliar para agregar contenido principal para un año específico
+    private void agregarContenidoPrincipalPorAnio(Document document, String id, int anio, List<HistorialDTO> historiales)
+            throws DocumentException {
+        // Título principal modificado para indicar que es de un año específico
+        Paragraph title = new Paragraph("HISTORIAL DENTAL " + anio,
+                new Font(Font.FontFamily.HELVETICA, 24, Font.BOLD, COLOR_PRINCIPAL));
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(15f);
+        document.add(title);
+
+        // Línea decorativa (reutilizada)
+        agregarLineaDecorativa(document);
+
+        // Información del paciente (adaptada)
+        agregarInfoPacientePorAnio(document, id, historiales);
+
+        // Agregar los registros del año (reutilizando el método existente)
+        agregarSeccionAnio(document, anio, historiales);
+    }
+
+    // Método auxiliar para información del paciente (versión para un año)
+    private void agregarInfoPacientePorAnio(Document document, String id, List<HistorialDTO> historiales)
+            throws DocumentException {
+        String nombrePaciente = !historiales.isEmpty() ? historiales.get(0).nombrePaciente() : "Paciente";
+
+        Paragraph patientName = new Paragraph(nombrePaciente.toUpperCase(),
+                new Font(Font.FontFamily.HELVETICA, 18, Font.BOLDITALIC, COLOR_SECUNDARIO));
+        patientName.setAlignment(Element.ALIGN_CENTER);
+        document.add(patientName);
+
+        Paragraph patientId = new Paragraph("ID: " + id,
+                new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, COLOR_ID_PACIENTE));
+        patientId.setAlignment(Element.ALIGN_CENTER);
+        patientId.setSpacingAfter(20f);
+        document.add(patientId);
+    }
+
 }

@@ -90,4 +90,38 @@ public class HistorialController {
     }
 
 
+
+    @PostMapping("/paciente/pdf/{id}/{anio}")
+    public ResponseEntity<byte[]> generarPdfHistorialPorAnio(
+            @PathVariable("id") String id,
+            @PathVariable("anio") int anio) {
+        try {
+            // Validación básica del ID
+            if (id == null || id.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("ID de paciente no válido".getBytes());
+            }
+
+            byte[] pdfBytes = pdfGenerator.historialPDFPorAnio(id,anio);
+
+            // Verificar que el PDF no esté vacío
+            if (pdfBytes == null || pdfBytes.length == 0) {
+                throw new IllegalStateException("El PDF generado está vacío");
+            }
+
+            return ResponseEntity.ok()
+                    .header("Content-Type", "application/pdf")
+                    .header("Content-Disposition", "attachment; filename=historial_"+id+".pdf")
+                    .body(pdfBytes);
+
+        } catch (Exception e) {
+            // Log del error completo
+            logger.error("Error al generar PDF para paciente " + id, e);
+
+            // Devuelve un mensaje de error claro
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(("Error al generar PDF: " + e.getMessage()).getBytes());
+        }
+    }
+
+
 }
