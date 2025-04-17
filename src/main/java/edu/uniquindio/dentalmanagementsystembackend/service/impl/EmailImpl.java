@@ -308,36 +308,6 @@ public class EmailImpl implements EmailService {
 
     @Override
     @Async
-    public void enviarCorreoCitaEmergencia(String email, String nombreOdontologo, LocalDateTime fechaHora) {
-        String htmlMessage = """
-            <html>
-            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
-                    <h2 style="color: #e74c3c;">Cita de Emergencia</h2>
-                    <p>Estimado paciente,</p>
-                    <p>Se ha programado una cita de emergencia con el Dr. %s.</p>
-                    <ul>
-                        <li><strong>Fecha y hora:</strong> %s</li>
-                    </ul>
-                    <p>Por favor, llegue lo antes posible a nuestra clínica.</p>
-                    <p>Si tiene alguna pregunta, no dude en contactarnos.</p>
-                    <p>Atentamente,<br/>El equipo de OdontoLogic</p>
-                    <hr style="border: 1px solid #eee; margin: 20px 0;">
-                    <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no responda.</p>
-                </div>
-            </body>
-            </html>
-            """.formatted(nombreOdontologo, fechaHora.format(formatter));
-
-        try {
-            sendMail(new EmailDTO(email, "Cita de Emergencia", htmlMessage));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    @Async
     public void enviarCorreoCita(CitaEmailDTO dto) throws Exception {
         String htmlMessage = """
             <html>

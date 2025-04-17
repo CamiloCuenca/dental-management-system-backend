@@ -17,6 +17,11 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Test class for account-related functionalities. This class contains various test cases
+ * for operations offered by the ServiciosCuenta service, such as login, account creation,
+ * activation, deletion, password updates, and profile management.
+ */
 @SpringBootTest
 public class AccountTest {
 
@@ -167,6 +172,16 @@ public class AccountTest {
         assertEquals("Usuario actualizado exitosamente.", resultado);
     }
 
+    /**
+     * Test method for verifying the functionality of retrieving a user profile.
+     *
+     * This method tests the `obtenerPerfil` method of the `serviciosCuenta` service
+     * to ensure it correctly retrieves the profile information of a user associated
+     * with a specific account ID.
+     *
+     * @throws UserNotFoundException    if the associated user for the account ID is not found.
+     * @throws AccountNotFoundException if the account corresponding to the ID is not found.
+     */
     @Test
     void testObtenerPerfil() throws UserNotFoundException, AccountNotFoundException {
         // Arrange

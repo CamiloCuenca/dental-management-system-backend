@@ -80,14 +80,15 @@ public interface EmailService {
      */
     void enviarCorreoCitaCompletada(String email, String nombreOdontologo, LocalDateTime fechaHora);
 
-    /**
-     * Envía un correo de cita de emergencia
-     * @param email Email del paciente
-     * @param nombreOdontologo Nombre del odontólogo
-     * @param fechaHora Fecha y hora de la cita
-     */
-    void enviarCorreoCitaEmergencia(String email, String nombreOdontologo, LocalDateTime fechaHora);
 
+    /**
+     * Envía un correo relacionado con una cita, de acuerdo al tipo especificado.
+     *
+     * @param dto DTO que contiene la información de la cita, incluyendo el email del paciente,
+     *            nombre del paciente, nombre del odontólogo, fecha y hora de la cita,
+     *            y el tipo de cita (confirmación, cancelación, etc.).
+     * @throws Exception Si ocurre un error al enviar el correo.
+     */
     void enviarCorreoCita(CitaEmailDTO dto) throws Exception;
 
 }

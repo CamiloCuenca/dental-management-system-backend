@@ -26,5 +26,13 @@ public interface ServiciosDisponibilidadDoctor {
      */
     List<HorarioDisponibleDTO> obtenerHorariosDisponibles(String doctorId, LocalDate fecha);
 
+    /**
+     * Valida si un doctor está disponible en una fecha y hora específicos.
+     *
+     * @param doctorId Identificador único del doctor cuya disponibilidad se quiere verificar.
+     * @param fecha Fecha para la cual se desea comprobar la disponibilidad.
+     * @param hora Hora para la cual se desea comprobar la disponibilidad.
+     * @return true si el doctor está disponible en la fecha y hora especificadas, false en caso contrario.
+     */
     boolean validarDisponibilidadDoctor(String doctorId, LocalDate fecha, LocalTime hora);
 } 

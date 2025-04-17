@@ -134,4 +134,26 @@ public class CitasController {
         serviciosCitas.completarCita(idCita);
         return ResponseEntity.ok("Cita marcada como completada exitosamente");
     }
+
+    /**
+     * Obtiene todas las citas de un paciente
+     * @param idPaciente ID del paciente
+     * @return Lista de citas del paciente
+     */
+    @GetMapping("/paciente/{idPaciente}")
+    public ResponseEntity<List<CitaDTO>> obtenerCitasPorPaciente(@PathVariable String idPaciente) {
+        return ResponseEntity.ok(serviciosCitas.obtenerCitasPorPaciente(idPaciente));
+    }
+
+    /**
+     * Obtiene todas las citas de un doctor
+     * @param idDoctor ID del doctor
+     * @return Lista de citas del doctor
+     */
+    @GetMapping("/doctor/{idDoctor}")
+    public ResponseEntity<List<CitaDTO>> obtenerCitasPorDoctor(@PathVariable String idDoctor) {
+        return ResponseEntity.ok(serviciosCitas.obtenerCitasPorDoctor(idDoctor));
+    }
+
+
 } 

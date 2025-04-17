@@ -66,6 +66,22 @@ public interface ServiciosCitas {
     void completarCita(Long idCita);
 
     /**
+     * Obtiene todas las citas de un paciente
+     * @param idPaciente ID del paciente
+     * @return Lista de citas del paciente
+     */
+    List<CitaDTO> obtenerCitasPorPaciente(String idPaciente);
+
+    /**
+     * Obtiene todas las citas de un doctor
+     * @param idDoctor ID del doctor
+     * @return Lista de citas del doctor
+     */
+    List<CitaDTO> obtenerCitasPorDoctor(String idDoctor);
+
+
+
+    /**
      * Obtiene las fechas disponibles para un doctor en un rango de fechas
      * @param doctorId ID del doctor
      * @param fechaInicio Fecha de inicio del rango
