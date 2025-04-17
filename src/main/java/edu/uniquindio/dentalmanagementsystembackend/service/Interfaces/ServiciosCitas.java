@@ -1,6 +1,7 @@
 package edu.uniquindio.dentalmanagementsystembackend.service.Interfaces;
 
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaNoAutenticadaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorEspecialidadDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaAdminDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaPacienteDTO;
@@ -21,6 +22,13 @@ public interface ServiciosCitas {
      * @return Cita creada
      */
     Cita crearCita(CrearCitaDTO dto);
+
+    /**
+     * Crea una nueva cita no autenticada
+     * @param dto DTO con la información de la cita
+     * @return Cita creada
+     */
+    Cita crearCitaNoAutenticada(CrearCitaNoAutenticadaDTO dto);
 
     /**
      * Obtiene los doctores disponibles para una especialidad específica

@@ -12,23 +12,23 @@ DELETE FROM users;
 
 -- Insertar Especialidades
 INSERT INTO especialidades (nombre, descripcion, duracion_promedio, activo, codigo_interno, nivel_complejidad, fecha_creacion) VALUES
-    ('Odontología General', 'Servicios básicos de odontología', 30, true, 'ODG001', 1, NOW()),
-    ('Higiene Dental', 'Limpieza y mantenimiento dental', 45, true, 'HIG001', 1, NOW()),
-    ('Cirugía Oral', 'Procedimientos quirúrgicos orales', 60, true, 'CIR001', 3, NOW()),
-    ('Endodoncia', 'Tratamientos de conducto', 90, true, 'END001', 3, NOW()),
-    ('Ortodoncia', 'Tratamientos de alineación dental', 45, true, 'ORT001', 2, NOW()),
-    ('Periodoncia', 'Tratamiento de encías e implantes', 60, true, 'PER001', 2, NOW()),
-    ('Odontología Estética', 'Procedimientos estéticos dentales', 60, true, 'EST001', 2, NOW());
+                                                                                                                                   ('Odontología General', 'Servicios básicos de odontología', 30, true, 'ODG001', 1, NOW()),
+                                                                                                                                   ('Higiene Dental', 'Limpieza y mantenimiento dental', 45, true, 'HIG001', 1, NOW()),
+                                                                                                                                   ('Cirugía Oral', 'Procedimientos quirúrgicos orales', 60, true, 'CIR001', 3, NOW()),
+                                                                                                                                   ('Endodoncia', 'Tratamientos de conducto', 90, true, 'END001', 3, NOW()),
+                                                                                                                                   ('Ortodoncia', 'Tratamientos de alineación dental', 45, true, 'ORT001', 2, NOW()),
+                                                                                                                                   ('Periodoncia', 'Tratamiento de encías e implantes', 60, true, 'PER001', 2, NOW()),
+                                                                                                                                   ('Odontología Estética', 'Procedimientos estéticos dentales', 60, true, 'EST001', 2, NOW());
 
 -- Insertar Tipos de Cita
 INSERT INTO tipos_cita (nombre, descripcion, especialidad_id, duracion_minutos, requiere_historial, prioridad, codigo_interno, activo, fecha_creacion) VALUES
-    ('Consulta General', 'Revisión dental general', 1, 30, false, 1, 'CG001', true, NOW()),
-    ('Limpieza Dental', 'Limpieza dental profesional', 2, 45, false, 1, 'LD001', true, NOW()),
-    ('Extracción Dental', 'Extracción de piezas dentales', 3, 60, true, 2, 'ED001', true, NOW()),
-    ('Tratamiento de Conducto', 'Endodoncia', 4, 90, true, 2, 'TC001', true, NOW()),
-    ('Consulta Ortodoncia', 'Revisión de tratamiento ortodóntico', 5, 45, true, 1, 'CO001', true, NOW()),
-    ('Implante Dental', 'Colocación de implantes', 6, 120, true, 3, 'ID001', true, NOW()),
-    ('Blanqueamiento', 'Blanqueamiento dental profesional', 7, 60, false, 1, 'BD001', true, NOW());
+                                                                                                                                                           ('Consulta General', 'Revisión dental general', 1, 30, false, 1, 'CG001', true, NOW()),
+                                                                                                                                                           ('Limpieza Dental', 'Limpieza dental profesional', 2, 45, false, 1, 'LD001', true, NOW()),
+                                                                                                                                                           ('Extracción Dental', 'Extracción de piezas dentales', 3, 60, true, 2, 'ED001', true, NOW()),
+                                                                                                                                                           ('Tratamiento de Conducto', 'Endodoncia', 4, 90, true, 2, 'TC001', true, NOW()),
+                                                                                                                                                           ('Consulta Ortodoncia', 'Revisión de tratamiento ortodóntico', 5, 45, true, 1, 'CO001', true, NOW()),
+                                                                                                                                                           ('Implante Dental', 'Colocación de implantes', 6, 120, true, 3, 'ID001', true, NOW()),
+                                                                                                                                                           ('Blanqueamiento', 'Blanqueamiento dental profesional', 7, 60, false, 1, 'BD001', true, NOW());
 
 -- Insertar usuarios y sus cuentas
 INSERT INTO users (id_number, name, last_name, phone_number, address, birth_date)
@@ -69,128 +69,130 @@ VALUES
 -- Insertar cuentas para doctores
 INSERT INTO cuentas (email, password, rol, status, user_id, created_at)
 VALUES
-    ('andres.torres@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '111111111', NOW()),
-    ('beatriz.martinez@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '222222222', NOW()),
-    ('carlos.garcia@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '333333333', NOW()),
-    ('diana.lopez@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '444444444', NOW()),
-    ('eduardo.ramirez@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '555555555', NOW()),
-    ('fernanda.sanchez@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '666666666', NOW()),
-    ('gabriel.perez@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '777777777', NOW()),
-    ('hector.gomez@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '888888888', NOW()),
-    ('isabel.castro@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '999999999', NOW()),
-    ('juan.morales@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '101010101', NOW()),
-    ('karina.rojas@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '111111112', NOW()),
-    ('luis.vargas@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '222222223', NOW()),
-    ('maria.silva@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '333333334', NOW()),
-    ('nicolas.cruz@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '444444445', NOW());
+    ('andres.torres@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '111111111', NOW()),
+    ('beatriz.martinez@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '222222222', NOW()),
+    ('carlos.garcia@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '333333333', NOW()),
+    ('diana.lopez@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '444444444', NOW()),
+    ('eduardo.ramirez@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '555555555', NOW()),
+    ('fernanda.sanchez@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '666666666', NOW()),
+    ('gabriel.perez@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '777777777', NOW()),
+    ('hector.gomez@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '888888888', NOW()),
+    ('isabel.castro@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '999999999', NOW()),
+    ('juan.morales@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '101010101', NOW()),
+    ('karina.rojas@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '111111112', NOW()),
+    ('luis.vargas@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '222222223', NOW()),
+    ('maria.silva@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '333333334', NOW()),
+    ('nicolas.cruz@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '444444445', NOW());
 
 -- Insertar cuentas para pacientes
 INSERT INTO cuentas (email, password, rol, status, user_id, created_at)
 VALUES
-    ('ana.martinez@email.com', '$2a$10$SUq/4RlcDDmYtfxwWadCtOfrpZ31lXhOhlINr5SiBI4EtfW9y/CJ6', 'PACIENTE', 'ACTIVE', '555555556', NOW()),
-    ('bruno.gonzalez@email.com', '$2a$10$yY5g1sLXRa6HexmHa0AS7.ndIrL3i3CRdeLFv/Y7cwPDWw.hZa.c6', 'PACIENTE', 'ACTIVE', '666666667', NOW()),
-    ('carmen.rodriguez@email.com', '$2a$10$SUq/4RlcDDmYtfxwWadCtOfrpZ31lXhOhlINr5SiBI4EtfW9y/CJ6', 'PACIENTE', 'ACTIVE', '777777778', NOW()),
-    ('diego.hernandez@email.com', '$2a$10$yY5g1sLXRa6HexmHa0AS7.ndIrL3i3CRdeLFv/Y7cwPDWw.hZa.c6', 'PACIENTE', 'ACTIVE', '888888889', NOW()),
-    ('elena.diaz@email.com', '$2a$10$SUq/4RlcDDmYtfxwWadCtOfrpZ31lXhOhlINr5SiBI4EtfW9y/CJ6', 'PACIENTE', 'ACTIVE', '999999990', NOW()),
-    ('felipe.moreno@email.com', '$2a$10$yY5g1sLXRa6HexmHa0AS7.ndIrL3i3CRdeLFv/Y7cwPDWw.hZa.c6', 'PACIENTE', 'ACTIVE', '101010102', NOW()),
-    ('gloria.jimenez@email.com', '$2a$10$SUq/4RlcDDmYtfxwWadCtOfrpZ31lXhOhlINr5SiBI4EtfW9y/CJ6', 'PACIENTE', 'ACTIVE', '111111113', NOW()),
-    ('hugo.paredes@email.com', '$2a$10$yY5g1sLXRa6HexmHa0AS7.ndIrL3i3CRdeLFv/Y7cwPDWw.hZa.c6', 'PACIENTE', 'ACTIVE', '222222224', NOW()),
-    ('iris.quintero@email.com', '$2a$10$SUq/4RlcDDmYtfxwWadCtOfrpZ31lXhOhlINr5SiBI4EtfW9y/CJ6', 'PACIENTE', 'ACTIVE', '333333335', NOW()),
-    ('jorge.valencia@email.com', '$2a$10$yY5g1sLXRa6HexmHa0AS7.ndIrL3i3CRdeLFv/Y7cwPDWw.hZa.c6', 'PACIENTE', 'ACTIVE', '444444446', NOW());
+    ('ana.martinez@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '555555556', NOW()),
+    ('bruno.gonzalez@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '666666667', NOW()),
+    ('carmen.rodriguez@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '777777778', NOW()),
+    ('diego.hernandez@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '888888889', NOW()),
+    ('elena.diaz@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '999999990', NOW()),
+    ('felipe.moreno@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '101010102', NOW()),
+    ('gloria.jimenez@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '111111113', NOW()),
+    ('hugo.paredes@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '222222224', NOW()),
+    ('iris.quintero@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '333333335', NOW()),
+    ('jorge.valencia@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '444444446', NOW());
 
 -- Asignar especialidades a doctores
 INSERT INTO doctor_especialidad (doctor_id, especialidad_id) VALUES
-    -- Odontología General
-    ('111111111', 1),
-    ('222222222', 1),
-    -- Higiene Dental
-    ('333333333', 2),
-    ('444444444', 2),
-    -- Cirugía Oral
-    ('555555555', 3),
-    ('666666666', 3),
-    -- Endodoncia
-    ('777777777', 4),
-    ('888888888', 4),
-    -- Ortodoncia
-    ('999999999', 5),
-    ('101010101', 5),
-    -- Periodoncia
-    ('111111112', 6),
-    ('222222223', 6),
-    -- Odontología Estética
-    ('333333334', 7),
-    ('444444445', 7);
+                                                                 -- Odontología General
+                                                                 ('111111111', 1),
+                                                                 ('222222222', 1),
+                                                                 -- Higiene Dental
+                                                                 ('333333333', 2),
+                                                                 ('444444444', 2),
+                                                                 -- Cirugía Oral
+                                                                 ('555555555', 3),
+                                                                 ('666666666', 3),
+                                                                 -- Endodoncia
+                                                                 ('777777777', 4),
+                                                                 ('888888888', 4),
+                                                                 -- Ortodoncia
+                                                                 ('999999999', 5),
+                                                                 ('101010101', 5),
+                                                                 -- Periodoncia
+                                                                 ('111111112', 6),
+                                                                 ('222222223', 6),
+                                                                 -- Odontología Estética
+                                                                 ('333333334', 7),
+                                                                 ('444444445', 7);
 
 -- Insertar disponibilidad de doctores (todos los días de lunes a viernes)
 INSERT INTO disponibilidad_doctor (doctor_id, dia_semana, hora_inicio, hora_fin, estado, intervalo_citas, fecha_creacion) VALUES
-    -- Odontología General
-    ('111111111', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 30, NOW()),
-    ('111111111', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 30, NOW()),
-    ('222222222', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 30, NOW()),
-    ('222222222', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 30, NOW()),
-    -- Higiene Dental
-    ('333333333', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 45, NOW()),
-    ('333333333', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 45, NOW()),
-    ('444444444', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 45, NOW()),
-    ('444444444', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 45, NOW()),
-    -- Cirugía Oral
-    ('555555555', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 60, NOW()),
-    ('555555555', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 60, NOW()),
-    ('666666666', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW()),
-    ('666666666', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW()),
-    -- Endodoncia
-    ('777777777', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 90, NOW()),
-    ('777777777', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 90, NOW()),
-    ('888888888', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 90, NOW()),
-    ('888888888', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 90, NOW()),
-    -- Ortodoncia
-    ('999999999', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 45, NOW()),
-    ('999999999', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 45, NOW()),
-    ('101010101', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 45, NOW()),
-    ('101010101', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 45, NOW()),
-    -- Periodoncia
-    ('111111112', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 60, NOW()),
-    ('111111112', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 60, NOW()),
-    ('222222223', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW()),
-    ('222222223', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW()),
-    -- Odontología Estética
-    ('333333334', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 60, NOW()),
-    ('333333334', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 60, NOW()),
-    ('444444445', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW()),
-    ('444444445', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW());
+                                                                                                                              -- Odontología General
+                                                                                                                              ('111111111', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 30, NOW()),
+                                                                                                                              ('111111111', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 30, NOW()),
+                                                                                                                              ('222222222', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 30, NOW()),
+                                                                                                                              ('222222222', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 30, NOW()),
+                                                                                                                              -- Higiene Dental
+                                                                                                                              ('333333333', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 45, NOW()),
+                                                                                                                              ('333333333', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 45, NOW()),
+                                                                                                                              ('444444444', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 45, NOW()),
+                                                                                                                              ('444444444', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 45, NOW()),
+                                                                                                                              -- Cirugía Oral
+                                                                                                                              ('555555555', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 60, NOW()),
+                                                                                                                              ('555555555', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 60, NOW()),
+                                                                                                                              ('666666666', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW()),
+                                                                                                                              ('666666666', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW()),
+                                                                                                                              -- Endodoncia
+                                                                                                                              ('777777777', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 90, NOW()),
+                                                                                                                              ('777777777', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 90, NOW()),
+                                                                                                                              ('888888888', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 90, NOW()),
+                                                                                                                              ('888888888', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 90, NOW()),
+                                                                                                                              -- Ortodoncia
+                                                                                                                              ('999999999', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 45, NOW()),
+                                                                                                                              ('999999999', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 45, NOW()),
+                                                                                                                              ('101010101', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 45, NOW()),
+                                                                                                                              ('101010101', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 45, NOW()),
+                                                                                                                              -- Periodoncia
+                                                                                                                              ('111111112', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 60, NOW()),
+                                                                                                                              ('111111112', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 60, NOW()),
+                                                                                                                              ('222222223', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW()),
+                                                                                                                              ('222222223', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW()),
+                                                                                                                              -- Odontología Estética
+                                                                                                                              ('333333334', 'MONDAY', '08:00:00', '17:00:00', 'ACTIVO', 60, NOW()),
+                                                                                                                              ('333333334', 'WEDNESDAY', '08:00:00', '17:00:00', 'ACTIVO', 60, NOW()),
+                                                                                                                              ('444444445', 'TUESDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW()),
+                                                                                                                              ('444444445', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW());
 
 -- Insertar citas para la próxima semana
-INSERT INTO citas (paciente_id, doctor_id, fecha_hora, estado, tipo_cita_id) VALUES
+INSERT INTO citas (paciente_id, doctor_id, fecha_hora, estado, tipo_cita_id, es_autenticada, 
+                  nombre_paciente_no_autenticado, numero_identificacion_no_autenticado, 
+                  telefono_no_autenticado, email_no_autenticado) VALUES
     -- Citas con Odontología General
-    ('555555556', '111111111', '2024-04-01 09:00:00', 'PENDIENTE', 1),
-    ('666666667', '222222222', '2024-04-02 10:00:00', 'CONFIRMADA', 1),
+    ('555555556', '111111111', '2024-04-01 09:00:00', 'PENDIENTE', 1, true, NULL, NULL, NULL, NULL),
+    ('666666667', '222222222', '2024-04-02 10:00:00', 'CONFIRMADA', 1, true, NULL, NULL, NULL, NULL),
     -- Citas con Higiene Dental
-    ('777777778', '333333333', '2024-04-01 11:00:00', 'PENDIENTE', 2),
-    ('888888889', '444444444', '2024-04-02 14:00:00', 'CONFIRMADA', 2),
+    ('777777778', '333333333', '2024-04-01 11:00:00', 'PENDIENTE', 2, true, NULL, NULL, NULL, NULL),
+    ('888888889', '444444444', '2024-04-02 14:00:00', 'CONFIRMADA', 2, true, NULL, NULL, NULL, NULL),
     -- Citas con Cirugía Oral
-    ('999999990', '555555555', '2024-04-03 09:00:00', 'PENDIENTE', 3),
-    ('101010102', '666666666', '2024-04-04 10:00:00', 'CONFIRMADA', 3),
+    ('999999990', '555555555', '2024-04-03 09:00:00', 'PENDIENTE', 3, true, NULL, NULL, NULL, NULL),
+    ('101010102', '666666666', '2024-04-04 10:00:00', 'CONFIRMADA', 3, true, NULL, NULL, NULL, NULL),
     -- Citas con Endodoncia
-    ('111111113', '777777777', '2024-04-01 13:00:00', 'PENDIENTE', 4),
-    ('222222224', '888888888', '2024-04-02 15:00:00', 'CONFIRMADA', 4),
+    ('111111113', '777777777', '2024-04-01 13:00:00', 'PENDIENTE', 4, true, NULL, NULL, NULL, NULL),
+    ('222222224', '888888888', '2024-04-02 15:00:00', 'CONFIRMADA', 4, true, NULL, NULL, NULL, NULL),
     -- Citas con Ortodoncia
-    ('333333335', '999999999', '2024-04-03 11:00:00', 'PENDIENTE', 5),
-    ('444444446', '101010101', '2024-04-04 13:00:00', 'CONFIRMADA', 5),
+    ('333333335', '999999999', '2024-04-03 11:00:00', 'PENDIENTE', 5, true, NULL, NULL, NULL, NULL),
+    ('444444446', '101010101', '2024-04-04 13:00:00', 'CONFIRMADA', 5, true, NULL, NULL, NULL, NULL),
     -- Citas con Periodoncia
-    ('555555556', '111111112', '2024-04-01 15:00:00', 'PENDIENTE', 6),
-    ('666666667', '222222223', '2024-04-02 16:00:00', 'CONFIRMADA', 6),
+    ('555555556', '111111112', '2024-04-01 15:00:00', 'PENDIENTE', 6, true, NULL, NULL, NULL, NULL),
+    ('666666667', '222222223', '2024-04-02 16:00:00', 'CONFIRMADA', 6, true, NULL, NULL, NULL, NULL),
     -- Citas con Odontología Estética
-    ('777777778', '333333334', '2024-04-03 14:00:00', 'PENDIENTE', 7),
-    ('888888889', '444444445', '2024-04-04 15:00:00', 'CONFIRMADA', 7),
+    ('777777778', '333333334', '2024-04-03 14:00:00', 'PENDIENTE', 7, true, NULL, NULL, NULL, NULL),
+    ('888888889', '444444445', '2024-04-04 15:00:00', 'CONFIRMADA', 7, true, NULL, NULL, NULL, NULL),
     -- Más citas distribuidas
-    ('999999990', '111111111', '2024-04-05 09:00:00', 'PENDIENTE', 1),
-    ('101010102', '333333333', '2024-04-05 10:00:00', 'CONFIRMADA', 2),
-    ('111111113', '555555555', '2024-04-05 11:00:00', 'PENDIENTE', 3),
-    ('222222224', '777777777', '2024-04-05 13:00:00', 'CONFIRMADA', 4),
-    ('333333335', '999999999', '2024-04-05 14:00:00', 'PENDIENTE', 5),
-    ('444444446', '111111112', '2024-04-05 15:00:00', 'CONFIRMADA', 6),
-    ('555555556', '333333334', '2024-04-05 16:00:00', 'PENDIENTE', 7);
+    ('999999990', '111111111', '2024-04-05 09:00:00', 'PENDIENTE', 1, true, NULL, NULL, NULL, NULL),
+    ('101010102', '333333333', '2024-04-05 10:00:00', 'CONFIRMADA', 2, true, NULL, NULL, NULL, NULL),
+    ('111111113', '555555555', '2024-04-05 11:00:00', 'PENDIENTE', 3, true, NULL, NULL, NULL, NULL),
+    ('222222224', '777777777', '2024-04-05 13:00:00', 'CONFIRMADA', 4, true, NULL, NULL, NULL, NULL),
+    ('333333335', '999999999', '2024-04-05 14:00:00', 'PENDIENTE', 5, true, NULL, NULL, NULL, NULL),
+    ('444444446', '111111112', '2024-04-05 15:00:00', 'CONFIRMADA', 6, true, NULL, NULL, NULL, NULL),
+    ('555555556', '333333334', '2024-04-05 16:00:00', 'PENDIENTE', 7, true, NULL, NULL, NULL, NULL);
 
 -- Insertar registros de historial médico asociados a las citas existentes
 INSERT INTO historiales_medicos (fecha, proxima_cita, cita_id, doctor_id, paciente_id, diagnostico, observaciones, tratamiento) VALUES
@@ -232,4 +234,4 @@ INSERT INTO historiales_medicos (fecha, proxima_cita, cita_id, doctor_id, pacien
                                                                                                                                     ('2024-04-05', NULL, 21, '333333334', '555555556', 'Abrasión cervical generalizada', 'Cepillado traumático', 'Restauraciones con resina fluida');
 
 -- Reactivar restricciones de claves foráneas
-SET FOREIGN_KEY_CHECKS = 1; 
+SET FOREIGN_KEY_CHECKS = 1;

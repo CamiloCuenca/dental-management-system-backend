@@ -160,5 +160,27 @@ public class CitasTest {
         serviciosCitas.completarCita(idCita);
     }
 
+    @Test
+    void crearCitaNoAut(){
+
+        String idPaciente = "1001277430";
+        String idDoctor = "111111111";
+        Long idTipoCita = 15L;
+
+        LocalDate fecha = LocalDate.of(2025, 4, 21);
+        LocalTime hora = LocalTime.of(11, 30);
+        CrearCitaNoAutenticadaDTO crearCitaNoAutenticadaDTO = new CrearCitaNoAutenticadaDTO(
+                "Brandon",
+                idPaciente,
+                "3153033412",
+                "sneid123@hotmail.com",
+                idDoctor,
+                fecha,
+                hora,
+                idTipoCita
+        );
+        serviciosCitas.crearCitaNoAutenticada(crearCitaNoAutenticadaDTO);
+    }
+
 
 }

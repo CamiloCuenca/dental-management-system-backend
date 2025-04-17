@@ -4,6 +4,7 @@ import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoCitas;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoDisponibilidad;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.Rol;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaNoAutenticadaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DisponibilidadDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.DoctorEspecialidadDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.EditarCitaAdminDTO;
@@ -163,6 +164,76 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         } catch (Exception e) {
             logger.error("Error al crear la cita", e);
             throw new RuntimeException("Error al crear la cita: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public Cita crearCitaNoAutenticada(CrearCitaNoAutenticadaDTO crearCitaNoAutenticadaDTO) {
+        System.out.println("\n=== Creando nueva cita no autenticada ===");
+        System.out.println("Nombre Paciente: " + crearCitaNoAutenticadaDTO.nombrePaciente());
+        System.out.println("Número Identificación: " + crearCitaNoAutenticadaDTO.pacienteId());
+        System.out.println("Doctor ID: " + crearCitaNoAutenticadaDTO.doctorId());
+        System.out.println("Fecha: " + crearCitaNoAutenticadaDTO.fecha());
+        System.out.println("Hora: " + crearCitaNoAutenticadaDTO.hora());
+        System.out.println("Tipo de cita ID: " + crearCitaNoAutenticadaDTO.tipoCitaId());
+
+        try {
+            // Validar que el doctor exista
+            User doctor = userRepository.findByIdNumber(crearCitaNoAutenticadaDTO.doctorId())
+                    .orElseThrow(() -> new RuntimeException("Doctor no encontrado"));
+
+            // Validar que el usuario sea un doctor
+            if (!doctor.getAccount().getRol().equals(Rol.DOCTOR)) {
+                throw new RuntimeException("El usuario especificado no es un doctor");
+            }
+
+            // Validar que la fecha no sea en el pasado
+            LocalDateTime fechaHoraCita = crearCitaNoAutenticadaDTO.getFechaHora();
+            if (fechaHoraCita.isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("No se pueden crear citas en fechas pasadas");
+            }
+
+            // Validar disponibilidad del doctor
+            if (!serviciosDisponibilidadDoctor.validarDisponibilidadDoctor(
+                    crearCitaNoAutenticadaDTO.doctorId(),
+                    crearCitaNoAutenticadaDTO.fecha(),
+                    crearCitaNoAutenticadaDTO.hora())) {
+                throw new RuntimeException("El doctor no está disponible en ese horario");
+            }
+
+            // Validar que no exista otra cita en el mismo horario
+            if (citasRepository.existsByDoctorAndFechaHora(doctor, fechaHoraCita.atZone(ZoneId.systemDefault()).toInstant())) {
+                throw new RuntimeException("Ya existe una cita programada para ese horario");
+            }
+
+            // Obtener el tipo de cita
+            TipoCita tipoCita = tipoCitaRepository.findById(crearCitaNoAutenticadaDTO.tipoCitaId())
+                    .orElseThrow(() -> new RuntimeException("Tipo de cita no encontrado"));
+
+            // Crear la cita no autenticada
+            Cita cita = new Cita(
+                    crearCitaNoAutenticadaDTO.nombrePaciente(),
+                    crearCitaNoAutenticadaDTO.pacienteId(),
+                    crearCitaNoAutenticadaDTO.telefono(),
+                    crearCitaNoAutenticadaDTO.email(),
+                    doctor,
+                    fechaHoraCita.atZone(ZoneId.systemDefault()).toInstant(),
+                    EstadoCitas.PENDIENTE,
+                    tipoCita
+            );
+
+            // Guardar la cita
+            Cita citaGuardada = citasRepository.save(cita);
+            System.out.println("Cita no autenticada creada exitosamente con ID: " + citaGuardada.getId());
+
+            // Enviar correo de confirmación
+            enviarCorreoConfirmacionCita(citaGuardada);
+
+            return citaGuardada;
+        } catch (Exception e) {
+            logger.error("Error al crear la cita no autenticada", e);
+            throw new RuntimeException("Error al crear la cita no autenticada: " + e.getMessage());
         }
     }
 
