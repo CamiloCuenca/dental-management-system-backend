@@ -12,6 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Esta clase implementa la interfaz ServiciosTipoCita y proporciona la lógica necesaria
+ * para gestionar las operaciones relacionadas con los tipos de cita en la aplicación.
+ * Utiliza la capa de repositorio para interactuar con la base de datos.
+ */
 @Service
 @Transactional
 @Slf4j
@@ -19,7 +24,17 @@ public class ServiciosTipoCitaImpl implements ServiciosTipoCita {
 
     @Autowired
     private TipoCitaRepository tipoCitaRepository;
-    
+
+
+    /**
+     * Obtiene la lista de todos los tipos de cita disponibles en el sistema.
+     * Cada tipo de cita incluye información como su identificador, nombre, duración en minutos
+     * y una descripción. La información recopilada se convierte en objetos DTO para su uso.
+     *
+     * @return una lista de objetos TipoCitaDTO que representan los diferentes tipos de cita.
+     *         Si no se encuentran tipos de cita, se devuelve una lista vacía.
+     * @throws RuntimeException si ocurre un error durante la obtención de los datos.
+     */
     @Override
     public List<TipoCitaDTO> listarTiposCita() {
         System.out.println("\n=== Obteniendo lista de tipos de cita ===");
