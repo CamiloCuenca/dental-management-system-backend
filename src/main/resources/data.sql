@@ -69,34 +69,34 @@ VALUES
 -- Insertar cuentas para doctores
 INSERT INTO cuentas (email, password, rol, status, user_id, created_at)
 VALUES
-    ('andres.torres@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '111111111', NOW()),
-    ('beatriz.martinez@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '222222222', NOW()),
-    ('carlos.garcia@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '333333333', NOW()),
-    ('diana.lopez@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '444444444', NOW()),
-    ('eduardo.ramirez@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '555555555', NOW()),
-    ('fernanda.sanchez@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '666666666', NOW()),
-    ('gabriel.perez@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '777777777', NOW()),
-    ('hector.gomez@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '888888888', NOW()),
-    ('isabel.castro@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '999999999', NOW()),
-    ('juan.morales@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '101010101', NOW()),
-    ('karina.rojas@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '111111112', NOW()),
-    ('luis.vargas@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '222222223', NOW()),
-    ('maria.silva@clinica.com', '$2a$10$XT7QRuo1TuqmcGihg5CN1uFAhL5nat3bqamFTGAgefp3VwP/DMqVe', 'DOCTOR', 'ACTIVE', '333333334', NOW()),
-    ('nicolas.cruz@clinica.com', '$2a$10$hZDofY1Sc.fBvGnE8X2Q4eSFI5JBML/iB54r0C0V.Yz7U0JIALIaq', 'DOCTOR', 'ACTIVE', '444444445', NOW());
+    ('andres.torres@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '111111111', NOW()),
+    ('beatriz.martinez@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '222222222', NOW()),
+    ('carlos.garcia@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '333333333', NOW()),
+    ('diana.lopez@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '444444444', NOW()),
+    ('eduardo.ramirez@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '555555555', NOW()),
+    ('fernanda.sanchez@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '666666666', NOW()),
+    ('gabriel.perez@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '777777777', NOW()),
+    ('hector.gomez@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '888888888', NOW()),
+    ('isabel.castro@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '999999999', NOW()),
+    ('juan.morales@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '101010101', NOW()),
+    ('karina.rojas@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '111111112', NOW()),
+    ('luis.vargas@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '222222223', NOW()),
+    ('maria.silva@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '333333334', NOW()),
+    ('nicolas.cruz@clinica.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'DOCTOR', 'ACTIVE', '444444445', NOW());
 
 -- Insertar cuentas para pacientes
 INSERT INTO cuentas (email, password, rol, status, user_id, created_at)
 VALUES
-    ('ana.martinez@email.com', '$2a$10$SUq/4RlcDDmYtfxwWadCtOfrpZ31lXhOhlINr5SiBI4EtfW9y/CJ6', 'PACIENTE', 'ACTIVE', '555555556', NOW()),
-    ('bruno.gonzalez@email.com', '$2a$10$yY5g1sLXRa6HexmHa0AS7.ndIrL3i3CRdeLFv/Y7cwPDWw.hZa.c6', 'PACIENTE', 'ACTIVE', '666666667', NOW()),
-    ('carmen.rodriguez@email.com', '$2a$10$SUq/4RlcDDmYtfxwWadCtOfrpZ31lXhOhlINr5SiBI4EtfW9y/CJ6', 'PACIENTE', 'ACTIVE', '777777778', NOW()),
-    ('diego.hernandez@email.com', '$2a$10$yY5g1sLXRa6HexmHa0AS7.ndIrL3i3CRdeLFv/Y7cwPDWw.hZa.c6', 'PACIENTE', 'ACTIVE', '888888889', NOW()),
-    ('elena.diaz@email.com', '$2a$10$SUq/4RlcDDmYtfxwWadCtOfrpZ31lXhOhlINr5SiBI4EtfW9y/CJ6', 'PACIENTE', 'ACTIVE', '999999990', NOW()),
-    ('felipe.moreno@email.com', '$2a$10$yY5g1sLXRa6HexmHa0AS7.ndIrL3i3CRdeLFv/Y7cwPDWw.hZa.c6', 'PACIENTE', 'ACTIVE', '101010102', NOW()),
-    ('gloria.jimenez@email.com', '$2a$10$SUq/4RlcDDmYtfxwWadCtOfrpZ31lXhOhlINr5SiBI4EtfW9y/CJ6', 'PACIENTE', 'ACTIVE', '111111113', NOW()),
-    ('hugo.paredes@email.com', '$2a$10$yY5g1sLXRa6HexmHa0AS7.ndIrL3i3CRdeLFv/Y7cwPDWw.hZa.c6', 'PACIENTE', 'ACTIVE', '222222224', NOW()),
-    ('iris.quintero@email.com', '$2a$10$SUq/4RlcDDmYtfxwWadCtOfrpZ31lXhOhlINr5SiBI4EtfW9y/CJ6', 'PACIENTE', 'ACTIVE', '333333335', NOW()),
-    ('jorge.valencia@email.com', '$2a$10$yY5g1sLXRa6HexmHa0AS7.ndIrL3i3CRdeLFv/Y7cwPDWw.hZa.c6', 'PACIENTE', 'ACTIVE', '444444446', NOW());
+    ('ana.martinez@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '555555556', NOW()),
+    ('bruno.gonzalez@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '666666667', NOW()),
+    ('carmen.rodriguez@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '777777778', NOW()),
+    ('diego.hernandez@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '888888889', NOW()),
+    ('elena.diaz@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '999999990', NOW()),
+    ('felipe.moreno@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '101010102', NOW()),
+    ('gloria.jimenez@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '111111113', NOW()),
+    ('hugo.paredes@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '222222224', NOW()),
+    ('iris.quintero@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '333333335', NOW()),
+    ('jorge.valencia@email.com', '$2a$10$EGsmTjDhUXCfSMLbYgSGsOt3ejDVZo9z0/1QDHGXSVmWpA8.Mcqg2', 'PACIENTE', 'ACTIVE', '444444446', NOW());
 
 -- Asignar especialidades a doctores
 INSERT INTO doctor_especialidad (doctor_id, especialidad_id) VALUES
