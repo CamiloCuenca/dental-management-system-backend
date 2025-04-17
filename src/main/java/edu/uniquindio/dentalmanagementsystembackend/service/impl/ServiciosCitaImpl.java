@@ -662,8 +662,9 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                         cita.getPaciente().getAccount().getEmail(),
                         cita.getPaciente().getName() + " " + cita.getPaciente().getLastName(),
                         cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
-                        cita.getTipoCita().getNombre(),
-                        fechaHoraLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                        fechaHoraLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+                        cita.getTipoCita().getNombre()
+
                 );
             } else {
                 // Para citas no autenticadas
@@ -671,8 +672,9 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                         cita.getEmailNoAutenticado(),
                         cita.getNombrePacienteNoAutenticado(),
                         cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
-                        cita.getTipoCita().getNombre(),
-                        fechaHoraLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                        fechaHoraLocal.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+                        cita.getTipoCita().getNombre()
+
                 );
             }
             
