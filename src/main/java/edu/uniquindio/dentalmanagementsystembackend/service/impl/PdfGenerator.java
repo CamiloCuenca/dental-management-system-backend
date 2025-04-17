@@ -82,7 +82,7 @@ public class PdfGenerator {
         header.setLockedWidth(true);
         header.setWidthPercentage(100);
 
-        Paragraph clinicName = new Paragraph("CLÍNICA DENTAL UNIQUINDIO",
+        Paragraph clinicName = new Paragraph("CLÍNICA DENTAL ODONTOLOGIC",
                 new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.GRAY));
         clinicName.setAlignment(Element.ALIGN_RIGHT);
 
