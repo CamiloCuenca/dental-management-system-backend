@@ -45,6 +45,30 @@ public class HistorialTest {
     private PdfGenerator pdfGenerator;
 
 
+    /**
+     * Prueba para crear un nuevo historial médico.
+     * Se verifica que el historial se haya creado correctamente y que los datos sean los esperados.
+     */
+    @Test
+    public void crearHistorial(){
+        // Crear un DTO de historial médico
+        CrearHistorialDTO crearHistorialDTO = new CrearHistorialDTO("555555556",
+                "111111111",
+                1L,
+                LocalDate.now(),
+                "Diagnóstico de prueba",
+                "Tratamiento de prueba",
+                "Observaciones de prueba",
+                LocalDate.now().plusDays(30));
+
+        // Llamar al servicio para crear el historial
+        HistorialMedico historialCreado = historialService.crearHistorial(crearHistorialDTO);
+
+        // Verificar que el historial se haya creado correctamente
+        assertNotNull(historialCreado);
+        assertEquals(crearHistorialDTO.diagnostico(), historialCreado.getDiagnostico());
+    }
+
 
     @Test
     public void testListarHistorialesPorPacienteAgrupadosPorAnio() {

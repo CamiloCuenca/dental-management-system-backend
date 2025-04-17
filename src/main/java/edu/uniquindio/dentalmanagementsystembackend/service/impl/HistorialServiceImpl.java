@@ -82,7 +82,23 @@ public class HistorialServiceImpl implements HistorialService {
         historial.setDoctor(doctor);
 
         // Guardar el historial
+
+        // Marcar la cita como completada
+        completarCita(dto.citaId());
         return historialRepository.save(historial);
+    }
+
+    public void completarCita(Long citaId){
+        // Obtener la cita por ID
+        Cita cita = citasRepository.findById(citaId)
+                .orElseThrow(() -> new HistorialException("Cita no encontrada con ID: " + citaId));
+
+        // Cambiar el estado de la cita a COMPLETADA
+        cita.setEstado(EstadoCitas.COMPLETADA);
+
+        // Guardar los cambios en la cita
+        citasRepository.save(cita);
+
     }
 
     /**
