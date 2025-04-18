@@ -24,4 +24,8 @@ public interface CitasRepository extends JpaRepository<Cita, Long> {
     boolean existsByDoctorAndFechaHoraBetween(User doctor, Instant fechaInicio, Instant fechaFin);
 
     boolean existsByDoctorAndFechaHora(User doctor, Instant fechaHora);
+
+    List<Cita> findByNumeroIdentificacionNoAutenticadoAndEsAutenticadaFalse(String numeroIdentificacion);
+    List<Cita> findByDoctor_IdNumberAndEsAutenticadaFalse(String idDoctor);
+
 }

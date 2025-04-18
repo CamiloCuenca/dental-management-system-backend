@@ -16,6 +16,11 @@ import edu.uniquindio.dentalmanagementsystembackend.entity.Especialidad;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Interface ServiciosCitas.
+ * Define las operaciones relacionadas con la gestión de citas médicas
+ * para pacientes autenticados y no autenticados, así como para administradores.
+ */
 public interface ServiciosCitas {
 
     /**
@@ -110,4 +115,21 @@ public interface ServiciosCitas {
      * @param nuevoEstado Nuevo estado de la cita
      */
     void cambiarEstadoCitaNoAutenticadaAdmin(Long idCita, EstadoCitas nuevoEstado);
+
+
+    /**
+     * Obtiene una lista de citas no autenticadas asociadas a un doctor específico.
+     *
+     * @param idDoctor El identificador único del doctor cuyas citas no autenticadas se buscan.
+     * @return Una lista de objetos CitaDTO que representan las citas no autenticadas del doctor especificado.
+     */
+    List<CitaDTO> obtenerCitasNoAutenticadasPorDoctor(String idDoctor);
+
+    /**
+     * Obtiene una lista de citas que no han sido autenticadas asociadas a un paciente específico.
+     *
+     * @param idPaciente El identificador único del paciente cuyas citas no autenticadas se buscan.
+     * @return Una lista de objetos CitaDTO que representan las citas no autenticadas del paciente especificado.
+     */
+    List<CitaDTO> obtenerCitasNoAutenticadasPorPaciente(String idPaciente);
 }
