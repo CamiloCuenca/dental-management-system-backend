@@ -1,5 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.controller;
 
+import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.cita.CrearCitaNoAutenticadaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
@@ -7,6 +8,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/citas-no-autenticadas")
@@ -25,4 +28,7 @@ public class CitaNoAutenticadaController {
             return ResponseEntity.badRequest().build();
         }
     }
-} 
+
+
+
+}

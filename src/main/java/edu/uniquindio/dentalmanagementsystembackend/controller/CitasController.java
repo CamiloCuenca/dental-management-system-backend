@@ -156,4 +156,40 @@ public class CitasController {
     }
 
 
+    /**
+     * Obtiene todas las citas no autenticadas de un doctor específico.
+     *
+     * @param idDoctor El identificador único del doctor.
+     * @return Lista de citas no autenticadas del doctor.
+     */
+    @GetMapping("/doctor-autenticadas/{idDoctor}")
+    public ResponseEntity<List<CitaDTO>> obtenerCitasNoAutenticadasPorDoctor(@PathVariable String idDoctor) {
+        try {
+            List<CitaDTO> citas = serviciosCitas.obtenerCitasNoAutenticadasPorDoctor(idDoctor);
+            return ResponseEntity.ok(citas);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Obtiene todas las citas no autenticadas de un paciente específico.
+     *
+     * @param idPaciente El identificador único del paciente.
+     * @return Lista de citas no autenticadas del paciente.
+     */
+    @GetMapping("/paciente-no-autenticadas/{idPaciente}")
+    public ResponseEntity<List<CitaDTO>> obtenerCitasNoAutenticadasPorPaciente(@PathVariable String idPaciente) {
+        try {
+            List<CitaDTO> citas = serviciosCitas.obtenerCitasNoAutenticadasPorPaciente(idPaciente);
+            return ResponseEntity.ok(citas);
+        } catch (Exception e) {
+            // Mejora el manejo de errores para identificar mejor el problema
+            e.printStackTrace(); // Para depuración en consola
+            return ResponseEntity.status(500).body(List.of()); // O mejor, devuelve un mensaje explicativo
+        }
+    }
+
+
+
 } 

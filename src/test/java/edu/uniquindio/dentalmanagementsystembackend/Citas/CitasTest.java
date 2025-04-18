@@ -256,12 +256,12 @@ public class CitasTest {
     @Test
     void crearCitaNoAut(){
 
-        String idPaciente = "1001277430";
+        String idPaciente = "1001277431";
         String idDoctor = "111111111";
         Long idTipoCita = 1L;
 
-        LocalDate fecha = LocalDate.of(2025, 4, 27);
-        LocalTime hora = LocalTime.of(13, 30);
+        LocalDate fecha = LocalDate.of(2025, 4, 21);
+        LocalTime hora = LocalTime.of(11, 30);
         CrearCitaNoAutenticadaDTO crearCitaNoAutenticadaDTO = new CrearCitaNoAutenticadaDTO(
                 "CAMILO",
                 idPaciente,
@@ -303,6 +303,33 @@ public class CitasTest {
         );
         serviciosCitas.editarCitaNoAutenticadaAdmin(idCita, editarCitaNoAutenticadaAdminDTO);
     }
+
+    @Test
+    void cancelarCitaNoAutenticadaAdmin(){
+        Long idCita = 34L;
+        serviciosCitas.cancelarCitaNoAutenticadaAdmin(idCita);
+    }
+
+    @Test
+    void cambiarEstadoCitaNoAutenticadaAdmin (){
+        Long idCita = 34L;
+        serviciosCitas.cambiarEstadoCitaNoAutenticadaAdmin(idCita, EstadoCitas.COMPLETADA);
+    }
+
+
+    @Test
+    void obtenerCitasNoAutenticadasPorPaciente(){
+        String idPaciente = "1001277431";
+        serviciosCitas.obtenerCitasNoAutenticadasPorPaciente(idPaciente);
+    }
+
+    @Test
+    void obtenerCitasNoAutenticadasPorDoctor (){
+        String idDoctor = "111111111";
+        serviciosCitas.obtenerCitasNoAutenticadasPorDoctor(idDoctor);
+    }
+
+
     
 
 

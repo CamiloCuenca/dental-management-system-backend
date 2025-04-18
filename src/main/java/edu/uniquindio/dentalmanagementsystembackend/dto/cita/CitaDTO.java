@@ -16,6 +16,8 @@ public record CitaDTO(
     String doctorNombre,
     Instant fechaHora,
     EstadoCitas estado,
+    String email,
+    String telefono,
     Long tipoCitaId,
     String tipoCitaNombre,
     int duracionMinutos
