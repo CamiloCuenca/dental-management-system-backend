@@ -11,6 +11,7 @@ import edu.uniquindio.dentalmanagementsystembackend.dto.cita.TipoCitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.entity.TipoCita;
+import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosTipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosDisponibilidadDoctor;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/citas")
@@ -31,6 +33,7 @@ public class CitasController {
     private final ServiciosCitas serviciosCitas;
     private final ServiciosTipoCita serviciosTipoCita;
     private final ServiciosDisponibilidadDoctor serviciosDisponibilidadDoctor;
+    private final CitasRepository citasRepository;
     
     /**
      * Crea una nueva cita
@@ -142,8 +145,47 @@ public class CitasController {
      */
     @GetMapping("/paciente/{idPaciente}")
     public ResponseEntity<List<CitaDTO>> obtenerCitasPorPaciente(@PathVariable String idPaciente) {
-        return ResponseEntity.ok(serviciosCitas.obtenerCitasPorPaciente(idPaciente));
+        // Validar parámetros de entrada
+        if (idPaciente == null || idPaciente.trim().isEmpty()) {
+            System.out.println("ID de paciente inválido: " + idPaciente);
+            return ResponseEntity.badRequest().body(List.of());
+        }
+
+        try {
+            // Obtener citas usando el repositorio
+            List<Cita> citas = citasRepository.findByPaciente_IdNumber(idPaciente);
+            System.out.println("Se encontraron " + citas.size() + " citas para el paciente con ID " + idPaciente);
+
+            // Transformar a DTOs
+            List<CitaDTO> citasDTO = citas.stream()
+                    .map(cita -> new CitaDTO(
+                            cita.getId(),
+                            cita.getPaciente() != null ? cita.getPaciente().getIdNumber() : null,
+                            cita.getPaciente() != null ? cita.getPaciente().getName() : null,
+                            cita.getDoctor() != null ? cita.getDoctor().getIdNumber() : null,
+                            cita.getDoctor() != null ? cita.getDoctor().getName() : null,
+                            cita.getFechaHora(),
+                            cita.getEstado(),
+                            cita.getPaciente() != null ? cita.getPaciente().getAccount().getEmail() : null,
+                            cita.getPaciente() != null ? cita.getPaciente().getPhoneNumber() : null,
+                            cita.getTipoCita().getId(),
+                            cita.getTipoCita().getNombre(),
+                            cita.getTipoCita().getDuracionMinutos()
+                    ))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(citasDTO);
+        } catch (Exception e) {
+            System.out.println("Error al obtener citas para el paciente " + idPaciente + ": " + e.getMessage());
+            e.printStackTrace(); // Para depuración
+
+            return ResponseEntity
+                    .status(500)
+                    .header("X-Error", "Error procesando la solicitud: " + e.getMessage())
+                    .body(List.of());
+        }
     }
+
 
     /**
      * Obtiene todas las citas de un doctor
@@ -151,9 +193,38 @@ public class CitasController {
      * @return Lista de citas del doctor
      */
     @GetMapping("/doctor/{idDoctor}")
-    public ResponseEntity<List<CitaDTO>> obtenerCitasPorDoctor(@PathVariable String idDoctor) {
-        return ResponseEntity.ok(serviciosCitas.obtenerCitasPorDoctor(idDoctor));
+    public List<CitaDTO> obtenerCitasPorDoctor(@PathVariable String idDoctor) {
+        // Validar parámetros de entrada
+        if (idDoctor == null || idDoctor.trim().isEmpty()) {
+            System.out.println("ID de doctor inválido: " + idDoctor);
+            throw new IllegalArgumentException("El ID del doctor no puede estar vacío");
+        }
+
+        // Buscar explícitamente solo citas autenticadas
+        List<Cita> citas = citasRepository.findByDoctor_IdNumberAndEsAutenticadaTrue(idDoctor);
+        System.out.println("Se encontraron " + citas.size() + " citas autenticadas para el doctor " + idDoctor);
+
+        // Transformar a DTOs y retornar
+        return citas.stream()
+                .map(cita -> new CitaDTO(
+                        cita.getId(),
+                        cita.getPaciente() != null ? cita.getPaciente().getIdNumber() : null,
+                        cita.getPaciente() != null ? cita.getPaciente().getName() : cita.getNombrePacienteNoAutenticado(),
+                        cita.getDoctor() != null ? cita.getDoctor().getIdNumber() : null,
+                        cita.getDoctor() != null ? cita.getDoctor().getName() : null,
+                        cita.getFechaHora(),
+                        cita.getEstado(),
+                        cita.getPaciente() != null ? cita.getPaciente().getAccount().getEmail() : cita.getEmailNoAutenticado(),
+                        cita.getPaciente() != null ? cita.getPaciente().getPhoneNumber() : cita.getTelefonoNoAutenticado(),
+                        cita.getTipoCita().getId(),
+                        cita.getTipoCita().getNombre(),
+                        cita.getTipoCita().getDuracionMinutos()
+                ))
+                .collect(Collectors.toList());
     }
+
+
+
 
 
     /**
@@ -162,15 +233,48 @@ public class CitasController {
      * @param idDoctor El identificador único del doctor.
      * @return Lista de citas no autenticadas del doctor.
      */
-    @GetMapping("/doctor-autenticadas/{idDoctor}")
+    @GetMapping("/doctor-no-autenticadas/{idDoctor}")
     public ResponseEntity<List<CitaDTO>> obtenerCitasNoAutenticadasPorDoctor(@PathVariable String idDoctor) {
+        // Validar parámetros de entrada
+        if (idDoctor == null || idDoctor.trim().isEmpty()) {
+            System.out.println("ID de doctor inválido: " + idDoctor);
+            return ResponseEntity.badRequest().body(List.of());
+        }
+
         try {
-            List<CitaDTO> citas = serviciosCitas.obtenerCitasNoAutenticadasPorDoctor(idDoctor);
-            return ResponseEntity.ok(citas);
+            // Usar el nuevo método de repositorio para obtener solo citas no autenticadas válidas
+            List<Cita> citas = citasRepository.findValidNoAuthCitasByDoctorId(idDoctor);
+            System.out.println("Se encontraron " + citas.size() + " citas no autenticadas válidas para el doctor " + idDoctor);
+
+            // Mapeo mejorado incluyendo el número de identificación
+            List<CitaDTO> citasDTO = citas.stream()
+                    .map(cita -> new CitaDTO(
+                            cita.getId(),
+                            cita.getNumeroIdentificacionNoAutenticado(), // Usamos esto como ID para citas no autenticadas
+                            cita.getNombrePacienteNoAutenticado(),
+                            cita.getDoctor() != null ? cita.getDoctor().getIdNumber() : null,
+                            cita.getDoctor() != null ? cita.getDoctor().getName() : null,
+                            cita.getFechaHora(),
+                            cita.getEstado(),
+                            cita.getEmailNoAutenticado(),
+                            cita.getTelefonoNoAutenticado(),
+                            cita.getTipoCita().getId(),
+                            cita.getTipoCita().getNombre(),
+                            cita.getTipoCita().getDuracionMinutos()
+                    ))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(citasDTO);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            System.out.println("Error al obtener citas no autenticadas: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(List.of());
         }
     }
+
+
+
+
 
     /**
      * Obtiene todas las citas no autenticadas de un paciente específico.
@@ -180,15 +284,48 @@ public class CitasController {
      */
     @GetMapping("/paciente-no-autenticadas/{idPaciente}")
     public ResponseEntity<List<CitaDTO>> obtenerCitasNoAutenticadasPorPaciente(@PathVariable String idPaciente) {
+        // Validar parámetros de entrada
+        if (idPaciente == null || idPaciente.trim().isEmpty()) {
+            System.out.println("ID de paciente inválido: " + idPaciente);
+            return ResponseEntity.badRequest().body(List.of());
+        }
+
         try {
-            List<CitaDTO> citas = serviciosCitas.obtenerCitasNoAutenticadasPorPaciente(idPaciente);
-            return ResponseEntity.ok(citas);
+            // Obtener citas no autenticadas usando el repositorio
+            List<Cita> citas = citasRepository.findByNumeroIdentificacionNoAutenticadoAndEsAutenticadaFalse(idPaciente);
+            System.out.println("Se encontraron " + citas.size() + " citas no autenticadas para el paciente con ID " + idPaciente);
+
+            // Transformar a DTOs
+            List<CitaDTO> citasDTO = citas.stream()
+                    .map(cita -> new CitaDTO(
+                            cita.getId(),
+                            null, // pacienteId es null para citas no autenticadas
+                            cita.getNombrePacienteNoAutenticado(),
+                            cita.getDoctor() != null ? cita.getDoctor().getIdNumber() : null,
+                            cita.getDoctor() != null ? cita.getDoctor().getName() : null,
+                            cita.getFechaHora(),
+                            cita.getEstado(),
+                            cita.getEmailNoAutenticado(),
+                            cita.getTelefonoNoAutenticado(),
+                            cita.getTipoCita().getId(),
+                            cita.getTipoCita().getNombre(),
+                            cita.getTipoCita().getDuracionMinutos()
+                    ))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(citasDTO);
         } catch (Exception e) {
-            // Mejora el manejo de errores para identificar mejor el problema
-            e.printStackTrace(); // Para depuración en consola
-            return ResponseEntity.status(500).body(List.of()); // O mejor, devuelve un mensaje explicativo
+            System.out.println("Error al obtener citas no autenticadas para el paciente " + idPaciente + ": " + e.getMessage());
+            e.printStackTrace(); // Para depuración
+
+            // Devolver un mensaje más explicativo en el cuerpo de la respuesta
+            return ResponseEntity
+                    .status(500)
+                    .header("X-Error", "Error procesando la solicitud: " + e.getMessage())
+                    .body(List.of());
         }
     }
+
 
 
 

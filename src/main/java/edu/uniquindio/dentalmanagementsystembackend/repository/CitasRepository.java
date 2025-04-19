@@ -26,6 +26,17 @@ public interface CitasRepository extends JpaRepository<Cita, Long> {
     boolean existsByDoctorAndFechaHora(User doctor, Instant fechaHora);
 
     List<Cita> findByNumeroIdentificacionNoAutenticadoAndEsAutenticadaFalse(String numeroIdentificacion);
+    List<Cita> findByDoctor_IdNumberAndEsAutenticadaTrue(String idDoctor);
+    // Método existente
     List<Cita> findByDoctor_IdNumberAndEsAutenticadaFalse(String idDoctor);
+
+    // Método nuevo más específico
+    @Query("SELECT c FROM Cita c WHERE c.doctor.idNumber = :idDoctor AND c.esAutenticada = false " +
+            "AND c.nombrePacienteNoAutenticado IS NOT NULL " +
+            "AND c.numeroIdentificacionNoAutenticado IS NOT NULL")
+    List<Cita> findValidNoAuthCitasByDoctorId(@Param("idDoctor") String idDoctor);
+
+
+
 
 }

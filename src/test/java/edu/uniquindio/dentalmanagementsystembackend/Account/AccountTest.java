@@ -63,7 +63,7 @@ public class AccountTest {
                 "carrera-15#3", // address
                 LocalDate.parse("2000-05-20"), // fechaNacimiento (LocalDate)
                 "brandone.acevedoc@uqvirtual.edu.co", // email
-                "C@ntraseña123" // password
+                "M@mahermosa123" // password
         );
         serviciosCuenta.crearCuenta(crearCuentaDTO);
     }
