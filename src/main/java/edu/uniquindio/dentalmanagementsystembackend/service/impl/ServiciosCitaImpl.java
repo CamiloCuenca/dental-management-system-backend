@@ -162,6 +162,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             cita.setFechaHora(fechaHoraCita.atZone(ZoneId.systemDefault()).toInstant());
             cita.setEstado(EstadoCitas.CONFIRMADA);
             cita.setTipoCita(tipoCita);
+            cita.setEsAutenticada(true);
 
             // Guardar la cita
             Cita citaGuardada = citasRepository.save(cita);
