@@ -621,81 +621,118 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     public List<CitaDTO> obtenerCitasNoAutenticadasPorDoctor(String idDoctor) {
         System.out.println("\n=== Obteniendo citas no autenticadas para el doctor ID: " + idDoctor + " ===");
         try {
+            // Validación del parámetro de entrada
+            if (idDoctor == null || idDoctor.trim().isEmpty()) {
+                logger.error("ID de doctor inválido: " + idDoctor);
+                throw new IllegalArgumentException("El ID del doctor no puede estar vacío");
+            }
+
             List<Cita> citas = citasRepository.findByDoctor_IdNumberAndEsAutenticadaFalse(idDoctor);
             System.out.println("Se encontraron " + citas.size() + " citas no autenticadas para el doctor");
 
             List<CitaDTO> citasDTO = citas.stream()
-                    .map(cita -> new CitaDTO(
-                            cita.getId(),
-                            cita.getNumeroIdentificacionNoAutenticado(),
-                            cita.getNombrePacienteNoAutenticado(),
-                            cita.getDoctor().getIdNumber(),
-                            cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
-                            cita.getFechaHora(),
-                            cita.getEstado(),
-                            cita.getEmailNoAutenticado(),
-                            cita.getTelefonoNoAutenticado(),
-                            cita.getTipoCita().getId(),
-                            cita.getTipoCita().getNombre(),
-                            cita.getTipoCita().getDuracionMinutos()
-                    ))
+                    .map(cita -> {
+                        try {
+                            return new CitaDTO(
+                                    cita.getId(),
+                                    cita.getNumeroIdentificacionNoAutenticado(),
+                                    cita.getNombrePacienteNoAutenticado() != null ?
+                                            cita.getNombrePacienteNoAutenticado() : "Nombre no disponible",
+                                    cita.getDoctor() != null ? cita.getDoctor().getIdNumber() : null,
+                                    cita.getDoctor() != null ?
+                                            (cita.getDoctor().getName() + " " + cita.getDoctor().getLastName()) :
+                                            "Doctor no disponible",
+                                    cita.getFechaHora(),
+                                    cita.getEstado(),
+                                    cita.getEmailNoAutenticado(),
+                                    cita.getTelefonoNoAutenticado(),
+                                    cita.getTipoCita() != null ? cita.getTipoCita().getId() : null,
+                                    cita.getTipoCita() != null ? cita.getTipoCita().getNombre() : "Tipo de cita no disponible",
+                                    cita.getTipoCita() != null ? cita.getTipoCita().getDuracionMinutos() : 0
+                            );
+                        } catch (Exception e) {
+                            logger.error("Error al convertir cita no autenticada a DTO: " + cita.getId(), e);
+                            return null;
+                        }
+                    })
+                    .filter(dto -> dto != null)
                     .collect(Collectors.toList());
 
-            // Mostrar información detallada de las citas encontradas
-            System.out.println("\n--- Detalles de las citas no autenticadas del doctor ---");
-            for (int i = 0; i < citasDTO.size(); i++) {
-                CitaDTO dto = citasDTO.get(i);
-                System.out.println("Cita #" + (i + 1) + ":");
-                System.out.println("  ID: " + dto.id());
-                System.out.println("  Paciente: " + dto.pacienteNombre() + " (ID: " + dto.pacienteId() + ")");
-                System.out.println("  Doctor: " + dto.doctorNombre() + " (ID: " + dto.doctorId() + ")");
-                System.out.println("  Fecha y hora: " + dto.fechaHora());
-                System.out.println("  Estado: " + dto.estado());
-                System.out.println("  Tipo de cita: " + dto.tipoCitaNombre() + " (ID: " + dto.tipoCitaId() + ")");
-                System.out.println("  Duración: " + dto.duracionMinutos() + " minutos");
-                System.out.println("  ------------------------------------");
-            }
+            // Mostrar información detallada de las citas encontradas (solo en desarrollo)
+            if (logger.isDebugEnabled()) {
+                System.out.println("\n--- Detalles de las citas no autenticadas del doctor ---");
+                for (int i = 0; i < citasDTO.size(); i++) {
+                    CitaDTO dto = citasDTO.get(i);
+                    System.out.println("Cita #" + (i + 1) + ":");
+                    System.out.println("  ID: " + dto.id());
+                    System.out.println("  Paciente: " + dto.pacienteNombre() + " (ID: " + dto.pacienteId() + ")");
+                    System.out.println("  Doctor: " + dto.doctorNombre() + " (ID: " + dto.doctorId() + ")");
+                    System.out.println("  Fecha y hora: " + dto.fechaHora());
+                    System.out.println("  Estado: " + dto.estado());
+                    System.out.println("  Tipo de cita: " + dto.tipoCitaNombre() + " (ID: " + dto.tipoCitaId() + ")");
+                    System.out.println("  Duración: " + dto.duracionMinutos() + " minutos");
+                    System.out.println("  ------------------------------------");
+                }
 
-            if (citasDTO.isEmpty()) {
-                System.out.println("No se encontraron citas no autenticadas para el doctor con ID: " + idDoctor);
+                if (citasDTO.isEmpty()) {
+                    System.out.println("No se encontraron citas no autenticadas para el doctor con ID: " + idDoctor);
+                }
             }
 
             return citasDTO;
         } catch (Exception e) {
-            logger.error("Error al obtener las citas no autenticadas del doctor", e);
-            System.out.println("ERROR: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error al obtener las citas no autenticadas del doctor " + idDoctor, e);
+            // Eliminar e.printStackTrace() en producción y mantener solo el logger
             throw new RuntimeException("Error al obtener las citas no autenticadas. Por favor, intente nuevamente.");
         }
     }
 
 
 
-        @Override
-        public List<CitaDTO> obtenerCitasNoAutenticadasPorPaciente(String numeroIdentificacion) {
-            System.out.println("\n=== Obteniendo citas no autenticadas para el paciente con identificación: " + numeroIdentificacion + " ===");
-            try {
-                List<Cita> citas = citasRepository.findByNumeroIdentificacionNoAutenticadoAndEsAutenticadaFalse(numeroIdentificacion);
-                System.out.println("Se encontraron " + citas.size() + " citas no autenticadas para el paciente");
 
-                List<CitaDTO> citasDTO = citas.stream()
-                        .map(cita -> new CitaDTO(
-                                cita.getId(),
-                                cita.getNumeroIdentificacionNoAutenticado(),
-                                cita.getNombrePacienteNoAutenticado(),
-                                cita.getDoctor().getIdNumber(),
-                                cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
-                                cita.getFechaHora(),
-                                cita.getEstado(),
-                                cita.getEmailNoAutenticado(),
-                                cita.getTelefonoNoAutenticado(),
-                                cita.getTipoCita().getId(),
-                                cita.getTipoCita().getNombre(),
-                                cita.getTipoCita().getDuracionMinutos()
-                        ))
-                        .collect(Collectors.toList());
+    @Override
+    public List<CitaDTO> obtenerCitasNoAutenticadasPorPaciente(String numeroIdentificacion) {
+        System.out.println("\n=== Obteniendo citas no autenticadas para el paciente con identificación: " + numeroIdentificacion + " ===");
+        try {
+            // Validación del parámetro de entrada
+            if (numeroIdentificacion == null || numeroIdentificacion.trim().isEmpty()) {
+                logger.error("Número de identificación de paciente inválido: " + numeroIdentificacion);
+                throw new IllegalArgumentException("El número de identificación del paciente no puede estar vacío");
+            }
 
-                // Mostrar información detallada de las citas encontradas
+            List<Cita> citas = citasRepository.findByNumeroIdentificacionNoAutenticadoAndEsAutenticadaFalse(numeroIdentificacion);
+            System.out.println("Se encontraron " + citas.size() + " citas no autenticadas para el paciente");
+
+            List<CitaDTO> citasDTO = citas.stream()
+                    .map(cita -> {
+                        try {
+                            return new CitaDTO(
+                                    cita.getId(),
+                                    cita.getNumeroIdentificacionNoAutenticado(),
+                                    cita.getNombrePacienteNoAutenticado() != null ?
+                                            cita.getNombrePacienteNoAutenticado() : "Nombre no disponible",
+                                    cita.getDoctor() != null ? cita.getDoctor().getIdNumber() : null,
+                                    cita.getDoctor() != null ?
+                                            (cita.getDoctor().getName() + " " + cita.getDoctor().getLastName()) :
+                                            "Doctor no disponible",
+                                    cita.getFechaHora(),
+                                    cita.getEstado(),
+                                    cita.getEmailNoAutenticado(),
+                                    cita.getTelefonoNoAutenticado(),
+                                    cita.getTipoCita() != null ? cita.getTipoCita().getId() : null,
+                                    cita.getTipoCita() != null ? cita.getTipoCita().getNombre() : "Tipo de cita no disponible",
+                                    cita.getTipoCita() != null ? cita.getTipoCita().getDuracionMinutos() : 0
+                            );
+                        } catch (Exception e) {
+                            logger.error("Error al convertir cita no autenticada a DTO: " + cita.getId(), e);
+                            return null;
+                        }
+                    })
+                    .filter(dto -> dto != null)
+                    .collect(Collectors.toList());
+
+            // Mostrar información detallada de las citas encontradas (solo en desarrollo)
+            if (logger.isDebugEnabled()) {
                 System.out.println("\n--- Detalles de las citas no autenticadas encontradas ---");
                 for (int i = 0; i < citasDTO.size(); i++) {
                     CitaDTO dto = citasDTO.get(i);
@@ -713,15 +750,16 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                 if (citasDTO.isEmpty()) {
                     System.out.println("No se encontraron citas no autenticadas para el paciente con identificación: " + numeroIdentificacion);
                 }
-
-                return citasDTO;
-            } catch (Exception e) {
-                logger.error("Error al obtener las citas no autenticadas del paciente", e);
-                System.out.println("ERROR: " + e.getMessage());
-                e.printStackTrace();
-                throw new RuntimeException("Error al obtener las citas no autenticadas. Por favor, intente nuevamente.");
             }
+
+            return citasDTO;
+        } catch (Exception e) {
+            logger.error("Error al obtener las citas no autenticadas del paciente " + numeroIdentificacion, e);
+            // Eliminar System.out y e.printStackTrace() en producción y mantener solo el logger
+            throw new RuntimeException("Error al obtener las citas no autenticadas. Por favor, intente nuevamente.");
         }
+    }
+
 
 
 
@@ -731,59 +769,88 @@ public class ServiciosCitaImpl implements ServiciosCitas {
     public List<CitaDTO> obtenerCitasPorPaciente(String idPaciente) {
         System.out.println("\n=== Obteniendo citas para el paciente ID: " + idPaciente + " ===");
         try {
+            // Validación del parámetro de entrada
+            if (idPaciente == null || idPaciente.trim().isEmpty()) {
+                logger.error("ID de paciente inválido: " + idPaciente);
+                throw new IllegalArgumentException("El ID del paciente no puede estar vacío");
+            }
+
             List<Cita> citas = citasRepository.findByPaciente_IdNumber(idPaciente);
             System.out.println("Se encontraron " + citas.size() + " citas para el paciente");
 
             return citas.stream()
-                    .map(cita -> new CitaDTO(
-                            cita.getId(),
-                            cita.getPaciente().getIdNumber(),
-                            cita.getPaciente().getName() + " " + cita.getPaciente().getLastName(),
-                            cita.getDoctor().getIdNumber(),
-                            cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
-                            cita.getFechaHora(),
-                            cita.getEstado(),
-                            cita.getEmailNoAutenticado(),
-                            cita.getTelefonoNoAutenticado(),
-                            cita.getTipoCita().getId(),
-                            cita.getTipoCita().getNombre(),
-                            cita.getTipoCita().getDuracionMinutos()
-                    ))
+                    .map(cita -> {
+                        try {
+                            return new CitaDTO(
+                                    cita.getId(),
+                                    cita.getPaciente() != null ? cita.getPaciente().getIdNumber() : null,
+                                    cita.getPaciente() != null ? (cita.getPaciente().getName() + " " + cita.getPaciente().getLastName()) : "Paciente no disponible",
+                                    cita.getDoctor() != null ? cita.getDoctor().getIdNumber() : null,
+                                    cita.getDoctor() != null ? (cita.getDoctor().getName() + " " + cita.getDoctor().getLastName()) : "Doctor no disponible",
+                                    cita.getFechaHora(),
+                                    cita.getEstado(),
+                                    cita.getEmailNoAutenticado(),
+                                    cita.getTelefonoNoAutenticado(),
+                                    cita.getTipoCita() != null ? cita.getTipoCita().getId() : null,
+                                    cita.getTipoCita() != null ? cita.getTipoCita().getNombre() : "Tipo de cita no disponible",
+                                    cita.getTipoCita() != null ? cita.getTipoCita().getDuracionMinutos() : 0
+                            );
+                        } catch (Exception e) {
+                            logger.error("Error al convertir cita a DTO: " + cita.getId(), e);
+                            return null;
+                        }
+                    })
+                    .filter(dto -> dto != null)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            logger.error("Error al obtener las citas del paciente", e);
+            logger.error("Error al obtener las citas del paciente " + idPaciente, e);
             throw new RuntimeException("Error al obtener las citas. Por favor, intente nuevamente.");
         }
     }
+
 
     @Override
     public List<CitaDTO> obtenerCitasPorDoctor(String idDoctor) {
         System.out.println("\n=== Obteniendo citas para el doctor ID: " + idDoctor + " ===");
         try {
+            if (idDoctor == null || idDoctor.trim().isEmpty()) {
+                logger.error("ID de doctor inválido: " + idDoctor);
+                throw new IllegalArgumentException("El ID del doctor no puede estar vacío");
+            }
+
             List<Cita> citas = citasRepository.findByDoctor_IdNumber(idDoctor);
             System.out.println("Se encontraron " + citas.size() + " citas para el doctor");
 
             return citas.stream()
-                    .map(cita -> new CitaDTO(
-                            cita.getId(),
-                            cita.getPaciente().getIdNumber(),
-                            cita.getPaciente().getName() + " " + cita.getPaciente().getLastName(),
-                            cita.getDoctor().getIdNumber(),
-                            cita.getDoctor().getName() + " " + cita.getDoctor().getLastName(),
-                            cita.getFechaHora(),
-                            cita.getEstado(),
-                            cita.getEmailNoAutenticado(),
-                            cita.getTelefonoNoAutenticado(),
-                            cita.getTipoCita().getId(),
-                            cita.getTipoCita().getNombre(),
-                            cita.getTipoCita().getDuracionMinutos()
-                    ))
+                    .map(cita -> {
+                        try {
+                            return new CitaDTO(
+                                    cita.getId(),
+                                    cita.getPaciente() != null ? cita.getPaciente().getIdNumber() : null,
+                                    cita.getPaciente() != null ? (cita.getPaciente().getName() + " " + cita.getPaciente().getLastName()) : "Paciente no disponible",
+                                    cita.getDoctor() != null ? cita.getDoctor().getIdNumber() : null,
+                                    cita.getDoctor() != null ? (cita.getDoctor().getName() + " " + cita.getDoctor().getLastName()) : "Doctor no disponible",
+                                    cita.getFechaHora(),
+                                    cita.getEstado(),
+                                    cita.getEmailNoAutenticado(),
+                                    cita.getTelefonoNoAutenticado(),
+                                    cita.getTipoCita() != null ? cita.getTipoCita().getId() : null,
+                                    cita.getTipoCita() != null ? cita.getTipoCita().getNombre() : "Tipo de cita no disponible",
+                                    cita.getTipoCita() != null ? cita.getTipoCita().getDuracionMinutos() : 0
+                            );
+                        } catch (Exception e) {
+                            logger.error("Error al convertir cita a DTO: " + cita.getId(), e);
+                            return null;
+                        }
+                    })
+                    .filter(dto -> dto != null)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            logger.error("Error al obtener las citas del doctor", e);
+            logger.error("Error al obtener las citas del doctor " + idDoctor, e);
             throw new RuntimeException("Error al obtener las citas. Por favor, intente nuevamente.");
         }
     }
+
 
     // ==============================================
     // MÉTODOS DE CONSULTA Y DISPONIBILIDAD

@@ -162,7 +162,7 @@ public class CitasController {
      * @param idDoctor El identificador único del doctor.
      * @return Lista de citas no autenticadas del doctor.
      */
-    @GetMapping("/doctor-autenticadas/{idDoctor}")
+    @GetMapping("/doctor-no-autenticadas/{idDoctor}")
     public ResponseEntity<List<CitaDTO>> obtenerCitasNoAutenticadasPorDoctor(@PathVariable String idDoctor) {
         try {
             List<CitaDTO> citas = serviciosCitas.obtenerCitasNoAutenticadasPorDoctor(idDoctor);
