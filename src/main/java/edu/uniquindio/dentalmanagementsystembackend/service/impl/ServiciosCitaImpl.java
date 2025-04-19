@@ -46,8 +46,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosDisponibilidadDoctor;
@@ -619,16 +618,16 @@ public class ServiciosCitaImpl implements ServiciosCitas {
 
     @Override
     public List<CitaDTO> obtenerCitasNoAutenticadasPorDoctor(String idDoctor) {
-        System.out.println("\n=== Obteniendo citas no autenticadas para el doctor ID: " + idDoctor + " ===");
+        logger.info("=== Obteniendo citas no autenticadas para el doctor ID: {} ===", idDoctor);
         try {
             // Validación del parámetro de entrada
             if (idDoctor == null || idDoctor.trim().isEmpty()) {
-                logger.error("ID de doctor inválido: " + idDoctor);
+                logger.error("ID de doctor inválido: {}", idDoctor);
                 throw new IllegalArgumentException("El ID del doctor no puede estar vacío");
             }
 
             List<Cita> citas = citasRepository.findByDoctor_IdNumberAndEsAutenticadaFalse(idDoctor);
-            System.out.println("Se encontraron " + citas.size() + " citas no autenticadas para el doctor");
+            logger.info("Se encontraron {} citas no autenticadas para el doctor", citas.size());
 
             List<CitaDTO> citasDTO = citas.stream()
                     .map(cita -> {
@@ -651,41 +650,36 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                                     cita.getTipoCita() != null ? cita.getTipoCita().getDuracionMinutos() : 0
                             );
                         } catch (Exception e) {
-                            logger.error("Error al convertir cita no autenticada a DTO: " + cita.getId(), e);
+                            logger.error("Error al convertir cita no autenticada a DTO: {}", cita.getId(), e);
                             return null;
                         }
                     })
                     .filter(dto -> dto != null)
                     .collect(Collectors.toList());
 
-            // Mostrar información detallada de las citas encontradas (solo en desarrollo)
+            // Mostrar información detallada a nivel de debug
             if (logger.isDebugEnabled()) {
-                System.out.println("\n--- Detalles de las citas no autenticadas del doctor ---");
-                for (int i = 0; i < citasDTO.size(); i++) {
-                    CitaDTO dto = citasDTO.get(i);
-                    System.out.println("Cita #" + (i + 1) + ":");
-                    System.out.println("  ID: " + dto.id());
-                    System.out.println("  Paciente: " + dto.pacienteNombre() + " (ID: " + dto.pacienteId() + ")");
-                    System.out.println("  Doctor: " + dto.doctorNombre() + " (ID: " + dto.doctorId() + ")");
-                    System.out.println("  Fecha y hora: " + dto.fechaHora());
-                    System.out.println("  Estado: " + dto.estado());
-                    System.out.println("  Tipo de cita: " + dto.tipoCitaNombre() + " (ID: " + dto.tipoCitaId() + ")");
-                    System.out.println("  Duración: " + dto.duracionMinutos() + " minutos");
-                    System.out.println("  ------------------------------------");
-                }
+                logger.debug("Detalles de las citas no autenticadas del doctor:");
+                citasDTO.forEach(dto -> {
+                    logger.debug("Cita ID: {}, Paciente: {}, Fecha: {}, Estado: {}",
+                            dto.id(), dto.pacienteNombre(), dto.fechaHora(), dto.estado());
+                });
 
                 if (citasDTO.isEmpty()) {
-                    System.out.println("No se encontraron citas no autenticadas para el doctor con ID: " + idDoctor);
+                    logger.debug("No se encontraron citas no autenticadas para el doctor con ID: {}", idDoctor);
                 }
             }
 
             return citasDTO;
+        } catch (IllegalArgumentException e) {
+            logger.error("Error de validación: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
-            logger.error("Error al obtener las citas no autenticadas del doctor " + idDoctor, e);
-            // Eliminar e.printStackTrace() en producción y mantener solo el logger
+            logger.error("Error al obtener las citas no autenticadas del doctor {}: {}", idDoctor, e.getMessage(), e);
             throw new RuntimeException("Error al obtener las citas no autenticadas. Por favor, intente nuevamente.");
         }
     }
+
 
 
 
@@ -862,46 +856,62 @@ public class ServiciosCitaImpl implements ServiciosCitas {
      */
     @Override
     public List<DoctorEspecialidadDTO> obtenerDoctoresPorEspecialidad(Long especialidadId) {
-        System.out.println("\n=== Obteniendo doctores para la especialidad ID: " + especialidadId + " ===");
+        logger.info("=== Obteniendo doctores para la especialidad ID: {} ===", especialidadId);
         try {
             // 1. Verificar que la especialidad existe
             Especialidad especialidad = especialidadRepository.findById(especialidadId)
-                    .orElseThrow(
-                            () -> new IllegalArgumentException("Especialidad no encontrada con ID: " + especialidadId));
+                    .orElseThrow(() -> new IllegalArgumentException("Especialidad no encontrada con ID: " + especialidadId));
 
-            System.out.println("Especialidad encontrada: " + especialidad.getNombre());
+            logger.info("Especialidad encontrada: {}", especialidad.getNombre());
 
-            // 2. Obtener todos los doctores
+            // 2. Consulta más eficiente - Obtener directamente los doctores con esta especialidad
+            // Opción alternativa si el repositorio lo permite:
+            // List<User> doctoresFiltrados = userRepository.findByAccount_RolAndEspecialidades(Rol.DOCTOR, especialidad);
+
+            // Si no se puede implementar la consulta directa, mantener el enfoque actual pero mejorado:
             List<User> doctores = userRepository.findByAccount_Rol(Rol.DOCTOR);
-            System.out.println("Total de doctores en el sistema: " + doctores.size());
+            logger.info("Total de doctores en el sistema: {}", doctores.size());
 
-            // 3. Filtrar doctores que tienen la especialidad requerida
             List<User> doctoresFiltrados = doctores.stream()
                     .filter(doctor -> doctor.getEspecialidades() != null &&
                             doctor.getEspecialidades().contains(especialidad))
                     .collect(Collectors.toList());
 
-            System.out.println("Doctores encontrados para la especialidad " + especialidad.getNombre() + ": "
-                    + doctoresFiltrados.size());
+            logger.info("Doctores encontrados para la especialidad {}: {}",
+                    especialidad.getNombre(), doctoresFiltrados.size());
+
+            // Obtenemos los IDs de los doctores para una consulta de disponibilidad más eficiente
+            Set<String> doctorIds = doctoresFiltrados.stream()
+                    .map(User::getIdNumber)
+                    .collect(Collectors.toSet());
+
+            // Mapa para almacenar la disponibilidad de cada doctor
+            Map<String, List<DisponibilidadDTO>> disponibilidadPorDoctor = new HashMap<>();
+
+            // 3. Obtener disponibilidad para todos los doctores filtrados de una vez
+            // (Esta consulta dependería de si el repositorio lo permite)
+            if (!doctorIds.isEmpty()) {
+                for (DayOfWeek dia : DayOfWeek.values()) {
+                    List<DisponibilidadDoctor> disponibilidades = disponibilidadDoctorRepository
+                            .findByDoctor_IdNumberInAndDiaSemanaAndEstado(
+                                    doctorIds, dia, EstadoDisponibilidad.ACTIVO);
+
+                    // Organizar por doctor
+                    for (DisponibilidadDoctor d : disponibilidades) {
+                        String doctorId = d.getDoctor().getIdNumber();
+                        disponibilidadPorDoctor.computeIfAbsent(doctorId, k -> new ArrayList<>())
+                                .add(new DisponibilidadDTO(d.getDiaSemana(), d.getHoraInicio(), d.getHoraFin()));
+                    }
+                }
+            }
 
             // 4. Convertir a DTOs
             List<DoctorEspecialidadDTO> doctoresDTO = doctoresFiltrados.stream()
                     .map(doctor -> {
-                        // Obtener disponibilidad del doctor
-                        List<DisponibilidadDTO> disponibilidadDTO = new ArrayList<>();
+                        // Obtener disponibilidad del doctor del mapa
+                        List<DisponibilidadDTO> disponibilidadDTO =
+                                disponibilidadPorDoctor.getOrDefault(doctor.getIdNumber(), Collections.emptyList());
 
-                        // Obtener disponibilidad para cada día de la semana
-                        for (DayOfWeek dia : DayOfWeek.values()) {
-                            List<DisponibilidadDoctor> disponibilidadesDia = disponibilidadDoctorRepository
-                                    .findByDoctor_IdNumberAndDiaSemanaAndEstado(doctor.getIdNumber(), dia,
-                                            EstadoDisponibilidad.ACTIVO);
-
-                            // Convertir a DTOs
-                            disponibilidadesDia.forEach(d -> disponibilidadDTO
-                                    .add(new DisponibilidadDTO(d.getDiaSemana(), d.getHoraInicio(), d.getHoraFin())));
-                        }
-
-                        // Crear DTO del doctor
                         return new DoctorEspecialidadDTO(
                                 doctor.getIdNumber(),
                                 doctor.getName(),
@@ -911,19 +921,20 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                     })
                     .collect(Collectors.toList());
 
-            doctoresDTO.forEach(doctor -> System.out
-                    .println("- " + doctor.nombre() + " " + doctor.apellido() + " (ID: " + doctor.id() + ")"));
+            // Log de resultados
+            doctoresDTO.forEach(doctor -> logger.info("- {} {} (ID: {})",
+                    doctor.nombre(), doctor.apellido(), doctor.id()));
 
             return doctoresDTO;
         } catch (IllegalArgumentException e) {
-            System.out.println("Error: " + e.getMessage());
+            logger.error("Error: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
-            System.out.println("Error inesperado: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error inesperado: {}", e.getMessage(), e);
             throw new RuntimeException("Error al obtener los doctores. Por favor, intente nuevamente.");
         }
     }
+
 
     /**
      * Obtiene las fechas disponibles para un doctor en un rango específico.

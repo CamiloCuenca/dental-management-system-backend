@@ -131,7 +131,7 @@ public class CitasTest {
      */
     @Test
     void obtenerDoctoresPorEspecialidad() {
-        Long especialidadId = 1L; // ID de la especialidad de ejemplo
+        Long especialidadId = 22L; // ID de la especialidad de ejemplo
         List<DoctorEspecialidadDTO> doctores = serviciosCitas.obtenerDoctoresPorEspecialidad(especialidadId);
     }
 
