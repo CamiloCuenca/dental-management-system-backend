@@ -1,5 +1,6 @@
 package edu.uniquindio.dentalmanagementsystembackend.Historial;
 
+import com.itextpdf.text.DocumentException;
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.CrearHistorialDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.HistorialDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Account.HistorialMedico;
@@ -83,11 +84,32 @@ public class HistorialTest {
     }
 
     @Test
-    public void pdfHistorial (){
+    public void pdfHistorial () throws DocumentException {
         // ID del paciente para la prueba
         String idPaciente = "555555556";
 
         pdfGenerator.historialPDF(idPaciente);
 
+    }
+
+    @Test
+    public void testListarHistorialesPorPacienteYAnio() {
+        // ID del paciente y año para la prueba
+        String idPaciente = "555555556";
+        int anio = 2024;
+
+        // Llamar al servicio para listar los historiales por paciente y año
+        List<HistorialDTO> historiales = historialService.listarHistorialesPorPacienteYAnio(idPaciente, anio);
+
+        // Verificar que se obtuvieron los historiales
+        assertNotNull(historiales);
+        assertFalse(historiales.isEmpty());
+
+        // Verificar que todos los historiales sean del año especificado
+        for (HistorialDTO historial : historiales) {
+            assertEquals(anio, historial.fecha().getYear());
+        }
+
+        System.out.println(historiales);
     }
 }

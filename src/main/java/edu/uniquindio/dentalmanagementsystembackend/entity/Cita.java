@@ -31,6 +31,22 @@ public class Cita {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private User paciente;
 
+    @Column(name = "es_autenticada", nullable = false)
+    private boolean esAutenticada;
+
+    // Campos para paciente no autenticado
+    @Column(name = "nombre_paciente_no_autenticado")
+    private String nombrePacienteNoAutenticado;
+
+    @Column(name = "numero_identificacion_no_autenticado")
+    private String numeroIdentificacionNoAutenticado;
+
+    @Column(name = "telefono_no_autenticado")
+    private String telefonoNoAutenticado;
+
+    @Column(name = "email_no_autenticado")
+    private String emailNoAutenticado;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_id")
     @OnDelete(action = OnDeleteAction.SET_NULL)
@@ -53,5 +69,20 @@ public class Cita {
         this.fechaHora = fechaHora;
         this.estado = estado;
         this.tipoCita = tipoCita;
+        this.esAutenticada = true;
+    }
+
+    public Cita(String nombrePacienteNoAutenticado, String numeroIdentificacionNoAutenticado,
+                String telefonoNoAutenticado, String emailNoAutenticado, User doctor,
+                Instant fechaHora, EstadoCitas estado, TipoCita tipoCita) {
+        this.nombrePacienteNoAutenticado = nombrePacienteNoAutenticado;
+        this.numeroIdentificacionNoAutenticado = numeroIdentificacionNoAutenticado;
+        this.telefonoNoAutenticado = telefonoNoAutenticado;
+        this.emailNoAutenticado = emailNoAutenticado;
+        this.doctor = doctor;
+        this.fechaHora = fechaHora;
+        this.estado = estado;
+        this.tipoCita = tipoCita;
+        this.esAutenticada = false;
     }
 }

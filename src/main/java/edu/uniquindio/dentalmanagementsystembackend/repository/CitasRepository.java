@@ -24,4 +24,31 @@ public interface CitasRepository extends JpaRepository<Cita, Long> {
     boolean existsByDoctorAndFechaHoraBetween(User doctor, Instant fechaInicio, Instant fechaFin);
 
     boolean existsByDoctorAndFechaHora(User doctor, Instant fechaHora);
+
+   // 1. Buscar citas NO autenticadas por número de identificación (paciente no autenticado)
+    @Query("SELECT c FROM Cita c WHERE c.numeroIdentificacionNoAutenticado = :numeroIdentificacion AND c.esAutenticada = false")
+    List<Cita> findByNumeroIdentificacionNoAutenticadoAndEsAutenticadaFalse(
+            @Param("numeroIdentificacion") String numeroIdentificacion
+    );
+
+    // 2. Buscar citas autenticadas por ID del doctor
+    @Query("SELECT c FROM Cita c WHERE c.doctor.idNumber = :idDoctor AND c.esAutenticada = true")
+    List<Cita> findByDoctor_IdNumberAndEsAutenticadaTrue(
+            @Param("idDoctor") String idDoctor
+    );
+
+    // 3. Buscar citas NO autenticadas por ID del doctor
+    @Query("SELECT c FROM Cita c WHERE c.doctor.idNumber = :idDoctor AND c.esAutenticada = false")
+    List<Cita> findByDoctor_IdNumberAndEsAutenticadaFalse(
+            @Param("idDoctor") String idDoctor
+    );
+    // Método nuevo más específico
+    @Query("SELECT c FROM Cita c WHERE c.doctor.idNumber = :idDoctor AND c.esAutenticada = false " +
+            "AND c.nombrePacienteNoAutenticado IS NOT NULL " +
+            "AND c.numeroIdentificacionNoAutenticado IS NOT NULL")
+    List<Cita> findValidNoAuthCitasByDoctorId(@Param("idDoctor") String idDoctor);
+
+
+
+
 }

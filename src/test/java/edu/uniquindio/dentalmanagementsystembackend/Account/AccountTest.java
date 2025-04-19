@@ -5,10 +5,6 @@ import edu.uniquindio.dentalmanagementsystembackend.exception.*;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CuentaRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.UserRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCuenta;
-import edu.uniquindio.dentalmanagementsystembackend.exception.ValidationCodeExpiredException;
-import edu.uniquindio.dentalmanagementsystembackend.exception.InvalidCurrentPasswordException;
-import edu.uniquindio.dentalmanagementsystembackend.exception.PasswordMismatchException;
-import edu.uniquindio.dentalmanagementsystembackend.exception.DatabaseOperationException;
 
 import javax.security.auth.login.AccountNotFoundException;
 
@@ -21,22 +17,16 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Test class for account-related functionalities. This class contains various test cases
+ * for operations offered by the ServiciosCuenta service, such as login, account creation,
+ * activation, deletion, password updates, and profile management.
+ */
 @SpringBootTest
 public class AccountTest {
 
-
-    @Autowired
-    private CuentaRepository cuentaRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
     @Autowired
     ServiciosCuenta serviciosCuenta;
-
 
     /**
      * Test for user login.
@@ -50,8 +40,7 @@ public class AccountTest {
     void testLogin() throws Exception, UserNotFoundException, InvalidPasswordException, AccountInactiveException {
         LoginDTO loginDTO = new LoginDTO(
                 "1001277430",
-                "M@mahermosa1234"
-        );
+                "C@ntraseña123");
 
         serviciosCuenta.login(loginDTO);
     }
@@ -64,16 +53,17 @@ public class AccountTest {
      * @throws UserAlreadyExistsException  if the user already exists.
      */
     @Test
-    void testGuardarCuentas() throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException, DatabaseOperationException, EmailSendingException {
+    void testGuardarCuentas() throws Exception, EmailAlreadyExistsException, UserAlreadyExistsException,
+            DatabaseOperationException, EmailSendingException {
         CrearCuentaDTO crearCuentaDTO = new CrearCuentaDTO(
-                "1001277430",                            // idNumber
-                "Brandon",                        // name
-                "Acevedo castañeda",                     // lastName
-                "3153033412",                            // phoneNumber
-                "carrera-15#3",                          // address
-                LocalDate.parse("2000-05-20"),           // fechaNacimiento (LocalDate)
-                "brandone.acevedoc@uqvirtual.edu.co",                   // email
-                "M@mahermosa123"                                   // password
+                "1001277430", // idNumber
+                "Brandon", // name
+                "Acevedo castañeda", // lastName
+                "3153033412", // phoneNumber
+                "carrera-15#3", // address
+                LocalDate.parse("2000-05-20"), // fechaNacimiento (LocalDate)
+                "brandone.acevedoc@uqvirtual.edu.co", // email
+                "M@mahermosa123" // password
         );
         serviciosCuenta.crearCuenta(crearCuentaDTO);
     }
@@ -90,7 +80,6 @@ public class AccountTest {
         serviciosCuenta.eliminarCuenta(49L);
     }
 
-
     /**
      * Test for activating an account.
      *
@@ -101,9 +90,8 @@ public class AccountTest {
     @Test
     void testActivarCuenta() throws Exception, AccountAlreadyActiveException, ValidationCodeExpiredException {
         ActivateAccountDTO activateAccountDTO = new ActivateAccountDTO(
-                "46522",
-                "brandone.acevedoc@uqvirtual.edu.co"
-        );
+                "91236",
+                "brandone.acevedoc@uqvirtual.edu.co");
         serviciosCuenta.activateAccount(activateAccountDTO);
     }
 
@@ -112,10 +100,11 @@ public class AccountTest {
      *
      * @throws Exception              if a general error occurs.
      * @throws EmailNotFoundException if the email is not found.
+     * @throws AccountAlreadyActiveException 
      */
     @Test
-    void testEnviarCodigo() throws Exception, EmailNotFoundException {
-        serviciosCuenta.sendActiveCode("laura.sanchez@hotmail.com");
+    void testEnviarCodigo() throws Exception, EmailNotFoundException, AccountAlreadyActiveException {
+        serviciosCuenta.sendActiveCode("brandone.acevedoc@uqvirtual.edu.co");
     }
 
     /**
@@ -126,7 +115,7 @@ public class AccountTest {
      */
     @Test
     void testEnviarCodigoRecuperacion() throws Exception, EmailNotFoundException {
-        serviciosCuenta.sendPasswordRecoveryCode("brandone.acevdoc@uqvirtual.edu.co");
+        serviciosCuenta.sendPasswordRecoveryCode("brandone.acevedoc@uqvirtual.edu.co");
     }
 
     /**
@@ -141,8 +130,7 @@ public class AccountTest {
         UpdatePasswordDTO updatePasswordDTO = new UpdatePasswordDTO(
                 "contraseña1",
                 "M@mahermosa123",
-                "M@mahermosa123"
-        );
+                "M@mahermosa123");
         serviciosCuenta.updatePassword(15L, updatePasswordDTO);
     }
 
@@ -155,19 +143,19 @@ public class AccountTest {
      * @throws ValidationCodeExpiredException if the validation code has expired.
      */
     @Test
-    void testChangePasswordCode() throws Exception, PasswordsDoNotMatchException, InvalidValidationCodeException, ValidationCodeExpiredException {
+    void testChangePasswordCode() throws Exception, PasswordsDoNotMatchException, InvalidValidationCodeException,
+            ValidationCodeExpiredException {
         ChangePasswordCodeDTO changePasswordCodeDTO = new ChangePasswordCodeDTO(
-                "25232",
+                "37233",
                 "M@mahermosa1234",
-                "M@mahermosa1234"
-        );
+                "M@mahermosa1234");
         serviciosCuenta.changePasswordCode(changePasswordCodeDTO);
     }
 
     @Test
     void testActualizarUsuario() throws Exception, UserNotFoundException {
         // Arrange
-        Long accountId = 15L; // ID de una cuenta existente
+        Long accountId = 26L; // ID de una cuenta existente
         ActualizarUsuarioDTO dto = new ActualizarUsuarioDTO(
                 "Nuevo Nombre",
                 "Nuevo Apellido",
@@ -184,19 +172,25 @@ public class AccountTest {
         assertEquals("Usuario actualizado exitosamente.", resultado);
     }
 
+    /**
+     * Test method for verifying the functionality of retrieving a user profile.
+     *
+     * This method tests the `obtenerPerfil` method of the `serviciosCuenta` service
+     * to ensure it correctly retrieves the profile information of a user associated
+     * with a specific account ID.
+     *
+     * @throws UserNotFoundException    if the associated user for the account ID is not found.
+     * @throws AccountNotFoundException if the account corresponding to the ID is not found.
+     */
     @Test
     void testObtenerPerfil() throws UserNotFoundException, AccountNotFoundException {
         // Arrange
-        Long accountId = 15L; // ID de una cuenta existente
+        Long accountId = 26L; // ID de una cuenta existente
 
         // Act
         PerfilDTO perfil = serviciosCuenta.obtenerPerfil(accountId);
 
         System.out.println(perfil);
     }
-
-
-
-
 
 }

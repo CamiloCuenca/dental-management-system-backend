@@ -31,7 +31,9 @@ public class ServiciosDisponibilidadDoctorImpl implements ServiciosDisponibilida
     
     @Autowired
     private UserRepository userRepository;
-    
+
+
+
     @Override
     public List<FechaDisponibleDTO> obtenerFechasDisponibles(String doctorId, LocalDate fechaInicio, LocalDate fechaFin) {
         System.out.println("\n=== Obteniendo fechas disponibles para el doctor ID: " + doctorId + " ===");
