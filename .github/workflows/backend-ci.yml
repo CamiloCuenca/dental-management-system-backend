@@ -3,16 +3,16 @@ name: Java CI with Spring Boot
 on:
   push:
     branches:
-      - '**'  # Ejecuta en TODAS las ramas al hacer push
-      - 'Juan-Camilo-Cuenca'  # Específicamente para tu rama
+      - '**'  # Todas las ramas
+      - 'Juan-Camilo-Cuenca'  # Tu rama específica
   pull_request:
     branches: [ main ]
 
 env:
   MYSQL_DATABASE: dental_db_test
-  MYSQL_USER: ${{ secrets.DB_USER || 'root' }}  # Usa secret o valor por defecto
-  MYSQL_PASSWORD: ${{ secrets.DB_PASSWORD || 'root' }}
-  MYSQL_ROOT_PASSWORD: ${{ secrets.DB_ROOT_PASSWORD || 'root' }}
+  MYSQL_USER: root
+  MYSQL_PASSWORD: 1234  # Actualizado para coincidir con tu properties
+  MYSQL_ROOT_PASSWORD: 1234  # Misma contraseña para root
 
 jobs:
   build-and-test:
@@ -21,14 +21,14 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
-          MYSQL_USER: ${{ env.MYSQL_USER }}
-          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
-          MYSQL_ROOT_PASSWORD: ${{ env.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: dental_db_test
+          MYSQL_USER: root
+          MYSQL_PASSWORD: 1234
+          MYSQL_ROOT_PASSWORD: 1234
         ports:
           - 3306:3306
         options: |
-          --health-cmd="mysqladmin ping -u root -p${{ env.MYSQL_ROOT_PASSWORD }}"
+          --health-cmd="mysqladmin ping -uroot -p1234"
           --health-interval=10s
           --health-timeout=10s
           --health-retries=5
@@ -47,17 +47,16 @@ jobs:
         run: |
           mkdir -p src/main/resources/
           cp src/test/resources/data-test.sql src/main/resources/data.sql
-          # Configuración dinámica para tests
-          echo "spring.datasource.username=${{ env.MYSQL_USER }}" >> src/test/resources/application-test.properties
-          echo "spring.datasource.password=${{ env.MYSQL_PASSWORD }}" >> src/test/resources/application-test.properties
 
       - name: Wait for MySQL
-        run: sleep 15  # Espera segura para MySQL
+        run: sleep 25  # Espera ampliada para MySQL
 
-      - name: Run Tests with MySQL
+      - name: Run Tests
         run: ./gradlew test --info
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ env.MYSQL_DATABASE }}?useSSL=false&allowPublicKeyRetrieval=true
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/dental_db_test?useSSL=false
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: 1234
           SPRING_JPA_HIBERNATE_DDL_AUTO: create
 
       - name: Build Project
@@ -72,7 +71,6 @@ jobs:
             build/test-results/**/*
             build/reports/tests/**/*
 
-      - name: Show MySQL logs on failure
+      - name: Show MySQL logs if failed
         if: failure()
-        run: |
-          docker logs $(docker ps -aqf "name=mysql") || echo "No MySQL container found"
+        run: docker logs $(docker ps -aqf "name=mysql")
