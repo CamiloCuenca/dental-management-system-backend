@@ -2,13 +2,6 @@
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Limpiar tablas existentes
-DELETE FROM citas;
-DELETE FROM disponibilidad_doctor;
-DELETE FROM doctor_especialidad;
-DELETE FROM tipos_cita;
-DELETE FROM especialidades;
-DELETE FROM cuentas;
-DELETE FROM users;
 
 -- Insertar Especialidades
 INSERT INTO especialidades (nombre, descripcion, duracion_promedio, activo, codigo_interno, nivel_complejidad, fecha_creacion) VALUES
