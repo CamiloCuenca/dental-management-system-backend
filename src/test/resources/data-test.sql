@@ -1,8 +1,6 @@
 -- Desactivar temporalmente restricciones de claves foráneas
 SET FOREIGN_KEY_CHECKS = 0;
 
--- Limpiar tablas existentes
-
 -- Insertar Especialidades
 INSERT INTO especialidades (nombre, descripcion, duracion_promedio, activo, codigo_interno, nivel_complejidad, fecha_creacion) VALUES
                                                                                                                                    ('Odontología General', 'Servicios básicos de odontología', 30, true, 'ODG001', 1, NOW()),
@@ -154,38 +152,38 @@ INSERT INTO disponibilidad_doctor (doctor_id, dia_semana, hora_inicio, hora_fin,
                                                                                                                               ('444444445', 'THURSDAY', '09:00:00', '18:00:00', 'ACTIVO', 60, NOW());
 
 -- Insertar citas para 2025
-INSERT INTO citas (paciente_id, doctor_id, fecha_hora, estado, tipo_cita_id, es_autenticada, 
-                  nombre_paciente_no_autenticado, numero_identificacion_no_autenticado, 
-                  telefono_no_autenticado, email_no_autenticado) VALUES
-    -- Citas con Odontología General (Lunes y Miércoles 8:00-17:00)
-    ('555555556', '111111111', '2025-01-06 09:00:00', 'PENDIENTE', 1, true, NULL, NULL, NULL, NULL),
-    ('666666667', '222222222', '2025-01-07 10:00:00', 'CONFIRMADA', 1, true, NULL, NULL, NULL, NULL),
-    -- Citas con Higiene Dental (Lunes y Miércoles 8:00-17:00)
-    ('777777778', '333333333', '2025-01-06 11:00:00', 'PENDIENTE', 2, true, NULL, NULL, NULL, NULL),
-    ('888888889', '444444444', '2025-01-07 14:00:00', 'CONFIRMADA', 2, true, NULL, NULL, NULL, NULL),
-    -- Citas con Cirugía Oral (Lunes y Miércoles 8:00-17:00)
-    ('999999990', '555555555', '2025-01-08 09:00:00', 'PENDIENTE', 3, true, NULL, NULL, NULL, NULL),
-    ('101010102', '666666666', '2025-01-09 10:00:00', 'CONFIRMADA', 3, true, NULL, NULL, NULL, NULL),
-    -- Citas con Endodoncia (Lunes y Miércoles 8:00-17:00)
-    ('111111113', '777777777', '2025-01-06 13:00:00', 'PENDIENTE', 4, true, NULL, NULL, NULL, NULL),
-    ('222222224', '888888888', '2025-01-07 15:00:00', 'CONFIRMADA', 4, true, NULL, NULL, NULL, NULL),
-    -- Citas con Ortodoncia (Lunes y Miércoles 8:00-17:00)
-    ('333333335', '999999999', '2025-01-08 11:00:00', 'PENDIENTE', 5, true, NULL, NULL, NULL, NULL),
-    ('444444446', '101010101', '2025-01-09 13:00:00', 'CONFIRMADA', 5, true, NULL, NULL, NULL, NULL),
-    -- Citas con Periodoncia (Lunes y Miércoles 8:00-17:00)
-    ('555555556', '111111112', '2025-01-06 15:00:00', 'PENDIENTE', 6, true, NULL, NULL, NULL, NULL),
-    ('666666667', '222222223', '2025-01-07 16:00:00', 'CONFIRMADA', 6, true, NULL, NULL, NULL, NULL),
-    -- Citas con Odontología Estética (Lunes y Miércoles 8:00-17:00)
-    ('777777778', '333333334', '2025-01-08 14:00:00', 'PENDIENTE', 7, true, NULL, NULL, NULL, NULL),
-    ('888888889', '444444445', '2025-01-09 15:00:00', 'CONFIRMADA', 7, true, NULL, NULL, NULL, NULL),
-    -- Más citas distribuidas
-    ('999999990', '111111111', '2025-01-13 09:00:00', 'PENDIENTE', 1, true, NULL, NULL, NULL, NULL),
-    ('101010102', '333333333', '2025-01-13 10:00:00', 'CONFIRMADA', 2, true, NULL, NULL, NULL, NULL),
-    ('111111113', '555555555', '2025-01-13 11:00:00', 'PENDIENTE', 3, true, NULL, NULL, NULL, NULL),
-    ('222222224', '777777777', '2025-01-13 13:00:00', 'CONFIRMADA', 4, true, NULL, NULL, NULL, NULL),
-    ('333333335', '999999999', '2025-01-13 14:00:00', 'PENDIENTE', 5, true, NULL, NULL, NULL, NULL),
-    ('444444446', '111111112', '2025-01-13 15:00:00', 'CONFIRMADA', 6, true, NULL, NULL, NULL, NULL),
-    ('555555556', '333333334', '2025-01-13 16:00:00', 'PENDIENTE', 7, true, NULL, NULL, NULL, NULL);
+INSERT INTO citas (paciente_id, doctor_id, fecha_hora, estado, tipo_cita_id, es_autenticada,
+                   nombre_paciente_no_autenticado, numero_identificacion_no_autenticado,
+                   telefono_no_autenticado, email_no_autenticado) VALUES
+                                                                      -- Citas con Odontología General (Lunes y Miércoles 8:00-17:00)
+                                                                      ('555555556', '111111111', '2025-01-06 09:00:00', 'PENDIENTE', 1, true, NULL, NULL, NULL, NULL),
+                                                                      ('666666667', '222222222', '2025-01-07 10:00:00', 'CONFIRMADA', 1, true, NULL, NULL, NULL, NULL),
+                                                                      -- Citas con Higiene Dental (Lunes y Miércoles 8:00-17:00)
+                                                                      ('777777778', '333333333', '2025-01-06 11:00:00', 'PENDIENTE', 2, true, NULL, NULL, NULL, NULL),
+                                                                      ('888888889', '444444444', '2025-01-07 14:00:00', 'CONFIRMADA', 2, true, NULL, NULL, NULL, NULL),
+                                                                      -- Citas con Cirugía Oral (Lunes y Miércoles 8:00-17:00)
+                                                                      ('999999990', '555555555', '2025-01-08 09:00:00', 'PENDIENTE', 3, true, NULL, NULL, NULL, NULL),
+                                                                      ('101010102', '666666666', '2025-01-09 10:00:00', 'CONFIRMADA', 3, true, NULL, NULL, NULL, NULL),
+                                                                      -- Citas con Endodoncia (Lunes y Miércoles 8:00-17:00)
+                                                                      ('111111113', '777777777', '2025-01-06 13:00:00', 'PENDIENTE', 4, true, NULL, NULL, NULL, NULL),
+                                                                      ('222222224', '888888888', '2025-01-07 15:00:00', 'CONFIRMADA', 4, true, NULL, NULL, NULL, NULL),
+                                                                      -- Citas con Ortodoncia (Lunes y Miércoles 8:00-17:00)
+                                                                      ('333333335', '999999999', '2025-01-08 11:00:00', 'PENDIENTE', 5, true, NULL, NULL, NULL, NULL),
+                                                                      ('444444446', '101010101', '2025-01-09 13:00:00', 'CONFIRMADA', 5, true, NULL, NULL, NULL, NULL),
+                                                                      -- Citas con Periodoncia (Lunes y Miércoles 8:00-17:00)
+                                                                      ('555555556', '111111112', '2025-01-06 15:00:00', 'PENDIENTE', 6, true, NULL, NULL, NULL, NULL),
+                                                                      ('666666667', '222222223', '2025-01-07 16:00:00', 'CONFIRMADA', 6, true, NULL, NULL, NULL, NULL),
+                                                                      -- Citas con Odontología Estética (Lunes y Miércoles 8:00-17:00)
+                                                                      ('777777778', '333333334', '2025-01-08 14:00:00', 'PENDIENTE', 7, true, NULL, NULL, NULL, NULL),
+                                                                      ('888888889', '444444445', '2025-01-09 15:00:00', 'CONFIRMADA', 7, true, NULL, NULL, NULL, NULL),
+                                                                      -- Más citas distribuidas
+                                                                      ('999999990', '111111111', '2025-01-13 09:00:00', 'PENDIENTE', 1, true, NULL, NULL, NULL, NULL),
+                                                                      ('101010102', '333333333', '2025-01-13 10:00:00', 'CONFIRMADA', 2, true, NULL, NULL, NULL, NULL),
+                                                                      ('111111113', '555555555', '2025-01-13 11:00:00', 'PENDIENTE', 3, true, NULL, NULL, NULL, NULL),
+                                                                      ('222222224', '777777777', '2025-01-13 13:00:00', 'CONFIRMADA', 4, true, NULL, NULL, NULL, NULL),
+                                                                      ('333333335', '999999999', '2025-01-13 14:00:00', 'PENDIENTE', 5, true, NULL, NULL, NULL, NULL),
+                                                                      ('444444446', '111111112', '2025-01-13 15:00:00', 'CONFIRMADA', 6, true, NULL, NULL, NULL, NULL),
+                                                                      ('555555556', '333333334', '2025-01-13 16:00:00', 'PENDIENTE', 7, true, NULL, NULL, NULL, NULL);
 
 -- Insertar registros de historial médico asociados a las citas existentes
 INSERT INTO historiales_medicos (fecha, proxima_cita, cita_id, doctor_id, paciente_id, diagnostico, observaciones, tratamiento) VALUES
