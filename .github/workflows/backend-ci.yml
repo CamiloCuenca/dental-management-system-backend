@@ -1,0 +1,68 @@
+name: Java CI with Spring Boot
+
+on:
+  push:
+    branches:
+      - '**'  # Ejecuta en TODAS las ramas al hacer push
+      - 'Juan-Camilo-Cuenca'  # Específicamente para tu rama
+  pull_request:
+    branches: [ main ]
+
+env:
+  MYSQL_DATABASE: dental_db_test
+  MYSQL_USER: root
+  MYSQL_PASSWORD: root
+  MYSQL_ROOT_PASSWORD: root
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ env.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+          MYSQL_ROOT_PASSWORD: ${{ env.MYSQL_ROOT_PASSWORD }}
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Prepare Test Database
+        run: |
+          mkdir -p src/main/resources/
+          # Usa data-test.sql para pruebas (recomendado)
+          cp src/test/resources/data-test.sql src/main/resources/data.sql
+          # O usa el data.sql de desarrollo si prefieres:
+          # cp src/main/resources/data.sql src/main/resources/
+
+      - name: Run Tests with MySQL
+        run: ./gradlew test --info
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ env.MYSQL_DATABASE }}?useSSL=false&allowPublicKeyRetrieval=true
+          SPRING_DATASOURCE_USERNAME: ${{ env.MYSQL_USER }}
+          SPRING_DATASOURCE_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+          SPRING_JPA_HIBERNATE_DDL_AUTO: create  # Recrea esquemas + inserta data.sql
+
+      - name: Build Project
+        run: ./gradlew build -x test
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: |
+            build/test-results/**/*
+            build/reports/tests/**/*
