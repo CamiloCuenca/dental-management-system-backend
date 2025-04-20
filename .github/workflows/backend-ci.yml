@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v3  # ✅ CORRECCIÓN: Esta es la acción correcta para JDK
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -42,10 +42,7 @@ jobs:
       - name: Prepare Test Database
         run: |
           mkdir -p src/main/resources/
-          # Usa data-test.sql para pruebas (recomendado)
           cp src/test/resources/data-test.sql src/main/resources/data.sql
-          # O usa el data.sql de desarrollo si prefieres:
-          # cp src/main/resources/data.sql src/main/resources/
 
       - name: Run Tests with MySQL
         run: ./gradlew test --info
@@ -53,14 +50,14 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ env.MYSQL_DATABASE }}?useSSL=false&allowPublicKeyRetrieval=true
           SPRING_DATASOURCE_USERNAME: ${{ env.MYSQL_USER }}
           SPRING_DATASOURCE_PASSWORD: ${{ env.MYSQL_PASSWORD }}
-          SPRING_JPA_HIBERNATE_DDL_AUTO: create  # Recrea esquemas + inserta data.sql
+          SPRING_JPA_HIBERNATE_DDL_AUTO: create
 
       - name: Build Project
         run: ./gradlew build -x test
 
       - name: Upload Test Results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # ✅ CORRECCIÓN: Versión actualizada
         with:
           name: test-reports
           path: |
