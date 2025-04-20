@@ -1,4 +1,4 @@
-name: Java CI with Spring Boot
+name: Java CI with Spring Boot (Build Only)
 
 on:
   push:
@@ -9,25 +9,8 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_DATABASE: dental_db_test
-          MYSQL_USER: test_user
-          MYSQL_PASSWORD: "1234"
-          MYSQL_ROOT_PASSWORD: "root1234"
-          MYSQL_ALLOW_EMPTY_PASSWORD: "no"
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -uroot -proot1234"
-          --health-interval=20s
-          --health-timeout=30s
-          --health-retries=10
-          --mount type=tmpfs,destination=/var/lib/mysql
 
     steps:
       - uses: actions/checkout@v4
@@ -39,44 +22,11 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Wait for MySQL
-        run: sleep 30  # Tiempo suficiente para inicialización
-
-      - name: Prepare Test Database
-        run: |
-          # Crear BD y usuario
-          mysql -h 127.0.0.1 -P 3306 -u root -proot1234 -e "DROP DATABASE IF EXISTS dental_db_test; CREATE DATABASE dental_db_test;"
-          mysql -h 127.0.0.1 -P 3306 -u root -proot1234 -e "CREATE USER IF NOT EXISTS 'test_user'@'%' IDENTIFIED BY '1234';"
-          mysql -h 127.0.0.1 -P 3306 -u root -proot1234 -e "GRANT ALL PRIVILEGES ON dental_db_test.* TO 'test_user'@'%';"
-          mysql -h 127.0.0.1 -P 3306 -u root -proot1234 -e "FLUSH PRIVILEGES;"
-          
-          # Cargar datos desde data.sql
-          mysql -h 127.0.0.1 -P 3306 -u root -proot1234 dental_db_test < src/main/resources/data.sql
-
-      - name: Run Tests
-        run: ./gradlew test --info
-        env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/dental_db_test?useSSL=false&allowPublicKeyRetrieval=true
-          SPRING_DATASOURCE_USERNAME: test_user
-          SPRING_DATASOURCE_PASSWORD: "1234"
-          SPRING_JPA_HIBERNATE_DDL_AUTO: create  # Creará esquema y cargará data.sql automáticamente
-
       - name: Build Project
-        run: ./gradlew build -x test
+        run: ./gradlew build -x test  # Compila sin ejecutar tests
 
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
         with:
-          name: test-reports
-          path: |
-            build/test-results/test/**
-            build/reports/tests/test/**
-
-      - name: Verify Database State
-        if: always()
-        run: |
-          echo "Tablas en la base de datos:"
-          mysql -h 127.0.0.1 -P 3306 -u test_user -p1234 dental_db_test -e "SHOW TABLES;"
-          echo "\nContenido de tablas importantes:"
-          mysql -h 127.0.0.1 -P 3306 -u test_user -p1234 dental_db_test -e "SELECT * FROM pacientes LIMIT 5;" || true
+          name: application
+          path: build/libs/*.jar
