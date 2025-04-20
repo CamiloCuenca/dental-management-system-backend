@@ -3,16 +3,16 @@ name: Java CI with Spring Boot
 on:
   push:
     branches:
-      - '**'  # Todas las ramas
-      - 'Juan-Camilo-Cuenca'  # Tu rama específica
+      - '**'
+      - 'Juan-Camilo-Cuenca'
   pull_request:
     branches: [ main ]
 
 env:
   MYSQL_DATABASE: dental_db_test
-  MYSQL_USER: root
-  MYSQL_PASSWORD: 1234  # Actualizado para coincidir con tu properties
-  MYSQL_ROOT_PASSWORD: 1234  # Misma contraseña para root
+  MYSQL_USER: test_user  # Cambiado: no usar root como usuario regular
+  MYSQL_PASSWORD: 1234
+  MYSQL_ROOT_PASSWORD: root1234  # Contraseña diferente para root
 
 jobs:
   build-and-test:
@@ -21,17 +21,17 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_DATABASE: dental_db_test
-          MYSQL_USER: root
-          MYSQL_PASSWORD: 1234
-          MYSQL_ROOT_PASSWORD: 1234
+          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ env.MYSQL_USER }}  # Usuario regular
+          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+          MYSQL_ROOT_PASSWORD: ${{ env.MYSQL_ROOT_PASSWORD }}  # Configuración separada para root
         ports:
           - 3306:3306
         options: |
-          --health-cmd="mysqladmin ping -uroot -p1234"
+          --health-cmd="mysqladmin ping -uroot -p${{ env.MYSQL_ROOT_PASSWORD }}"
           --health-interval=10s
-          --health-timeout=10s
-          --health-retries=5
+          --health-timeout=15s
+          --health-retries=6
 
     steps:
       - uses: actions/checkout@v4
@@ -47,30 +47,33 @@ jobs:
         run: |
           mkdir -p src/main/resources/
           cp src/test/resources/data-test.sql src/main/resources/data.sql
+          # Actualiza application-test.properties
+          echo "spring.datasource.username=${{ env.MYSQL_USER }}" >> src/test/resources/application-test.properties
+          echo "spring.datasource.password=${{ env.MYSQL_PASSWORD }}" >> src/test/resources/application-test.properties
 
       - name: Wait for MySQL
-        run: sleep 25  # Espera ampliada para MySQL
+        run: sleep 30  # Espera más larga para inicialización completa
 
       - name: Run Tests
         run: ./gradlew test --info
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/dental_db_test?useSSL=false
-          SPRING_DATASOURCE_USERNAME: root
-          SPRING_DATASOURCE_PASSWORD: 1234
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ env.MYSQL_DATABASE }}?useSSL=false
           SPRING_JPA_HIBERNATE_DDL_AUTO: create
 
       - name: Build Project
         run: ./gradlew build -x test
 
       - name: Upload Test Results
-        if: always()
+        if: success() || failure()  # Sube resultados siempre
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: |
-            build/test-results/**/*
-            build/reports/tests/**/*
+            build/test-results/test/**
+            build/reports/tests/test/**
 
       - name: Show MySQL logs if failed
         if: failure()
-        run: docker logs $(docker ps -aqf "name=mysql")
+        run: |
+          docker logs $(docker ps -aqf "name=mysql") || echo "No se encontró el contenedor"
+          mysql -h 127.0.0.1 -P 3306 -u ${{ env.MYSQL_USER }} -p${{ env.MYSQL_PASSWORD }} -e "SHOW DATABASES;" || echo "Error al conectar"
