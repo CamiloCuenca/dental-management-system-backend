@@ -22,7 +22,7 @@ jobs:
           MYSQL_ALLOW_EMPTY_PASSWORD: "no"
         ports:
           - 3306:3306
-        options: |
+        options: >-
           --health-cmd="mysqladmin ping -uroot -proot1234"
           --health-interval=20s
           --health-timeout=30s
@@ -39,33 +39,25 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Wait for MySQL to be ready
-        timeout-minutes: 5
-        run: |
-          for i in {1..30}; do
-            if docker exec $(docker ps -qf "name=mysql") mysqladmin ping -uroot -proot1234 --silent; then
-              echo "MySQL is ready!"
-              break
-            fi
-            echo "Waiting for MySQL ($i/30)..."
-            sleep 10
-          done
+      - name: Wait for MySQL
+        run: sleep 45
 
       - name: Prepare Test Database
         run: |
           mkdir -p src/main/resources/
           cp src/test/resources/data-test.sql src/main/resources/data.sql
-          # Verificar conexión
-          mysql -h 127.0.0.1 -P 3306 -u test_user -p1234 -e "CREATE DATABASE IF NOT EXISTS dental_db_test;"
+          mysql -h 127.0.0.1 -P 3306 -u root -proot1234 -e "CREATE DATABASE IF NOT EXISTS dental_db_test;"
+          mysql -h 127.0.0.1 -P 3306 -u root -proot1234 -e "CREATE USER IF NOT EXISTS 'test_user'@'%' IDENTIFIED BY '1234';"
+          mysql -h 127.0.0.1 -P 3306 -u root -proot1234 -e "GRANT ALL PRIVILEGES ON dental_db_test.* TO 'test_user'@'%';"
+          mysql -h 127.0.0.1 -P 3306 -u root -proot1234 -e "FLUSH PRIVILEGES;"
 
       - name: Run Tests
         run: ./gradlew test --info
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/dental_db_test?useSSL=false&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/dental_db_test?useSSL=false&allowPublicKeyRetrieval=true
           SPRING_DATASOURCE_USERNAME: test_user
           SPRING_DATASOURCE_PASSWORD: "1234"
           SPRING_JPA_HIBERNATE_DDL_AUTO: create
-          SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
 
       - name: Build Project
         run: ./gradlew build -x test
@@ -79,8 +71,8 @@ jobs:
             build/test-results/test/**
             build/reports/tests/test/**
 
-      - name: Show MySQL logs
+      - name: Show MySQL status
         if: always()
         run: |
+          docker ps -a
           docker logs $(docker ps -aqf "name=mysql") || echo "No MySQL container found"
-          mysql -h 127.0.0.1 -P 3306 -u test_user -p1234 -e "SHOW DATABASES;" || echo "Failed to connect to MySQL"
