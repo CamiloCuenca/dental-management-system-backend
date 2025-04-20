@@ -10,9 +10,9 @@ on:
 
 env:
   MYSQL_DATABASE: dental_db_test
-  MYSQL_USER: root
-  MYSQL_PASSWORD: root
-  MYSQL_ROOT_PASSWORD: root
+  MYSQL_USER: ${{ secrets.DB_USER || 'root' }}  # Usa secret o valor por defecto
+  MYSQL_PASSWORD: ${{ secrets.DB_PASSWORD || 'root' }}
+  MYSQL_ROOT_PASSWORD: ${{ secrets.DB_ROOT_PASSWORD || 'root' }}
 
 jobs:
   build-and-test:
@@ -27,13 +27,17 @@ jobs:
           MYSQL_ROOT_PASSWORD: ${{ env.MYSQL_ROOT_PASSWORD }}
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: |
+          --health-cmd="mysqladmin ping -u root -p${{ env.MYSQL_ROOT_PASSWORD }}"
+          --health-interval=10s
+          --health-timeout=10s
+          --health-retries=5
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3  # ✅ CORRECCIÓN: Esta es la acción correcta para JDK
+        uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -43,13 +47,17 @@ jobs:
         run: |
           mkdir -p src/main/resources/
           cp src/test/resources/data-test.sql src/main/resources/data.sql
+          # Configuración dinámica para tests
+          echo "spring.datasource.username=${{ env.MYSQL_USER }}" >> src/test/resources/application-test.properties
+          echo "spring.datasource.password=${{ env.MYSQL_PASSWORD }}" >> src/test/resources/application-test.properties
+
+      - name: Wait for MySQL
+        run: sleep 15  # Espera segura para MySQL
 
       - name: Run Tests with MySQL
         run: ./gradlew test --info
         env:
           SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ env.MYSQL_DATABASE }}?useSSL=false&allowPublicKeyRetrieval=true
-          SPRING_DATASOURCE_USERNAME: ${{ env.MYSQL_USER }}
-          SPRING_DATASOURCE_PASSWORD: ${{ env.MYSQL_PASSWORD }}
           SPRING_JPA_HIBERNATE_DDL_AUTO: create
 
       - name: Build Project
@@ -57,9 +65,14 @@ jobs:
 
       - name: Upload Test Results
         if: always()
-        uses: actions/upload-artifact@v4  # ✅ CORRECCIÓN: Versión actualizada
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: |
             build/test-results/**/*
             build/reports/tests/**/*
+
+      - name: Show MySQL logs on failure
+        if: failure()
+        run: |
+          docker logs $(docker ps -aqf "name=mysql") || echo "No MySQL container found"
