@@ -71,6 +71,21 @@ public class HistorialTest {
     }
 
 
+
+    /**
+     * Prueba unitaria para verificar la funcionalidad del método
+     * {@code listarHistorialesPorPacienteAgrupadosPorAnio} del servicio.
+     * Este método obtiene y agrupa los historiales médicos de un paciente específico
+     * por año.
+     *
+     * La prueba utiliza un ID de paciente fijo y llama al servicio para
+     * recuperar los historiales médicos agrupados por año. Como parte de la prueba,
+     * se imprimen los resultados obtenidos.
+     *
+     * @throws AssertionError si los resultados de la agrupación no cumplen con
+     * los criterios esperados o si ocurre algún problema durante la ejecución
+     * del método de servicio.
+     */
     @Test
     public void testListarHistorialesPorPacienteAgrupadosPorAnio() {
         // ID del paciente para la prueba
@@ -83,6 +98,14 @@ public class HistorialTest {
 
     }
 
+    /**
+     * Método de prueba para generar un historial médico en formato PDF.
+     * Este método sirve como prueba unitaria para verificar la funcionalidad
+     * de generación de un archivo PDF que contiene el historial médico de un paciente
+     * específico identificado por su ID.
+     *
+     * @throws DocumentException si ocurre un error durante la creación del documento PDF
+     */
     @Test
     public void pdfHistorial () throws DocumentException {
         // ID del paciente para la prueba

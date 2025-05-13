@@ -80,6 +80,7 @@ public class AccountTest {
         serviciosCuenta.eliminarCuenta(49L);
     }
 
+
     /**
      * Test for activating an account.
      *
@@ -100,7 +101,6 @@ public class AccountTest {
      *
      * @throws Exception              if a general error occurs.
      * @throws EmailNotFoundException if the email is not found.
-     * @throws AccountAlreadyActiveException 
      */
     @Test
     void testEnviarCodigo() throws Exception, EmailNotFoundException, AccountAlreadyActiveException {
