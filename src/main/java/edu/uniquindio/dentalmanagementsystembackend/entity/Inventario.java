@@ -50,10 +50,7 @@ public class Inventario {
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 20)
     private EstadoInventario estado;
-
-    @Column(name = "ubicacion", length = 100)
-    private String ubicacion; // Ubicación física en la clínica
-
+    
     @Column(name = "fecha_ultimo_abastecimiento")
     private LocalDate fechaUltimoAbastecimiento;
 

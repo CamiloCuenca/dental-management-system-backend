@@ -6,5 +6,5 @@ public enum EstadoInventario {
     RESERVADO,
     VENCIDO,
     DAÑADO,
-    EN_REPOSICION
+    ELIMINADO, EN_REPOSICION
 }
