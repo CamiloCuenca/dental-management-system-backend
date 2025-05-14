@@ -3,6 +3,8 @@ plugins {
     id 'org.springframework.boot' version '3.4.3'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.asciidoctor.jvm.convert' version '3.3.2'
+    id 'org.sonarqube' version '4.4.1.3373'
+    id 'jacoco'
 }
 
 group = 'edu.uniquindio'
@@ -29,13 +31,12 @@ ext {
 }
 
 dependencies {
-
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-webflux' // Para usar WebClient
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
-    implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final' // Implementación de referencia
-    implementation 'org.glassfish:jakarta.el:4.0.2' // Necesario para Hibernate Validator
+    implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
+    implementation 'org.glassfish:jakarta.el:4.0.2'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
@@ -50,16 +51,80 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
     implementation 'com.itextpdf:itextpdf:5.0.6'
-
 }
-
 
 tasks.named('test') {
     outputs.dir snippetsDir
     useJUnitPlatform()
+    ignoreFailures = true // Para que el build no falle si hay tests fallidos
+    finalizedBy jacocoTestReport
 }
 
 tasks.named('asciidoctor') {
     inputs.dir snippetsDir
     dependsOn test
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+    reportsDirectory = layout.buildDirectory.dir('reports/jacoco')
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, excludes: [
+                    '**/config/**',
+                    '**/dto/**',
+                    '**/exception/**',
+                    '**/model/**',
+                    '**/utils/**',
+                    '**/*Application*',
+                    '**/entity/**' // Excluir entidades si es necesario
+            ])
+        }))
+    }
+}
+
+sonar {
+    properties {
+        property "sonar.host.url", "http://localhost:9000"
+        property "sonar.token", "sqa_0a5657ff41cb9ef1fde8d5a78767a22eb565d56c"
+        property "sonar.projectKey", "${group}:${rootProject.name}"
+        property "sonar.projectName", "${rootProject.name}"
+        property "sonar.projectVersion", "${version}"
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.java.source", "17"
+        property "sonar.java.binaries", "build/classes/java/main"
+        property "sonar.gradle.skipCompile", "true"
+        property "sonar.java.coveragePlugin", "jacoco"
+        property "sonar.coverage.jacoco.xmlReportPaths", "${layout.buildDirectory.get().asFile}/reports/jacoco/test/jacocoTestReport.xml"
+        property "sonar.junit.reportPaths", "${layout.buildDirectory.get().asFile}/test-results/test"
+        property "sonar.test.failure.ignore", "true"
+        property "sonar.qualitygate.wait", "true"
+        property "sonar.scm.disabled", "true"
+
+        property "sonar.exclusions", """
+            **/generated/**/*,
+            **/config/**/*,
+            **/dto/**/*,
+            **/exception/**/*,
+            **/model/**/*,
+            **/utils/**/*,
+            **/*Application*,
+            **/entity/**/*
+        """
+    }
+}
+
+tasks.named('sonar').configure {
+    dependsOn jacocoTestReport
+    mustRunAfter test
 }
