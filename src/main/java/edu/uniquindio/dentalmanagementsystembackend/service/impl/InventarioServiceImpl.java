@@ -263,6 +263,32 @@ public class InventarioServiceImpl implements InventarioService {
         inventarioRepository.save(inventario);
     }
 
+    @Override
+    @Transactional
+    public void registrarUsoProducto(Long idProducto, Integer cantidadUsada) throws Exception {
+        // 1. Validar que la cantidad usada sea positiva
+        if (cantidadUsada <= 0) {
+            throw new Exception("La cantidad usada debe ser mayor que cero");
+        }
+
+        // 2. Obtener el producto del inventario
+        Inventario inventario = inventarioRepository.findById(idProducto)
+                .orElseThrow(() -> new Exception("No se encontró el producto con ID: " + idProducto));
+
+        // 3. Validar que haya suficiente stock
+        if (inventario.getCantidadDisponible() < cantidadUsada) {
+            throw new Exception("No hay suficiente stock disponible para el producto: " + inventario.getNombre());
+        }
+
+        // 4. Descontar la cantidad usada del stock
+        inventario.setCantidadDisponible(inventario.getCantidadDisponible() - cantidadUsada);
+
+        // 5. Actualizar el estado del inventario
+        actualizarEstadoInventario(inventario);
+
+        // 6. Guardar los cambios
+        inventarioRepository.save(inventario);
+    }
 
     @Override
     @Transactional(readOnly = true)

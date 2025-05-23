@@ -18,7 +18,7 @@ public class CorsConfig {
                 // Configuración de CORS para permitir todas las rutas
                 registry.addMapping("/**") // Permitir todas las rutas
                         .allowedOrigins("*") // Permitir cualquier origen
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Métodos permitidos
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS" , "PATCH") // Métodos permitidos
                         .allowedHeaders("*"); // Permitir todos los encabezados
             }
         };

@@ -76,7 +76,6 @@ public class HistorialServiceImpl implements HistorialService {
         historial.setDiagnostico(dto.diagnostico());
         historial.setTratamiento(dto.tratamiento());
         historial.setObservaciones(dto.observaciones());
-        historial.setProximaCita(dto.proximaCita());
         historial.setCita(cita);
         historial.setPaciente(paciente);
         historial.setDoctor(doctor);

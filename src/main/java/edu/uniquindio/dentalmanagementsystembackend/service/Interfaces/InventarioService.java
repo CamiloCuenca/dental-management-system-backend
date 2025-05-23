@@ -33,5 +33,5 @@ public interface InventarioService {
     List<Inventario> obtenerProductosNecesitanSterilizacion();
 
 
-
+    void registrarUsoProducto(Long idProducto, Integer cantidadUsada) throws Exception;
 }
