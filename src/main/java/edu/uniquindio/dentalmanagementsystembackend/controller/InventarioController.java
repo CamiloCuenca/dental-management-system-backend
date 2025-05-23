@@ -128,4 +128,17 @@ public class InventarioController {
     }
 
 
+
+    @PutMapping("/{id}/usar")
+    public ResponseEntity<?> registrarUsoProducto(
+            @PathVariable Long id,
+            @RequestParam Integer cantidad) {
+        try {
+            inventarioService.registrarUsoProducto(id, cantidad);
+            return ResponseEntity.ok("Uso del producto registrado exitosamente");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }

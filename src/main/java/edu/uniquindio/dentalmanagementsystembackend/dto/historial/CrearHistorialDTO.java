@@ -48,10 +48,7 @@ public record CrearHistorialDTO(
     /**
      * Observaciones adicionales del odontólogo.
      */
-    String observaciones,
+    String observaciones
     
-    /**
-     * Fecha programada para la próxima cita.
-     */
-    LocalDate proximaCita
+
 ) {}
