@@ -56,4 +56,6 @@ public interface CuentaRepository extends JpaRepository<Account,Long> {
     List<Account> findByRol(@Param("rol") Rol rol);
 
 
+    @Query("SELECT u.email FROM Account u WHERE u.rol = 'ADMINISTRATOR'")
+    List<String> obtenerCorreosAdministradores();
 }
