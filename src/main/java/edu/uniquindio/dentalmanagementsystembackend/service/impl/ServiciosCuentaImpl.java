@@ -129,6 +129,41 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         return jwtUtils.generateToken(account.getEmail(), claims);
     }
 
+   @Override
+   public List<CuentaDTO> listarCuentasPaciente() throws Exception {
+       return accountRepository.findByRol(Rol.PACIENTE)
+               .stream()
+               .filter(account -> account.getStatus() == AccountStatus.ACTIVE) // Filtrar solo cuentas activas
+               .map(account -> new CuentaDTO(
+                       account.getId(),
+                       account.getUser().getIdNumber(),
+                       account.getUser().getName(),
+                       account.getUser().getLastName(),
+                       account.getUser().getAddress(),
+                       account.getUser().getBirthDate(),
+                       account.getUser().getPhoneNumber(),
+                       account.getEmail()
+               ))
+               .collect(Collectors.toList());
+   }
+    @Override
+    public List<CuentaDTO> listarCuentasDoctor() throws Exception {
+        return accountRepository.findByRol(Rol.DOCTOR)
+                .stream()
+                .filter(account -> account.getStatus() == AccountStatus.ACTIVE) // Filtrar solo cuentas activas
+                .map(account -> new CuentaDTO(
+                        account.getId(),
+                        account.getUser().getIdNumber(),
+                        account.getUser().getName(),
+                        account.getUser().getLastName(),
+                        account.getUser().getAddress(),
+                        account.getUser().getBirthDate(),
+                        account.getUser().getPhoneNumber(),
+                        account.getEmail()
+                ))
+                .collect(Collectors.toList());
+    }
+
     // ==============================================
     // MÉTODOS DE GESTIÓN DE CUENTAS
     // ==============================================

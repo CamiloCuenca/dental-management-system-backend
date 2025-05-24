@@ -11,6 +11,7 @@ import edu.uniquindio.dentalmanagementsystembackend.exception.InvalidCurrentPass
 import edu.uniquindio.dentalmanagementsystembackend.exception.PasswordMismatchException;
 import edu.uniquindio.dentalmanagementsystembackend.exception.DatabaseOperationException;
 import javax.security.auth.login.AccountNotFoundException;
+import java.util.List;
 
 
 public interface ServiciosCuenta {
@@ -138,7 +139,19 @@ public interface ServiciosCuenta {
     String generarNuevoToken(Long accountId) throws Exception, UserNotFoundException;
 
     
+/**
+ * Lista las cuentas asociadas a un paciente.
+ * @return Lista de cuentas de pacientes.
+ * @throws Exception si ocurre un error general.
+ */
+List<CuentaDTO> listarCuentasPaciente() throws Exception;
 
+/**
+ * Lista las cuentas asociadas a un doctor.
+ * @return Lista de cuentas de doctores.
+ * @throws Exception si ocurre un error general.
+ */
+List<CuentaDTO> listarCuentasDoctor() throws Exception;
 
 
 
