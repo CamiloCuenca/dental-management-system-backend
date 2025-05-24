@@ -4,8 +4,11 @@ import edu.uniquindio.dentalmanagementsystembackend.Enum.EstadoInventario;
 import edu.uniquindio.dentalmanagementsystembackend.Enum.TipoProducto;
 import edu.uniquindio.dentalmanagementsystembackend.dto.Inventario.InventarioDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.Inventario.InventarioDetalleDTO;
+import edu.uniquindio.dentalmanagementsystembackend.dto.account.EmailDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Inventario;
+import edu.uniquindio.dentalmanagementsystembackend.repository.CuentaRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.InventarioRepository;
+import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.EmailService;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.InventarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +25,8 @@ import java.util.List;
 public class InventarioServiceImpl implements InventarioService {
 
     private final InventarioRepository inventarioRepository;
+    private final EmailService email;
+    private final CuentaRepository cuentaRepository;
 
 
     @Override
@@ -263,32 +268,81 @@ public class InventarioServiceImpl implements InventarioService {
         inventarioRepository.save(inventario);
     }
 
-    @Override
-    @Transactional
-    public void registrarUsoProducto(Long idProducto, Integer cantidadUsada) throws Exception {
-        // 1. Validar que la cantidad usada sea positiva
-        if (cantidadUsada <= 0) {
-            throw new Exception("La cantidad usada debe ser mayor que cero");
+  @Override
+  @Transactional
+  public void registrarUsoProducto(Long idProducto, Integer cantidadUsada) throws Exception {
+      // 1. Validar que la cantidad usada sea positiva
+      if (cantidadUsada <= 0) {
+          throw new Exception("La cantidad usada debe ser mayor que cero");
+      }
+
+      // 2. Obtener el producto del inventario
+      Inventario inventario = inventarioRepository.findById(idProducto)
+              .orElseThrow(() -> new Exception("No se encontró el producto con ID: " + idProducto));
+
+      // 3. Validar que haya suficiente stock
+      if (inventario.getCantidadDisponible() < cantidadUsada) {
+          throw new Exception("No hay suficiente stock disponible para el producto: " + inventario.getNombre());
+      }
+
+      // 4. Descontar la cantidad usada del stock
+      inventario.setCantidadDisponible(inventario.getCantidadDisponible() - cantidadUsada);
+
+      // 5. Verificar si la cantidad disponible está por debajo del mínimo
+      if (inventario.getCantidadDisponible() < inventario.getCantidadMinima()) {
+          System.out.println("El producto " + inventario.getNombre() + " está por debajo de la cantidad mínima.");
+
+          // Obtener correos de los administradores
+          List<String> correosAdministradores = cuentaRepository.obtenerCorreosAdministradores();
+
+          // Notificar a los administradores
+          notificarAdministradoresCantidadMinima(inventario, correosAdministradores);
+      }
+
+      // 6. Actualizar el estado del inventario
+      actualizarEstadoInventario(inventario);
+
+      // 7. Guardar los cambios
+      inventarioRepository.save(inventario);
+  }
+    private void notificarAdministradoresCantidadMinima(Inventario inventario, List<String> correosAdministradores) {
+        // Construcción del mensaje HTML
+        String htmlMessage = """
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                <h2 style="color: #2c3e50;">Alerta: Producto con cantidad mínima</h2>
+                <p>Estimado administrador,</p>
+                <p>El producto <strong>%s</strong> ha alcanzado o está por debajo de su cantidad mínima.</p>
+                <ul>
+                    <li><strong>ID del producto:</strong> %d</li>
+                    <li><strong>Cantidad disponible:</strong> %d</li>
+                    <li><strong>Cantidad mínima:</strong> %d</li>
+                </ul>
+                <p>Por favor, tome las medidas necesarias para reabastecer este producto.</p>
+                <p>Atentamente,<br/>El sistema de gestión de inventario</p>
+                <hr style="border: 1px solid #eee; margin: 20px 0;">
+                <p style="font-size: 12px; color: #777;">Este es un correo automático, por favor no responda.</p>
+            </div>
+        </body>
+        </html>
+        """.formatted(
+                inventario.getNombre(),
+                inventario.getId(),
+                inventario.getCantidadDisponible(),
+                inventario.getCantidadMinima()
+        );
+
+        // Envío del correo a cada administrador
+        for (String correo : correosAdministradores) {
+            try {
+                email.sendMail(new EmailDTO(correo, "Alerta: Producto con cantidad mínima", htmlMessage));
+            } catch (Exception e) {
+                e.printStackTrace(); // Manejo de excepciones, podrías usar un logger aquí
+            }
         }
-
-        // 2. Obtener el producto del inventario
-        Inventario inventario = inventarioRepository.findById(idProducto)
-                .orElseThrow(() -> new Exception("No se encontró el producto con ID: " + idProducto));
-
-        // 3. Validar que haya suficiente stock
-        if (inventario.getCantidadDisponible() < cantidadUsada) {
-            throw new Exception("No hay suficiente stock disponible para el producto: " + inventario.getNombre());
-        }
-
-        // 4. Descontar la cantidad usada del stock
-        inventario.setCantidadDisponible(inventario.getCantidadDisponible() - cantidadUsada);
-
-        // 5. Actualizar el estado del inventario
-        actualizarEstadoInventario(inventario);
-
-        // 6. Guardar los cambios
-        inventarioRepository.save(inventario);
     }
+
 
     @Override
     @Transactional(readOnly = true)
