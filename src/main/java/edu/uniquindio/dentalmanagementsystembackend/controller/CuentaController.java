@@ -61,7 +61,7 @@ public class CuentaController {
      * @param accountId ID of the account to delete.
      * @return ResponseEntity with no content if deletion is successful, or appropriate error status if it fails.
      */
-    @DeleteMapping("/{accountId}")
+    @DeleteMapping("/eliminar/{accountId}")
     public ResponseEntity<Void> eliminarCuenta(@PathVariable Long accountId) {
         try {
             accountService.eliminarCuenta(accountId);
@@ -197,6 +197,36 @@ public class CuentaController {
         }
     }
 
+    /**
+     * Endpoint for listing patient accounts.
+     * @return ResponseEntity with a list of patient accounts.
+     */
+    @GetMapping("/pacientes")
+    public ResponseEntity<List<CuentaDTO>> listarCuentasPaciente() {
+        try {
+            List<CuentaDTO> cuentas = accountService.listarCuentasPaciente();
+            return ResponseEntity.ok(cuentas);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
+        }
+    }
+
+
+    /**
+     * Endpoint for listing doctor accounts.
+     * @return ResponseEntity with a list of doctor accounts.
+     */
+    @GetMapping("/doctores")
+    public ResponseEntity<List<CuentaDTO>> listarCuentasDoctor() {
+        try {
+            List<CuentaDTO> cuentas = accountService.listarCuentasDoctor();
+            return ResponseEntity.ok(cuentas);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
+        }
+    }
 
 
 
