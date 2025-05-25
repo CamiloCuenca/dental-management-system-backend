@@ -388,4 +388,8 @@ public class InventarioServiceImpl implements InventarioService {
     public List<Inventario> obtenerProductosNecesitanSterilizacion() {
         return inventarioRepository.findProductosParaEsterilizar(5);
     }
+
+
+
+
 }
