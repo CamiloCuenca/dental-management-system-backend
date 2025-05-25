@@ -27,7 +27,7 @@ public class InventarioController {
     private final InventarioService inventarioService;
     private final InventarioRepository inventarioRepository;
 
-    @PostMapping
+    @PostMapping("/crear/producto")
     public ResponseEntity<?> registrarInventario(@RequestBody InventarioDTO inventarioDTO) {
         try {
             Inventario inventario = inventarioService.registrarInventario(inventarioDTO);
@@ -52,7 +52,7 @@ public class InventarioController {
     }
 
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<String> eliminarInventario(@PathVariable Long id) {
         try {
             inventarioService.eliminarInventario(id);
@@ -141,4 +141,13 @@ public class InventarioController {
         }
     }
 
+    @GetMapping("/buscar/{id}")
+    public ResponseEntity<?> obtenerInventarioPorId(@PathVariable Long id) {
+        try {
+            InventarioDetalleDTO inventario = inventarioService.obtenerInventarioPorId(id);
+            return ResponseEntity.ok(inventario);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

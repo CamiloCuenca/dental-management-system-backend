@@ -12,8 +12,6 @@ public record InventarioDTO(
         Integer cantidadMinima,
         Double precioUnitario,
         LocalDate fechaVencimiento,
-        EstadoInventario estado,
-        String ubicacion,
         Boolean esSterilizable,
         Integer vidaUtilSterilizacion
 ) {
