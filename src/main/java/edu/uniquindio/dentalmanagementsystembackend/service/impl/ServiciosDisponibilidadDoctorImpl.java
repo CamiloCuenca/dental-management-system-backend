@@ -8,6 +8,7 @@ import edu.uniquindio.dentalmanagementsystembackend.entity.Account.User;
 import edu.uniquindio.dentalmanagementsystembackend.repository.DisponibilidadDoctorRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.UserRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosDisponibilidadDoctor;
+import edu.uniquindio.dentalmanagementsystembackend.exception.DisponibilidadException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,7 +62,7 @@ public class ServiciosDisponibilidadDoctorImpl implements ServiciosDisponibilida
             } catch (Exception e) {
                 System.out.println("Error al buscar disponibilidades: " + e.getMessage());
                 e.printStackTrace();
-                throw new RuntimeException("Error al buscar disponibilidades: " + e.getMessage());
+                throw new DisponibilidadException("Error al buscar disponibilidades", DisponibilidadException.DisponibilidadErrorType.DISPONIBILIDAD_NO_ENCONTRADA, doctorId);
             }
             
             if (disponibilidades.isEmpty()) {
@@ -111,13 +112,13 @@ public class ServiciosDisponibilidadDoctorImpl implements ServiciosDisponibilida
             });
             
             return fechasDisponibles;
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error: " + e.getMessage());
+        } catch (DisponibilidadException e) {
+            // Re-lanzar excepciones específicas tal como están
             throw e;
         } catch (Exception e) {
             System.out.println("Error inesperado: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("Error al obtener las fechas disponibles: " + e.getMessage());
+            throw new DisponibilidadException("Error interno al obtener las fechas disponibles", DisponibilidadException.DisponibilidadErrorType.HORARIO_NO_DISPONIBLE, doctorId);
         }
     }
     
@@ -160,13 +161,13 @@ public class ServiciosDisponibilidadDoctorImpl implements ServiciosDisponibilida
             horariosDisponibles.forEach(hora -> System.out.println("- " + hora.hora()));
             
             return horariosDisponibles;
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error: " + e.getMessage());
+        } catch (DisponibilidadException e) {
+            // Re-lanzar excepciones específicas tal como están
             throw e;
         } catch (Exception e) {
             System.out.println("Error inesperado: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("Error al obtener los horarios disponibles: " + e.getMessage());
+            throw new DisponibilidadException("Error interno al obtener los horarios disponibles", DisponibilidadException.DisponibilidadErrorType.HORARIO_NO_DISPONIBLE, doctorId);
         }
     }
 

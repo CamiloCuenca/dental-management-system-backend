@@ -26,7 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.security.auth.login.AccountNotFoundException;
+import edu.uniquindio.dentalmanagementsystembackend.exception.AccountNotFoundException;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -74,7 +74,7 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         claims.put("sub", account.getEmail()); // Subject estándar JWT
         claims.put("accountId", account.getId()); // ID principal
         claims.put("userId", account.getUser() != null ? account.getUser().getIdNumber() : null);
-        claims.put("role", account.getRol()); // Mejor usar "role" que "rol" para estándares
+        claims.put("rol", account.getRol()); // Usar "rol" para mantener consistencia con el filtro
         claims.put("email", account.getEmail());
 
         // Datos de usuario opcionales (con null checks)
@@ -95,8 +95,8 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      */
     @Override
     @Transactional
-    public TokenDTO login(LoginDTO loginDTO)
-            throws UserNotFoundException, AccountInactiveException, InvalidPasswordException {
+    public TokenDTO login(LoginDTO loginDTO) {
+        try {
         validarLoginDTO(loginDTO);
         String idNumber = loginDTO.idNumber().trim();
 
@@ -108,6 +108,15 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
         String token = jwtUtils.generateToken(account.getEmail(), claims);
 
         return new TokenDTO(token);
+        } catch (UserNotFoundException e) {
+            throw new AuthenticationException("Credenciales inválidas", "INVALID_CREDENTIALS");
+        } catch (AccountInactiveException e) {
+            throw new AuthenticationException("Cuenta inactiva", "ACCOUNT_INACTIVE");
+        } catch (InvalidPasswordException e) {
+            throw new AuthenticationException("Contraseña incorrecta", "INVALID_PASSWORD");
+        } catch (ValidationException e) {
+            throw e; // Re-lanzar excepciones de validación tal como están
+        }
     }
 
     /**
@@ -330,14 +339,24 @@ public class ServiciosCuentaImpl implements ServiciosCuenta {
      * Valida los datos del DTO de inicio de sesión.
      */
     private void validarLoginDTO(LoginDTO loginDTO) {
+        Map<String, String> fieldErrors = new HashMap<>();
+        
         if (loginDTO == null) {
-            throw new IllegalArgumentException("El objeto LoginDTO no puede ser nulo.");
+            throw new ValidationException("Los datos de login no pueden ser nulos");
         }
+        
         if (loginDTO.idNumber() == null || loginDTO.idNumber().isBlank()) {
-            throw new IllegalArgumentException("El número de identificación no puede estar vacío.");
+            fieldErrors.put("idNumber", "El número de identificación es obligatorio");
         }
+        
         if (loginDTO.password() == null || loginDTO.password().isBlank()) {
-            throw new IllegalArgumentException("La contraseña no puede estar vacía.");
+            fieldErrors.put("password", "La contraseña es obligatoria");
+        }
+        
+        if (!fieldErrors.isEmpty()) {
+            ValidationException exception = new ValidationException("Datos de login inválidos");
+            fieldErrors.forEach(exception::addFieldError);
+            throw exception;
         }
     }
 

@@ -10,4 +10,9 @@ public record EmailDTO(
         String body
 
 ) {
+
+    public String email() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'email'");
+    }
 }

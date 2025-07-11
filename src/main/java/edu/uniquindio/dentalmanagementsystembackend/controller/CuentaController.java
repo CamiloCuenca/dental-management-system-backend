@@ -1,30 +1,31 @@
 package edu.uniquindio.dentalmanagementsystembackend.controller;
 
-
-import edu.uniquindio.dentalmanagementsystembackend.dto.account.DoctorDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.JWT.TokenDTO;
 import edu.uniquindio.dentalmanagementsystembackend.dto.account.*;
 import edu.uniquindio.dentalmanagementsystembackend.exception.*;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCuenta;
-import edu.uniquindio.dentalmanagementsystembackend.exception.DatabaseOperationException;
+import edu.uniquindio.dentalmanagementsystembackend.service.impl.CaptchaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.security.auth.login.AccountNotFoundException;
-import java.util.Collections;
-import java.util.HashMap;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
+
+import javax.security.auth.login.AccountNotFoundException;
 
 @RestController
 @RequestMapping("/api/cuenta")
 @RequiredArgsConstructor
+@Slf4j
 public class CuentaController {
 
     // Service for account-related operations
     private final ServiciosCuenta accountService;
+    private final CaptchaService captchaService;
 
     /**
      * Endpoint for user login.
@@ -41,12 +42,37 @@ public class CuentaController {
     }
 
     /**
-     * Endpoint for creating a new account.
-     * @param cuentaDTO Data transfer object containing account details.
+     * Endpoint for creating a new account with reCAPTCHA v3 verification.
+     * @param registroDTO DTO con los datos de la cuenta y el token de reCAPTCHA
      * @return ResponseEntity with a success message if account creation is successful, or CONFLICT status if it fails.
      */
     @PostMapping("/register")
-    public ResponseEntity<String> crearCuenta(@RequestBody CrearCuentaDTO cuentaDTO) {
+    public ResponseEntity<String> crearCuenta(@Valid @RequestBody RegistroConCaptchaDTO registroDTO) {
+        try {
+            // Verificar reCAPTCHA
+            Boolean captchaValid = captchaService.verifyCaptcha(registroDTO.captchaToken()).block();
+            if (!captchaValid) {
+                log.warn("reCAPTCHA verification failed for account creation");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Verificación de seguridad fallida. Por favor, inténtalo de nuevo.");
+            }
+
+            // Crear la cuenta usando el DTO convertido
+            CrearCuentaDTO cuentaDTO = registroDTO.toCrearCuentaDTO();
+            return ResponseEntity.status(HttpStatus.CREATED).body(accountService.crearCuenta(cuentaDTO));
+        } catch (EmailAlreadyExistsException | UserAlreadyExistsException | Exception | DatabaseOperationException |
+                 EmailSendingException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Endpoint for creating a new account without reCAPTCHA (for backward compatibility).
+     * @param cuentaDTO Data transfer object containing account details.
+     * @return ResponseEntity with a success message if account creation is successful, or CONFLICT status if it fails.
+     */
+    @PostMapping("/register-no-captcha")
+    public ResponseEntity<String> crearCuentaSinCaptcha(@RequestBody CrearCuentaDTO cuentaDTO) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(accountService.crearCuenta(cuentaDTO));
         } catch (EmailAlreadyExistsException | UserAlreadyExistsException | Exception | DatabaseOperationException |
@@ -55,149 +81,126 @@ public class CuentaController {
         }
     }
 
-
     /**
      * Endpoint for deleting an account.
      * @param accountId ID of the account to delete.
      * @return ResponseEntity with no content if deletion is successful, or appropriate error status if it fails.
+     * @throws InvalidIdFormatException 
+     * @throws UserNotFoundException 
      */
     @DeleteMapping("/{accountId}")
-    public ResponseEntity<Void> eliminarCuenta(@PathVariable Long accountId) {
+    public ResponseEntity<Void> eliminarCuenta(@PathVariable Long accountId) throws UserNotFoundException, InvalidIdFormatException {
         try {
             accountService.eliminarCuenta(accountId);
             return ResponseEntity.noContent().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (InvalidIdFormatException | Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
      * Endpoint for activating an account.
-     * @param activateAccountDTO Data transfer object containing activation details.
+     * @param activateAccountDTO Data transfer object containing activation information.
      * @return ResponseEntity with a success message if activation is successful, or appropriate error status if it fails.
      */
     @PostMapping("/activate")
-    public ResponseEntity<String> activateAccount(@RequestBody ActivateAccountDTO activateAccountDTO) {
+    public ResponseEntity<String> activarCuenta(@RequestBody ActivateAccountDTO activateAccountDTO) {
         try {
             return ResponseEntity.ok(accountService.activateAccount(activateAccountDTO));
-        } catch (AccountAlreadyActiveException | ValidationCodeExpiredException | Exception e) {
+        } catch (AccountAlreadyActiveException | ValidationCodeExpiredException | AccountNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor");
+        }
+    }
+
+    /**
+     * Endpoint for sending activation code.
+     * @param emailDTO Data transfer object containing email information.
+     * @return ResponseEntity with a success message if code sending is successful, or appropriate error status if it fails.
+     */
+    @PostMapping("/send-active-code")
+    public ResponseEntity<String> enviarCodigoActivacion(@RequestBody EmailDTO emailDTO) {
+        try {
+            return ResponseEntity.ok(accountService.sendActiveCode(emailDTO.email()));
+        } catch (EmailNotFoundException | AccountAlreadyActiveException | Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
     /**
-     * Endpoint for sending an activation code.
-     * @param email Email address to send the activation code to.
-     * @return ResponseEntity with a success message if sending is successful, or appropriate error status if it fails.
+     * Endpoint for sending password recovery code.
+     * @param emailDTO Data transfer object containing email information.
+     * @return ResponseEntity with a success message if code sending is successful, or appropriate error status if it fails.
      */
-    @PostMapping("/send-activation-code")
-    public ResponseEntity<String> sendActiveCode(@RequestParam String email) {
+    @PostMapping("/send-recovery-code")
+    public ResponseEntity<String> enviarCodigoRecuperacion(@RequestBody EmailDTO emailDTO) {
         try {
-            return ResponseEntity.ok(accountService.sendActiveCode(email));
-        } catch (EmailNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } catch (AccountAlreadyActiveException e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.ok(accountService.sendPasswordRecoveryCode(emailDTO.email()));
+        } catch (EmailNotFoundException | Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
     /**
-     * Endpoint for changing the password using a code.
-     * @param changePasswordDTO Data transfer object containing password change details.
+     * Endpoint for changing password using recovery code.
+     * @param changePasswordDTO Data transfer object containing password change information.
      * @return ResponseEntity with a success message if password change is successful, or appropriate error status if it fails.
+     * @throws Exception 
      */
-    @PostMapping("/change-password")
-    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordCodeDTO changePasswordDTO) {
+    @PostMapping("/change-password-code")
+    public ResponseEntity<String> cambiarContraseñaConCodigo(@RequestBody ChangePasswordCodeDTO changePasswordDTO) throws Exception {
         try {
             return ResponseEntity.ok(accountService.changePasswordCode(changePasswordDTO));
-        } catch (InvalidValidationCodeException | ValidationCodeExpiredException | PasswordsDoNotMatchException | Exception e) {
+        } catch (InvalidValidationCodeException | ValidationCodeExpiredException | PasswordsDoNotMatchException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
     /**
-     * Endpoint for updating the password.
-     * @param id ID of the account to update the password for.
-     * @param updatePasswordDTO Data transfer object containing new password details.
-     * @return ResponseEntity with no content if update is successful, or appropriate error status if it fails.
+     * Endpoint for updating password.
+     * @param accountId ID of the account.
+     * @param updatePasswordDTO Data transfer object containing password update information.
+     * @return ResponseEntity with a success message if password update is successful, or appropriate error status if it fails.
+     * @throws Exception 
      */
-    @PutMapping("/update-password/{id}")
-    public ResponseEntity<Void> updatePassword(@PathVariable Long id, @RequestBody UpdatePasswordDTO updatePasswordDTO) {
+    @PutMapping("/{accountId}/update-password")
+    public ResponseEntity<String> actualizarContraseña(@PathVariable Long accountId, @RequestBody UpdatePasswordDTO updatePasswordDTO) throws Exception {
         try {
-            accountService.updatePassword(id, updatePasswordDTO);
-            return ResponseEntity.noContent().build();
-        } catch (InvalidCurrentPasswordException | PasswordMismatchException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        } catch (Exception e) {
+            return ResponseEntity.ok(accountService.updatePassword(accountId, updatePasswordDTO));
+        } catch (AccountNotFoundException | InvalidCurrentPasswordException | PasswordMismatchException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Endpoint for getting user profile.
+     * @param accountId ID of the account.
+     * @return ResponseEntity with user profile information if successful, or appropriate error status if it fails.
+     */
+    @GetMapping("/{accountId}/profile")
+    public ResponseEntity<PerfilDTO> obtenerPerfil(@PathVariable Long accountId) {
+        try {
+            return ResponseEntity.ok(accountService.obtenerPerfil(accountId));
+        } catch (UserNotFoundException | AccountNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
     /**
-     * Endpoint for sending a password recovery code.
-     * @param email Email address to send the recovery code to.
-     * @return ResponseEntity with a success message if sending is successful, or appropriate error status if it fails.
+     * Endpoint for updating user profile.
+     * @param accountId ID of the account.
+     * @param actualizarUsuarioDTO Data transfer object containing updated user information.
+     * @return ResponseEntity with a success message if update is successful, or appropriate error status if it fails.
+     * @throws Exception 
      */
-    @PostMapping("/send-recovery-code")
-    public ResponseEntity<String> sendPasswordRecoveryCode(@RequestParam String email) {
+    @PutMapping("/{accountId}/profile")
+    public ResponseEntity<String> actualizarPerfil(@PathVariable Long accountId, @RequestBody ActualizarUsuarioDTO actualizarUsuarioDTO) throws Exception {
         try {
-            return ResponseEntity.ok(accountService.sendPasswordRecoveryCode(email));
-        } catch (EmailNotFoundException | Exception e) {
+            return ResponseEntity.ok(accountService.actualizarUsuario(accountId, actualizarUsuarioDTO));
+        } catch (UserNotFoundException | AccountNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-
-    /**
-     * Endpoint para actualizar la información del usuario.
-     * @param accountId ID de la cuenta.
-     * @param actualizarUsuarioDTO DTO con la información actualizada del usuario.
-     * @return ResponseEntity con un mensaje de confirmación.
-     */
-    @PutMapping("/usuario/{accountId}")
-    public ResponseEntity<Map<String, String>> actualizarUsuario(
-            @PathVariable Long accountId,
-            @RequestBody ActualizarUsuarioDTO actualizarUsuarioDTO) {
-        try {
-            // Actualizar la información del usuario
-            String mensaje = accountService.actualizarUsuario(accountId, actualizarUsuarioDTO);
-
-            // Generar nuevo token con la información actualizada
-            String nuevoToken = accountService.generarNuevoToken(accountId);
-
-            // Preparar la respuesta
-            Map<String, String> response = new HashMap<>();
-            response.put("message", mensaje);
-            response.put("token", nuevoToken);
-
-            return ResponseEntity.ok(response);
-        } catch (UserNotFoundException | AccountNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Error al actualizar la información del usuario"));
-        }
-    }
-
-    @GetMapping("/perfil/{accountId}")
-    public ResponseEntity<PerfilDTO> obtenerPerfil(@PathVariable Long accountId) {
-        try {
-            PerfilDTO perfil = accountService.obtenerPerfil(accountId);
-            return ResponseEntity.ok(perfil);
-        } catch (UserNotFoundException | AccountNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(null);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
-        }
-    }
-
-
-
 
 }

@@ -4,6 +4,7 @@ import edu.uniquindio.dentalmanagementsystembackend.dto.cita.TipoCitaDTO;
 import edu.uniquindio.dentalmanagementsystembackend.entity.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.repository.TipoCitaRepository;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosTipoCita;
+import edu.uniquindio.dentalmanagementsystembackend.exception.TipoCitaException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -73,10 +74,12 @@ public class ServiciosTipoCitaImpl implements ServiciosTipoCita {
                     ))
                     .collect(Collectors.toList());
 
+        } catch (DataAccessException e) {
+            log.error("Error de base de datos al obtener tipos de cita: {}", e.getMessage(), e);
+            throw new TipoCitaException("Error de base de datos al obtener tipos de cita", TipoCitaException.TipoCitaErrorType.TIPO_CITA_NO_ENCONTRADO, "Error al acceder a los datos");
         } catch (Exception e) {
-            // Capturar excepciones
-            log.error("Error al obtener tipos de cita: {}", e.getMessage(), e);
-            throw new RuntimeException("Error al obtener los tipos de cita. Por favor, intente nuevamente.", e);
+            log.error("Error inesperado al obtener tipos de cita: {}", e.getMessage(), e);
+            throw new TipoCitaException("Error interno al obtener tipos de cita", TipoCitaException.TipoCitaErrorType.TIPO_CITA_NO_ENCONTRADO, "Error al procesar la solicitud");
         }
     }
 

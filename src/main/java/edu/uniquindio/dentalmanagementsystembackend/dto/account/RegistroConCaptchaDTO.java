@@ -1,7 +1,5 @@
 package edu.uniquindio.dentalmanagementsystembackend.dto.account;
 
-import java.time.LocalDate;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,8 +7,12 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record CrearCuentaDTO(
+import java.time.LocalDate;
 
+/**
+ * DTO para el registro de cuentas con verificación de reCAPTCHA v3.
+ */
+public record RegistroConCaptchaDTO(
         @NotBlank(message = "El número de identificación no puede estar vacío.")
         @Size(min = 5, max = 15, message = "El número de identificación debe tener entre 5 y 15 dígitos.")
         @Pattern(regexp = "^\\d{5,15}$", message = "El número de identificación solo puede contener entre 5 y 15 dígitos numéricos.")
@@ -48,14 +50,25 @@ public record CrearCuentaDTO(
                 regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
                 message = "La contraseña debe tener al menos una mayúscula, una minúscula, un número y un carácter especial."
         )
-        String password
+        String password,
+
+        @NotBlank(message = "El token de reCAPTCHA es requerido")
+        String captchaToken
 ) {
-
-
-
-
-
-
-
-
-}
+    
+    /**
+     * Convierte este DTO a CrearCuentaDTO para usar con el servicio.
+     */
+    public CrearCuentaDTO toCrearCuentaDTO() {
+        return new CrearCuentaDTO(
+                idNumber,
+                name,
+                lastName,
+                phoneNumber,
+                address,
+                fechaNacimiento,
+                email,
+                password
+        );
+    }
+} 

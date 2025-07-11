@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import io.jsonwebtoken.UnsupportedJwtException;
 
 // Anotación que indica que esta clase es un componente de Spring
 @Component
@@ -41,47 +42,57 @@ public class FiltroToken extends OncePerRequestFilter {
         // Si el método de la solicitud es OPTIONS, se responde con OK
         if (request.getMethod().equals("OPTIONS")) {
             response.setStatus(HttpServletResponse.SC_OK);
-        } else {
+            return;
+        }
+
             // Obtener la URI de la petición que se está realizando
             String requestURI = request.getRequestURI();
 
             // Se obtiene el token de la petición del encabezado del mensaje HTTP
             String token = getToken(request);
-            boolean error = true;
+        boolean error = false;
 
             try {
-                // Si la petición es para la ruta /api/paciente se verifica que el token exista y que el rol sea PACIENTE
+            // Validar rutas que requieren autenticación
                 if (requestURI.startsWith("/api/paciente")) {
-                    error = validarToken(token, Rol.PACIENTE);
+                error = !validarToken(token, Rol.PACIENTE);
+            } else if (requestURI.startsWith("/api/administrador")) {
+                error = !validarToken(token, Rol.ADMINISTRATOR);
+            } else if (requestURI.startsWith("/api/doctor")) {
+                error = !validarToken(token, Rol.DOCTOR);
                 } else {
-                    error = false;
-                }
-
-                // Agregar la validación para las peticiones que sean de los administradores
-                if (requestURI.startsWith("/api/administrador")) {
-                    error = validarToken(token, Rol.ADMINISTRATOR);
-                } else {
+                // Rutas públicas no requieren validación
                     error = false;
                 }
 
                 // Si hay un error se crea una respuesta con el mensaje del error
                 if (error) {
                     crearRespuestaError("No tiene permisos para acceder a este recurso", HttpServletResponse.SC_FORBIDDEN, response);
+                return;
                 }
 
-            } catch (MalformedJwtException | SignatureException e) {
-                crearRespuestaError("El token es incorrecto", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response);
+        } catch (MalformedJwtException e) {
+            crearRespuestaError("El token tiene un formato incorrecto", HttpServletResponse.SC_UNAUTHORIZED, response);
+            return;
+        } catch (SignatureException e) {
+            crearRespuestaError("El token no es válido", HttpServletResponse.SC_UNAUTHORIZED, response);
+            return;
             } catch (ExpiredJwtException e) {
-                crearRespuestaError("El token está vencido", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response);
+            crearRespuestaError("El token ha expirado", HttpServletResponse.SC_UNAUTHORIZED, response);
+            return;
+        } catch (UnsupportedJwtException e) {
+            crearRespuestaError("El token no es compatible", HttpServletResponse.SC_UNAUTHORIZED, response);
+            return;
+        } catch (IllegalArgumentException e) {
+            crearRespuestaError("El token es nulo o está vacío", HttpServletResponse.SC_UNAUTHORIZED, response);
+            return;
             } catch (Exception e) {
-                crearRespuestaError(e.getMessage(), HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response);
+            crearRespuestaError("Error interno del servidor: " + e.getMessage(), HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response);
+            return;
             }
 
             // Si no hay errores se continúa con la petición
-            if (!error) {
                 filterChain.doFilter(request, response);
-            }
-        }
     }
 
     // Método para obtener el token del encabezado de la solicitud HTTP
@@ -103,13 +114,21 @@ public class FiltroToken extends OncePerRequestFilter {
 
     // Método para validar el token y verificar que el rol sea el correcto
     private boolean validarToken(String token, Rol rol) {
-        boolean error = true;
-        if (token != null) {
-            Jws<Claims> jws = jwtUtils.parseJwt(token);
-            if (Rol.valueOf(jws.getPayload().get("rol").toString()) == rol) {
-                error = false;
-            }
+        if (token == null || token.trim().isEmpty()) {
+            return false;
         }
-        return error;
+        
+        try {
+            Jws<Claims> jws = jwtUtils.parseJwt(token);
+            String tokenRol = jws.getPayload().get("rol", String.class);
+            
+            if (tokenRol == null) {
+                return false;
+            }
+            
+            return Rol.valueOf(tokenRol) == rol;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

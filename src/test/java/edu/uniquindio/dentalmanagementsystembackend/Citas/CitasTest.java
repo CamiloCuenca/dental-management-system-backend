@@ -11,6 +11,7 @@ import edu.uniquindio.dentalmanagementsystembackend.entity.Cita;
 import edu.uniquindio.dentalmanagementsystembackend.entity.DisponibilidadDoctor;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Especialidad;
 import edu.uniquindio.dentalmanagementsystembackend.entity.TipoCita;
+import edu.uniquindio.dentalmanagementsystembackend.exception.CitaException;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CuentaRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.DisponibilidadDoctorRepository;
@@ -20,30 +21,24 @@ import edu.uniquindio.dentalmanagementsystembackend.repository.UserRepository;
 // Importa la clase ListaCitasDTO desde el paquete dto
 // Importa la interfaz CitasRepository desde el paquete repository
 // Importa la interfaz ServiciosCitas desde el paquete service. Interfaces
-import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosCitas;
+import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.EmailService;
+import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosDisponibilidadDoctor;
+import edu.uniquindio.dentalmanagementsystembackend.service.impl.ServiciosCitaImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.DayOfWeek;
-import java.time.Instant;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
-
-import edu.uniquindio.dentalmanagementsystembackend.util.DateUtil;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 /**
  * This class contains unit tests for handling appointment-related features and uses
@@ -52,36 +47,80 @@ import jakarta.persistence.PersistenceContext;
  * interact with the services and repositories related to appointments.
  */
 // Anotación que indica que esta clase es una prueba de Spring Boot
-@SpringBootTest
-public class CitasTest {
+@ExtendWith(MockitoExtension.class)
+class CitasTest {
 
-    // Inyección de dependencias para el repositorio de citas
-    @Autowired
+    @Mock
     private CitasRepository citasRepository;
-
-    // Inyección de dependencias para el servicio de citas
-    @Autowired
-    private ServiciosCitas serviciosCitas;
-
-    // Inyección de dependencias para otros repositorios necesarios
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
+    @Mock
     private CuentaRepository cuentaRepository;
-
-    @Autowired
-    private TipoCitaRepository tipoCitaRepository;
-
-    @Autowired
+    @Mock
+    private UserRepository userRepository;
+    @Mock
     private DisponibilidadDoctorRepository disponibilidadDoctorRepository;
-
-    @Autowired
+    @Mock
+    private TipoCitaRepository tipoCitaRepository;
+    @Mock
     private EspecialidadRepository especialidadRepository;
+    @Mock
+    private EmailService emailService;
+    @Mock
+    private ServiciosDisponibilidadDoctor serviciosDisponibilidadDoctor;
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    @InjectMocks
+    private ServiciosCitaImpl serviciosCita;
 
+    private User testPaciente;
+    private User testDoctor;
+    private TipoCita testTipoCita;
+    private Cita testCita;
+    private Cita testCitaPendiente;
+    private Especialidad testEspecialidad;
+
+    @BeforeEach
+    void setUp() {
+        testPaciente = new User();
+        testPaciente.setIdNumber("1001277430");
+        testPaciente.setName("Juan");
+        testPaciente.setLastName("Pérez");
+        Account pacienteAccount = new Account();
+        pacienteAccount.setRol(Rol.PACIENTE);
+        testPaciente.setAccount(pacienteAccount);
+
+        testDoctor = new User();
+        testDoctor.setIdNumber("111111111");
+        testDoctor.setName("Dr. María");
+        testDoctor.setLastName("García");
+        Account doctorAccount = new Account();
+        doctorAccount.setRol(Rol.DOCTOR);
+        testDoctor.setAccount(doctorAccount);
+
+        testTipoCita = new TipoCita();
+        testTipoCita.setId(1L);
+        testTipoCita.setNombre("Consulta General");
+
+        testEspecialidad = new Especialidad();
+        testEspecialidad.setId(1L);
+        testEspecialidad.setNombre("Odontología General");
+
+        testCita = new Cita();
+        testCita.setId(10L);
+        testCita.setPaciente(testPaciente);
+        testCita.setDoctor(testDoctor);
+        testCita.setFechaHora(LocalDateTime.of(2025, 4, 21, 11, 30).atZone(ZoneId.systemDefault()).toInstant());
+        testCita.setEstado(EstadoCitas.CONFIRMADA);
+        testCita.setTipoCita(testTipoCita);
+        testCita.setEsAutenticada(true);
+
+        testCitaPendiente = new Cita();
+        testCitaPendiente.setId(31L);
+        testCitaPendiente.setPaciente(testPaciente);
+        testCitaPendiente.setDoctor(testDoctor);
+        testCitaPendiente.setFechaHora(LocalDateTime.of(2025, 7, 11, 11, 30).atZone(ZoneId.systemDefault()).toInstant());
+        testCitaPendiente.setEstado(EstadoCitas.PENDIENTE);
+        testCitaPendiente.setTipoCita(testTipoCita);
+        testCitaPendiente.setEsAutenticada(true);
+    }
 
     /**
      * Test method to validate the functionality of creating a medical appointment.
@@ -102,20 +141,28 @@ public class CitasTest {
      * - Ensures the crearCita method from ServiciosCitas works as expected with valid inputs.
      */
     @Test
-    void crearCita() {
-        String idPaciente = "1001277430";
-        String idDoctor = "111111111";
-        Long idTipoCita = 1L;
+    void crearCita_success() throws Exception {
+        CrearCitaDTO crearCitaDTO = new CrearCitaDTO(
+                "1001277430",
+                "111111111",
+                LocalDate.now().plusDays(1), // Fecha futura
+                LocalTime.of(11, 30),
+                1L
+        );
 
-        LocalDate fecha = LocalDate.of(2025, 4, 21);
-        LocalTime hora = LocalTime.of(11, 30);
+        when(userRepository.findByIdNumber("1001277430")).thenReturn(Optional.of(testPaciente));
+        when(userRepository.findByIdNumber("111111111")).thenReturn(Optional.of(testDoctor));
+        when(serviciosDisponibilidadDoctor.validarDisponibilidadDoctor(anyString(), any(LocalDate.class), any(LocalTime.class))).thenReturn(true);
+        when(citasRepository.existsByDoctorAndFechaHora(any(User.class), any())).thenReturn(false);
+        when(tipoCitaRepository.findById(1L)).thenReturn(Optional.of(testTipoCita));
+        when(citasRepository.save(any(Cita.class))).thenReturn(testCita);
+        doNothing().when(emailService).enviarCorreoCita(any());
 
-        CrearCitaDTO crearCitaDTO = new CrearCitaDTO(idPaciente, idDoctor, fecha, hora, idTipoCita);
-
-        Cita cita = serviciosCitas.crearCita(crearCitaDTO);
-
-        // Verificar que sí se guardó
-        assertNotNull(cita.getId());
+        Cita cita = serviciosCita.crearCita(crearCitaDTO);
+        assertNotNull(cita);
+        assertEquals(testCita.getId(), cita.getId());
+        verify(citasRepository).save(any(Cita.class));
+        verify(emailService).enviarCorreoCita(any());
     }
 
 
@@ -131,8 +178,16 @@ public class CitasTest {
      */
     @Test
     void obtenerDoctoresPorEspecialidad() {
-        Long especialidadId = 22L; // ID de la especialidad de ejemplo
-        List<DoctorEspecialidadDTO> doctores = serviciosCitas.obtenerDoctoresPorEspecialidad(especialidadId);
+        Long especialidadId = 1L; // ID de la especialidad válido
+        
+        when(especialidadRepository.findById(especialidadId)).thenReturn(Optional.of(testEspecialidad));
+        when(userRepository.findByAccount_Rol(Rol.DOCTOR)).thenReturn(List.of(testDoctor));
+        
+        List<DoctorEspecialidadDTO> doctores = serviciosCita.obtenerDoctoresPorEspecialidad(especialidadId);
+        
+        assertNotNull(doctores);
+        verify(especialidadRepository).findById(especialidadId);
+        verify(userRepository).findByAccount_Rol(Rol.DOCTOR);
     }
 
 
@@ -156,16 +211,22 @@ public class CitasTest {
     @Test
     void editarCitaPaciente() {
         Long idCita = 31L; // ID de la cita a editar
-        LocalDate fecha = LocalDate.of(2025, 4, 28);
+        LocalDate fecha = LocalDate.now().plusDays(2);
         LocalTime hora = LocalTime.of(11, 30);
 
         EditarCitaPacienteDTO editarCitaPacienteDTO = new EditarCitaPacienteDTO(
                 idCita,
                 fecha,
                 hora
-
         );
-        serviciosCitas.editarCitaPaciente(idCita, editarCitaPacienteDTO);
+        
+        when(citasRepository.findById(idCita)).thenReturn(Optional.of(testCitaPendiente));
+        when(citasRepository.save(any(Cita.class))).thenReturn(testCitaPendiente);
+        
+        serviciosCita.editarCitaPaciente(idCita, editarCitaPacienteDTO);
+        
+        verify(citasRepository).findById(idCita);
+        verify(citasRepository).save(any(Cita.class));
     }
 
     /**
@@ -188,8 +249,14 @@ public class CitasTest {
     @Test
     void cancelarCita() {
         Long idCita = 31L;
-        serviciosCitas.cancelarCita(idCita);
-
+        
+        when(citasRepository.findById(idCita)).thenReturn(Optional.of(testCitaPendiente));
+        when(citasRepository.save(any(Cita.class))).thenReturn(testCitaPendiente);
+        
+        serviciosCita.cancelarCita(idCita);
+        
+        verify(citasRepository).findById(idCita);
+        verify(citasRepository).save(any(Cita.class));
     }
 
     /**
@@ -211,7 +278,14 @@ public class CitasTest {
     @Test
     void confirmarCita() {
         Long idCita = 31L;
-        serviciosCitas.confirmarCita(idCita);
+        
+        when(citasRepository.findById(idCita)).thenReturn(Optional.of(testCitaPendiente));
+        when(citasRepository.save(any(Cita.class))).thenReturn(testCitaPendiente);
+        
+        serviciosCita.confirmarCita(idCita);
+        
+        verify(citasRepository).findById(idCita);
+        verify(citasRepository).save(any(Cita.class));
     }
 
     /**
@@ -233,7 +307,24 @@ public class CitasTest {
     @Test
     void completarCita() {
         Long idCita = 31L;
-        serviciosCitas.completarCita(idCita);
+        
+        // Crear una cita confirmada para completar
+        Cita citaConfirmada = new Cita();
+        citaConfirmada.setId(31L);
+        citaConfirmada.setPaciente(testPaciente);
+        citaConfirmada.setDoctor(testDoctor);
+        citaConfirmada.setFechaHora(LocalDateTime.of(2025, 7, 11, 11, 30).atZone(ZoneId.systemDefault()).toInstant());
+        citaConfirmada.setEstado(EstadoCitas.CONFIRMADA);
+        citaConfirmada.setTipoCita(testTipoCita);
+        citaConfirmada.setEsAutenticada(true);
+        
+        when(citasRepository.findById(idCita)).thenReturn(Optional.of(citaConfirmada));
+        when(citasRepository.save(any(Cita.class))).thenReturn(citaConfirmada);
+        
+        serviciosCita.completarCita(idCita);
+        
+        verify(citasRepository).findById(idCita);
+        verify(citasRepository).save(any(Cita.class));
     }
 
     /**
@@ -260,7 +351,7 @@ public class CitasTest {
         String idDoctor = "111111111";
         Long idTipoCita = 1L;
 
-        LocalDate fecha = LocalDate.of(2025, 4, 21);
+        LocalDate fecha = LocalDate.now().plusDays(1); // Fecha futura
         LocalTime hora = LocalTime.of(11, 30);
         CrearCitaNoAutenticadaDTO crearCitaNoAutenticadaDTO = new CrearCitaNoAutenticadaDTO(
                 "CAMILO",
@@ -272,7 +363,18 @@ public class CitasTest {
                 hora,
                 idTipoCita
         );
-        serviciosCitas.crearCitaNoAutenticada(crearCitaNoAutenticadaDTO);
+
+        when(userRepository.findByIdNumber(idDoctor)).thenReturn(Optional.of(testDoctor));
+        when(tipoCitaRepository.findById(idTipoCita)).thenReturn(Optional.of(testTipoCita));
+        when(serviciosDisponibilidadDoctor.validarDisponibilidadDoctor(anyString(), any(LocalDate.class), any(LocalTime.class))).thenReturn(true);
+        when(citasRepository.save(any(Cita.class))).thenReturn(testCita);
+
+        serviciosCita.crearCitaNoAutenticada(crearCitaNoAutenticadaDTO);
+
+        verify(userRepository).findByIdNumber(idDoctor);
+        verify(tipoCitaRepository).findById(idTipoCita);
+        verify(serviciosDisponibilidadDoctor).validarDisponibilidadDoctor(anyString(), any(LocalDate.class), any(LocalTime.class));
+        verify(citasRepository).save(any(Cita.class));
     }
 
     
@@ -289,7 +391,7 @@ public class CitasTest {
         String idDoctor = "111111111";
         Long idCita = 32L;
 
-        LocalDate fecha = LocalDate.of(2025, 4, 21);
+        LocalDate fecha = LocalDate.now().plusDays(2); // Fecha futura
         LocalTime hora = LocalTime.of(11, 30);
         EditarCitaNoAutenticadaAdminDTO editarCitaNoAutenticadaAdminDTO = new EditarCitaNoAutenticadaAdminDTO(
               "Camilo",
@@ -301,32 +403,82 @@ public class CitasTest {
                 hora,
                 1L
         );
-        serviciosCitas.editarCitaNoAutenticadaAdmin(idCita, editarCitaNoAutenticadaAdminDTO);
+
+        Cita citaNoAutenticada = new Cita();
+        citaNoAutenticada.setId(idCita);
+        citaNoAutenticada.setEsAutenticada(false);
+        citaNoAutenticada.setEstado(EstadoCitas.PENDIENTE);
+
+        when(citasRepository.findById(idCita)).thenReturn(Optional.of(citaNoAutenticada));
+        when(userRepository.findByIdNumber(idDoctor)).thenReturn(Optional.of(testDoctor));
+        when(tipoCitaRepository.findById(1L)).thenReturn(Optional.of(testTipoCita));
+        when(citasRepository.save(any(Cita.class))).thenReturn(citaNoAutenticada);
+
+        serviciosCita.editarCitaNoAutenticadaAdmin(idCita, editarCitaNoAutenticadaAdminDTO);
+
+        verify(citasRepository).findById(idCita);
+        verify(userRepository).findByIdNumber(idDoctor);
+        verify(tipoCitaRepository).findById(1L);
+        verify(citasRepository).save(any(Cita.class));
     }
 
     @Test
     void cancelarCitaNoAutenticadaAdmin(){
         Long idCita = 34L;
-        serviciosCitas.cancelarCitaNoAutenticadaAdmin(idCita);
+        
+        Cita citaNoAutenticada = new Cita();
+        citaNoAutenticada.setId(idCita);
+        citaNoAutenticada.setEsAutenticada(false);
+        citaNoAutenticada.setEstado(EstadoCitas.PENDIENTE);
+
+        when(citasRepository.findById(idCita)).thenReturn(Optional.of(citaNoAutenticada));
+        when(citasRepository.save(any(Cita.class))).thenReturn(citaNoAutenticada);
+
+        serviciosCita.cancelarCitaNoAutenticadaAdmin(idCita);
+
+        verify(citasRepository).findById(idCita);
+        verify(citasRepository).save(any(Cita.class));
     }
 
     @Test
     void cambiarEstadoCitaNoAutenticadaAdmin (){
         Long idCita = 34L;
-        serviciosCitas.cambiarEstadoCitaNoAutenticadaAdmin(idCita, EstadoCitas.COMPLETADA);
+        
+        Cita citaNoAutenticada = new Cita();
+        citaNoAutenticada.setId(idCita);
+        citaNoAutenticada.setEsAutenticada(false);
+        citaNoAutenticada.setEstado(EstadoCitas.PENDIENTE);
+
+        when(citasRepository.findById(idCita)).thenReturn(Optional.of(citaNoAutenticada));
+        when(citasRepository.save(any(Cita.class))).thenReturn(citaNoAutenticada);
+
+        serviciosCita.cambiarEstadoCitaNoAutenticadaAdmin(idCita, EstadoCitas.COMPLETADA);
+
+        verify(citasRepository).findById(idCita);
+        verify(citasRepository).save(any(Cita.class));
     }
 
 
     @Test
     void obtenerCitasNoAutenticadasPorPaciente(){
         String idPaciente = "1001277431";
-        serviciosCitas.obtenerCitasNoAutenticadasPorPaciente(idPaciente);
+        
+        when(citasRepository.findByNumeroIdentificacionNoAutenticadoAndEsAutenticadaFalse(idPaciente)).thenReturn(List.of());
+
+        serviciosCita.obtenerCitasNoAutenticadasPorPaciente(idPaciente);
+
+        verify(citasRepository).findByNumeroIdentificacionNoAutenticadoAndEsAutenticadaFalse(idPaciente);
     }
 
     @Test
     void obtenerCitasNoAutenticadasPorDoctor (){
         String idDoctor = "111111111";
-        serviciosCitas.obtenerCitasNoAutenticadasPorDoctor(idDoctor);
+        
+        when(citasRepository.findByDoctor_IdNumberAndEsAutenticadaFalse(idDoctor)).thenReturn(List.of());
+
+        serviciosCita.obtenerCitasNoAutenticadasPorDoctor(idDoctor);
+
+        verify(citasRepository).findByDoctor_IdNumberAndEsAutenticadaFalse(idDoctor);
     }
 
 

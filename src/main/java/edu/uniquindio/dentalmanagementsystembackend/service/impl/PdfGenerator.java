@@ -4,6 +4,7 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import edu.uniquindio.dentalmanagementsystembackend.dto.historial.HistorialDTO;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.HistorialService;
+import edu.uniquindio.dentalmanagementsystembackend.exception.PdfException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,7 +53,7 @@ public class PdfGenerator {
                         agregarHeader(writer, document);
                         agregarFooter(writer, document, id);
                     } catch (DocumentException e) {
-                        throw new RuntimeException("Error al agregar header/footer", e);
+                        throw new PdfException("Error al agregar header/footer", PdfException.PdfErrorType.ERROR_HEADER_FOOTER, "historial");
                     }
                 }
             });
@@ -71,11 +72,16 @@ public class PdfGenerator {
             document.close();
             return outputStream.toByteArray();
 
+        } catch (PdfException e) {
+            if (document.isOpen()) {
+                document.close();
+            }
+            throw e;
         } catch (Exception e) {
             if (document.isOpen()) {
                 document.close();
             }
-            throw new DocumentException("Error al generar el PDF: " + e.getMessage());
+            throw new PdfException("Error interno al generar el PDF", PdfException.PdfErrorType.ERROR_GENERACION_PDF, "historial");
         }
     }
 
@@ -394,7 +400,7 @@ public class PdfGenerator {
                         agregarHeader(writer, document);
                         agregarFooter(writer, document, id);
                     } catch (DocumentException e) {
-                        throw new RuntimeException("Error al agregar header/footer", e);
+                        throw new PdfException("Error al agregar header/footer", PdfException.PdfErrorType.ERROR_HEADER_FOOTER, "historial");
                     }
                 }
             });

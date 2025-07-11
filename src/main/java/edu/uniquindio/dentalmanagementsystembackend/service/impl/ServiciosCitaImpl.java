@@ -20,6 +20,8 @@ import edu.uniquindio.dentalmanagementsystembackend.entity.DisponibilidadDoctor;
 import edu.uniquindio.dentalmanagementsystembackend.entity.Especialidad;
 import edu.uniquindio.dentalmanagementsystembackend.entity.TipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.exception.HistorialException;
+import edu.uniquindio.dentalmanagementsystembackend.exception.CitaException;
+import edu.uniquindio.dentalmanagementsystembackend.exception.ValidationException;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CitasRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.CuentaRepository;
 import edu.uniquindio.dentalmanagementsystembackend.repository.DisponibilidadDoctorRepository;
@@ -120,21 +122,21 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         try {
             // Validar que el paciente exista
             User paciente = userRepository.findByIdNumber(crearCitaDTO.pacienteId())
-                    .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+                    .orElseThrow(() -> new CitaException("Paciente no encontrado", CitaException.CitaErrorType.PACIENTE_NO_ENCONTRADO));
 
             // Validar que el doctor exista
             User doctor = userRepository.findByIdNumber(crearCitaDTO.doctorId())
-                    .orElseThrow(() -> new RuntimeException("Doctor no encontrado"));
+                    .orElseThrow(() -> new CitaException("Doctor no encontrado", CitaException.CitaErrorType.DOCTOR_NO_ENCONTRADO));
 
             // Validar que el usuario sea un doctor
             if (!doctor.getAccount().getRol().equals(Rol.DOCTOR)) {
-                throw new RuntimeException("El usuario especificado no es un doctor");
+                throw new CitaException("El usuario especificado no es un doctor", CitaException.CitaErrorType.DOCTOR_NO_ENCONTRADO);
             }
 
             // Validar que la fecha no sea en el pasado
             LocalDateTime fechaHoraCita = LocalDateTime.of(crearCitaDTO.fecha(), crearCitaDTO.hora());
             if (fechaHoraCita.isBefore(LocalDateTime.now())) {
-                throw new RuntimeException("No se pueden crear citas en fechas pasadas");
+                throw new CitaException("No se pueden crear citas en fechas pasadas", CitaException.CitaErrorType.CITA_PASADA);
             }
 
             // Validar disponibilidad del doctor
@@ -142,18 +144,18 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                     crearCitaDTO.doctorId(),
                     crearCitaDTO.fecha(),
                     crearCitaDTO.hora())) {
-                throw new RuntimeException("El doctor no está disponible en ese horario");
+                throw new CitaException("El doctor no está disponible en ese horario", CitaException.CitaErrorType.DOCTOR_NO_DISPONIBLE);
             }
 
             // Validar que no exista otra cita en el mismo horario
             if (citasRepository.existsByDoctorAndFechaHora(doctor,
                     fechaHoraCita.atZone(ZoneId.systemDefault()).toInstant())) {
-                throw new RuntimeException("Ya existe una cita programada para ese horario");
+                throw new CitaException("Ya existe una cita programada para ese horario", CitaException.CitaErrorType.CITA_YA_EXISTE);
             }
 
             // Obtener el tipo de cita
             TipoCita tipoCita = tipoCitaRepository.findById(crearCitaDTO.tipoCitaId())
-                    .orElseThrow(() -> new RuntimeException("Tipo de cita no encontrado"));
+                    .orElseThrow(() -> new CitaException("Tipo de cita no encontrado", CitaException.CitaErrorType.ESPECIALIDAD_NO_ENCONTRADA));
 
             // Crear la cita
             Cita cita = new Cita();
@@ -172,9 +174,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             enviarCorreoConfirmacionCita(citaGuardada);
 
             return citaGuardada;
+        } catch (CitaException e) {
+            // Re-lanzar excepciones específicas de citas tal como están
+            throw e;
         } catch (Exception e) {
             logger.error("Error al crear la cita", e);
-            throw new RuntimeException("Error al crear la cita: " + e.getMessage());
+            throw new CitaException("Error interno al crear la cita", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, "Error al procesar la solicitud");
         }
     }
 
@@ -190,21 +195,25 @@ public class ServiciosCitaImpl implements ServiciosCitas {
 
         try {
             Cita cita = citasRepository.findById(idCita)
-                    .orElseThrow(() -> new IllegalArgumentException("Cita no encontrada"));
+                    .orElseThrow(() -> new CitaException("Cita no encontrada", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, idCita));
 
             if (dto.fecha() == null || dto.hora() == null) {
-                throw new IllegalArgumentException("Fecha y hora no pueden ser nulas");
+                throw new ValidationException("Fecha y hora no pueden ser nulas");
             }
 
             LocalDateTime nuevaFechaHora = LocalDateTime.of(dto.fecha(), dto.hora());
             Instant instant = nuevaFechaHora.atZone(ZoneId.systemDefault()).toInstant();
 
             if (nuevaFechaHora.isBefore(LocalDateTime.now())) {
-                throw new IllegalArgumentException("La fecha y hora no pueden ser en el pasado");
+                throw new CitaException("La fecha y hora no pueden ser en el pasado", CitaException.CitaErrorType.CITA_PASADA);
             }
 
-            if (cita.getEstado() == EstadoCitas.CANCELADA || cita.getEstado() == EstadoCitas.COMPLETADA) {
-                throw new IllegalArgumentException("No se puede editar una cita cancelada o completada");
+            if (cita.getEstado() == EstadoCitas.CANCELADA) {
+                throw new CitaException("No se puede editar una cita cancelada", CitaException.CitaErrorType.CITA_CANCELADA);
+            }
+            
+            if (cita.getEstado() == EstadoCitas.COMPLETADA) {
+                throw new CitaException("No se puede editar una cita completada", CitaException.CitaErrorType.CITA_COMPLETADA);
             }
 
             cita.setFechaHora(instant);
@@ -214,13 +223,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             System.out.println("Cita actualizada exitosamente");
 
             return cita;
-        } catch (IllegalArgumentException e) {
-            logger.warn("Error de validación al editar cita: {}", e.getMessage());
+        } catch (CitaException | ValidationException e) {
+            // Re-lanzar excepciones específicas tal como están
             throw e;
         } catch (Exception e) {
             logger.error("Error inesperado al editar cita", e);
-            e.printStackTrace(); // Agrega esto temporalmente
-            throw e; // Cambia esto temporalmente para ver la excepción real
+            throw new CitaException("Error interno al editar la cita", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, "Error al procesar la solicitud");
         }
     }
 
@@ -234,14 +242,14 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         System.out.println("\n=== Cancelando cita ID: " + idCita + " ===");
         try {
             Cita cita = citasRepository.findById(idCita)
-                    .orElseThrow(() -> new IllegalArgumentException("Cita no encontrada"));
+                    .orElseThrow(() -> new CitaException("Cita no encontrada", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, idCita));
 
             // Validar que la cita no esté ya cancelada o completada
             if (cita.getEstado() == EstadoCitas.CANCELADA) {
-                throw new IllegalArgumentException("La cita ya está cancelada");
+                throw new CitaException("La cita ya está cancelada", CitaException.CitaErrorType.CITA_CANCELADA);
             }
             if (cita.getEstado() == EstadoCitas.COMPLETADA) {
-                throw new IllegalArgumentException("No se puede cancelar una cita completada");
+                throw new CitaException("No se puede cancelar una cita completada", CitaException.CitaErrorType.CITA_COMPLETADA);
             }
 
             // Cancelar la cita
@@ -259,12 +267,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             } catch (Exception e) {
                 logger.warn("No se pudo enviar el correo de cancelación: {}", e.getMessage());
             }
-        } catch (IllegalArgumentException e) {
-            logger.warn("Error de validación al cancelar cita: {}", e.getMessage());
+        } catch (CitaException e) {
+            // Re-lanzar excepciones específicas de citas tal como están
             throw e;
         } catch (Exception e) {
             logger.error("Error inesperado al cancelar cita", e);
-            throw new RuntimeException("Error al cancelar la cita. Por favor, intente nuevamente.");
+            throw new CitaException("Error interno al cancelar la cita", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, "Error al procesar la solicitud");
         }
     }
 
@@ -278,11 +286,11 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         System.out.println("\n=== Confirmando cita ID: " + idCita + " ===");
         try {
             Cita cita = citasRepository.findById(idCita)
-                    .orElseThrow(() -> new IllegalArgumentException("Cita no encontrada"));
+                    .orElseThrow(() -> new CitaException("Cita no encontrada", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, idCita));
 
             // Validar que la cita esté pendiente
             if (cita.getEstado() != EstadoCitas.PENDIENTE) {
-                throw new IllegalArgumentException("Solo se pueden confirmar citas pendientes");
+                throw new CitaException("Solo se pueden confirmar citas pendientes", CitaException.CitaErrorType.CITA_NO_ENCONTRADA);
             }
 
             // Confirmar la cita
@@ -300,12 +308,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             } catch (Exception e) {
                 logger.warn("No se pudo enviar el correo de confirmación: {}", e.getMessage());
             }
-        } catch (IllegalArgumentException e) {
-            logger.warn("Error de validación al confirmar cita: {}", e.getMessage());
+        } catch (CitaException e) {
+            // Re-lanzar excepciones específicas de citas tal como están
             throw e;
         } catch (Exception e) {
             logger.error("Error inesperado al confirmar cita", e);
-            throw new RuntimeException("Error al confirmar la cita. Por favor, intente nuevamente.");
+            throw new CitaException("Error interno al confirmar la cita", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, "Error al procesar la solicitud");
         }
     }
 
@@ -319,11 +327,11 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         System.out.println("\n=== Completando cita ID: " + idCita + " ===");
         try {
             Cita cita = citasRepository.findById(idCita)
-                    .orElseThrow(() -> new IllegalArgumentException("Cita no encontrada"));
+                    .orElseThrow(() -> new CitaException("Cita no encontrada", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, idCita));
 
             // Validar que la cita esté confirmada
             if (cita.getEstado() != EstadoCitas.CONFIRMADA) {
-                throw new IllegalArgumentException("Solo se pueden completar citas confirmadas");
+                throw new CitaException("Solo se pueden completar citas confirmadas", CitaException.CitaErrorType.CITA_NO_ENCONTRADA);
             }
 
             // Completar la cita
@@ -341,12 +349,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             } catch (Exception e) {
                 logger.warn("No se pudo enviar el correo de cita completada: {}", e.getMessage());
             }
-        } catch (IllegalArgumentException e) {
-            logger.warn("Error de validación al completar cita: {}", e.getMessage());
+        } catch (CitaException e) {
+            // Re-lanzar excepciones específicas de citas tal como están
             throw e;
         } catch (Exception e) {
             logger.error("Error inesperado al completar cita", e);
-            throw new RuntimeException("Error al completar la cita. Por favor, intente nuevamente.");
+            throw new CitaException("Error interno al completar la cita", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, "Error al procesar la solicitud");
         }
     }
 
@@ -372,18 +380,18 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         try {
             // Validar que el doctor exista
             User doctor = userRepository.findByIdNumber(crearCitaNoAutenticadaDTO.doctorId())
-                    .orElseThrow(() -> new RuntimeException("Doctor no encontrado"));
+                    .orElseThrow(() -> new CitaException("Doctor no encontrado", CitaException.CitaErrorType.DOCTOR_NO_ENCONTRADO));
 
             // Validar que el usuario sea un doctor
             if (!doctor.getAccount().getRol().equals(Rol.DOCTOR)) {
-                throw new RuntimeException("El usuario especificado no es un doctor");
+                throw new CitaException("El usuario especificado no es un doctor", CitaException.CitaErrorType.DOCTOR_NO_ENCONTRADO);
             }
 
             // Validar que la fecha no sea en el pasado
             LocalDateTime fechaHoraCita = LocalDateTime.of(crearCitaNoAutenticadaDTO.fecha(),
                     crearCitaNoAutenticadaDTO.hora());
             if (fechaHoraCita.isBefore(LocalDateTime.now())) {
-                throw new RuntimeException("No se pueden crear citas en fechas pasadas");
+                throw new CitaException("No se pueden crear citas en fechas pasadas", CitaException.CitaErrorType.CITA_PASADA);
             }
 
             // Validar disponibilidad del doctor
@@ -391,18 +399,18 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                     crearCitaNoAutenticadaDTO.doctorId(),
                     crearCitaNoAutenticadaDTO.fecha(),
                     crearCitaNoAutenticadaDTO.hora())) {
-                throw new RuntimeException("El doctor no está disponible en ese horario");
+                throw new CitaException("El doctor no está disponible en ese horario", CitaException.CitaErrorType.DOCTOR_NO_DISPONIBLE);
             }
 
             // Validar que no exista otra cita en el mismo horario
             if (citasRepository.existsByDoctorAndFechaHora(doctor,
                     fechaHoraCita.atZone(ZoneId.systemDefault()).toInstant())) {
-                throw new RuntimeException("Ya existe una cita programada para ese horario");
+                throw new CitaException("Ya existe una cita programada para ese horario", CitaException.CitaErrorType.CITA_YA_EXISTE);
             }
 
             // Obtener el tipo de cita
             TipoCita tipoCita = tipoCitaRepository.findById(crearCitaNoAutenticadaDTO.tipoCitaId())
-                    .orElseThrow(() -> new RuntimeException("Tipo de cita no encontrado"));
+                    .orElseThrow(() -> new CitaException("Tipo de cita no encontrado", CitaException.CitaErrorType.ESPECIALIDAD_NO_ENCONTRADA));
 
             // Crear la cita no autenticada
             Cita cita = new Cita(
@@ -423,9 +431,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             enviarCorreoConfirmacionCita(citaGuardada);
 
             return citaGuardada;
+        } catch (CitaException e) {
+            // Re-lanzar excepciones específicas de citas tal como están
+            throw e;
         } catch (Exception e) {
             logger.error("Error al crear la cita no autenticada", e);
-            throw new RuntimeException("Error al crear la cita no autenticada: " + e.getMessage());
+            throw new CitaException("Error interno al crear la cita no autenticada", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, "Error al procesar la solicitud");
         }
     }
 
@@ -674,10 +685,10 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             return citasDTO;
         } catch (IllegalArgumentException e) {
             logger.error("Error de validación: {}", e.getMessage());
-            throw e;
+            throw new ValidationException("ID de doctor inválido: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Error al obtener las citas no autenticadas del doctor {}: {}", idDoctor, e.getMessage(), e);
-            throw new RuntimeException("Error al obtener las citas no autenticadas. Por favor, intente nuevamente.");
+            throw new CitaException("Error interno al obtener las citas no autenticadas", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, "Error al procesar la solicitud");
         }
     }
 
@@ -748,10 +759,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             }
 
             return citasDTO;
+        } catch (IllegalArgumentException e) {
+            logger.error("Error de validación: {}", e.getMessage());
+            throw new ValidationException("Número de identificación inválido: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Error al obtener las citas no autenticadas del paciente " + numeroIdentificacion, e);
-            // Eliminar System.out y e.printStackTrace() en producción y mantener solo el logger
-            throw new RuntimeException("Error al obtener las citas no autenticadas. Por favor, intente nuevamente.");
+            throw new CitaException("Error interno al obtener las citas no autenticadas", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, "Error al procesar la solicitud");
         }
     }
 
@@ -797,9 +810,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                     })
                     .filter(dto -> dto != null)
                     .collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            logger.error("Error de validación: {}", e.getMessage());
+            throw new ValidationException("ID de paciente inválido: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Error al obtener las citas del paciente " + idPaciente, e);
-            throw new RuntimeException("Error al obtener las citas. Por favor, intente nuevamente.");
+            throw new CitaException("Error interno al obtener las citas del paciente", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, "Error al procesar la solicitud");
         }
     }
 
@@ -840,9 +856,12 @@ public class ServiciosCitaImpl implements ServiciosCitas {
                     })
                     .filter(dto -> dto != null)
                     .collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            logger.error("Error de validación: {}", e.getMessage());
+            throw new ValidationException("ID de doctor inválido: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Error al obtener las citas del doctor " + idDoctor, e);
-            throw new RuntimeException("Error al obtener las citas. Por favor, intente nuevamente.");
+            throw new CitaException("Error interno al obtener las citas del doctor", CitaException.CitaErrorType.CITA_NO_ENCONTRADA, "Error al procesar la solicitud");
         }
     }
 
@@ -928,11 +947,11 @@ public class ServiciosCitaImpl implements ServiciosCitas {
 
             return doctoresDTO;
         } catch (IllegalArgumentException e) {
-            logger.error("Error: {}", e.getMessage());
-            throw e;
+            logger.error("Error de validación: {}", e.getMessage());
+            throw new ValidationException("ID de especialidad inválido: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Error inesperado: {}", e.getMessage(), e);
-            throw new RuntimeException("Error al obtener los doctores. Por favor, intente nuevamente.");
+            throw new CitaException("Error interno al obtener los doctores", CitaException.CitaErrorType.DOCTOR_NO_ENCONTRADO, "Error al procesar la solicitud");
         }
     }
 
@@ -950,7 +969,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
         try {
             // 1. Verificar que el doctor existe
             User doctor = userRepository.findByIdNumber(doctorId)
-                    .orElseThrow(() -> new IllegalArgumentException("Doctor no encontrado con ID: " + doctorId));
+                    .orElseThrow(() -> new CitaException("Doctor no encontrado con ID: " + doctorId, CitaException.CitaErrorType.DOCTOR_NO_ENCONTRADO));
 
             System.out.println("Doctor encontrado: " + doctor.getName() + " " + doctor.getLastName());
 
@@ -969,7 +988,7 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             } catch (Exception e) {
                 System.out.println("Error al buscar disponibilidades: " + e.getMessage());
                 e.printStackTrace();
-                throw new RuntimeException("Error al buscar disponibilidades: " + e.getMessage());
+                throw new CitaException("Error al buscar disponibilidades", CitaException.CitaErrorType.DOCTOR_NO_DISPONIBLE, "Error al procesar la solicitud");
             }
 
             if (disponibilidades.isEmpty()) {
@@ -1026,13 +1045,13 @@ public class ServiciosCitaImpl implements ServiciosCitas {
             });
 
             return fechasDisponibles;
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error: " + e.getMessage());
+        } catch (CitaException e) {
+            // Re-lanzar excepciones específicas de citas tal como están
             throw e;
         } catch (Exception e) {
             System.out.println("Error inesperado: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("Error al obtener las fechas disponibles: " + e.getMessage());
+            throw new CitaException("Error interno al obtener las fechas disponibles", CitaException.CitaErrorType.HORARIO_NO_DISPONIBLE, "Error al procesar la solicitud");
         }
     }
 
