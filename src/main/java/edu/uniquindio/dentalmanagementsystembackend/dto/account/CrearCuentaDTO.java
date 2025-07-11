@@ -51,11 +51,4 @@ public record CrearCuentaDTO(
         String password
 ) {
 
-
-
-
-
-
-
-
 }

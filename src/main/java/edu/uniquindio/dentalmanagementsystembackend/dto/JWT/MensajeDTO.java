@@ -1,8 +1,12 @@
 package edu.uniquindio.dentalmanagementsystembackend.dto.JWT;
 
-public record MensajeDTO <T>(
-        boolean error,
-        T respuesta
+import jakarta.validation.constraints.NotNull;
 
+public record MensajeDTO <T>(
+        @NotNull(message = "El campo error no puede ser nulo.")
+        boolean error,
+        
+        @NotNull(message = "La respuesta no puede ser nula.")
+        T respuesta
 ) {
 }
