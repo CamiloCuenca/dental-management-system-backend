@@ -72,7 +72,7 @@ public class CuentaController {
      * @return ResponseEntity with a success message if account creation is successful, or CONFLICT status if it fails.
      */
     @PostMapping("/register-no-captcha")
-    public ResponseEntity<String> crearCuentaSinCaptcha(@RequestBody CrearCuentaDTO cuentaDTO) {
+    public ResponseEntity<String> crearCuentaSinCaptcha(@Valid @RequestBody CrearCuentaDTO cuentaDTO) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(accountService.crearCuenta(cuentaDTO));
         } catch (EmailAlreadyExistsException | UserAlreadyExistsException | Exception | DatabaseOperationException |
@@ -120,7 +120,7 @@ public class CuentaController {
      * @return ResponseEntity with a success message if code sending is successful, or appropriate error status if it fails.
      */
     @PostMapping("/send-active-code")
-    public ResponseEntity<String> enviarCodigoActivacion(@RequestBody EmailDTO emailDTO) {
+    public ResponseEntity<String> enviarCodigoActivacion(@Valid @RequestBody EmailDTO emailDTO) {
         try {
             return ResponseEntity.ok(accountService.sendActiveCode(emailDTO.email()));
         } catch (EmailNotFoundException | AccountAlreadyActiveException | Exception e) {
@@ -134,7 +134,7 @@ public class CuentaController {
      * @return ResponseEntity with a success message if code sending is successful, or appropriate error status if it fails.
      */
     @PostMapping("/send-recovery-code")
-    public ResponseEntity<String> enviarCodigoRecuperacion(@RequestBody EmailDTO emailDTO) {
+    public ResponseEntity<String> enviarCodigoRecuperacion(@Valid @RequestBody EmailDTO emailDTO) {
         try {
             return ResponseEntity.ok(accountService.sendPasswordRecoveryCode(emailDTO.email()));
         } catch (EmailNotFoundException | Exception e) {
@@ -195,7 +195,7 @@ public class CuentaController {
      * @throws Exception 
      */
     @PutMapping("/{accountId}/profile")
-    public ResponseEntity<String> actualizarPerfil(@PathVariable Long accountId, @RequestBody ActualizarUsuarioDTO actualizarUsuarioDTO) throws Exception {
+    public ResponseEntity<String> actualizarPerfil(@PathVariable Long accountId, @Valid @RequestBody ActualizarUsuarioDTO actualizarUsuarioDTO) throws Exception {
         try {
             return ResponseEntity.ok(accountService.actualizarUsuario(accountId, actualizarUsuarioDTO));
         } catch (UserNotFoundException | AccountNotFoundException e) {

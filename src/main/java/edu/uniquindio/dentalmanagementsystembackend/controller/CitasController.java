@@ -16,9 +16,14 @@ import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.Servicios
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosTipoCita;
 import edu.uniquindio.dentalmanagementsystembackend.service.Interfaces.ServiciosDisponibilidadDoctor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -41,7 +46,7 @@ public class CitasController {
      * @return Cita creada
      */
     @PostMapping("/crear")
-    public ResponseEntity<Cita> crearCita(@RequestBody CrearCitaDTO dto) {
+    public ResponseEntity<Cita> crearCita(@Valid @RequestBody CrearCitaDTO dto) {
         return ResponseEntity.ok(serviciosCitas.crearCita(dto));
     }
 
@@ -101,7 +106,7 @@ public class CitasController {
     @PutMapping("/paciente/editar/{idCita}")
     public ResponseEntity<Cita> editarCitaPaciente(
             @PathVariable Long idCita,
-            @RequestBody EditarCitaPacienteDTO dto) {
+            @Valid @RequestBody EditarCitaPacienteDTO dto) {
         return ResponseEntity.ok(serviciosCitas.editarCitaPaciente(idCita, dto));
     }
 
@@ -139,88 +144,110 @@ public class CitasController {
     }
 
     /**
-     * Obtiene todas las citas de un paciente
+     * Obtiene todas las citas de un paciente con paginación
      * @param idPaciente ID del paciente
-     * @return Lista de citas del paciente
+     * @param page Número de página (por defecto 0)
+     * @param size Tamaño de la página (por defecto 10)
+     * @param sort Campo por el cual ordenar (por defecto "fechaHora")
+     * @return Página de citas del paciente
      */
     @GetMapping("/paciente/{idPaciente}")
-    public ResponseEntity<List<CitaDTO>> obtenerCitasPorPaciente(@PathVariable String idPaciente) {
+    public ResponseEntity<Page<CitaDTO>> obtenerCitasPorPaciente(
+            @PathVariable String idPaciente,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "fechaHora") String sort) {
+        
         // Validar parámetros de entrada
         if (idPaciente == null || idPaciente.trim().isEmpty()) {
             System.out.println("ID de paciente inválido: " + idPaciente);
-            return ResponseEntity.badRequest().body(List.of());
+            return ResponseEntity.badRequest().build();
         }
 
         try {
-            // Obtener citas usando el repositorio
-            List<Cita> citas = citasRepository.findByPaciente_IdNumber(idPaciente);
-            System.out.println("Se encontraron " + citas.size() + " citas para el paciente con ID " + idPaciente);
+            // Crear Pageable con ordenamiento
+            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sort));
+            
+            // Obtener citas paginadas usando el repositorio
+            Page<Cita> citasPage = citasRepository.findByPaciente_IdNumber(idPaciente, pageable);
+            System.out.println("Se encontraron " + citasPage.getTotalElements() + " citas para el paciente con ID " + idPaciente);
 
             // Transformar a DTOs
-            List<CitaDTO> citasDTO = citas.stream()
-                    .map(cita -> new CitaDTO(
-                            cita.getId(),
-                            cita.getPaciente() != null ? cita.getPaciente().getIdNumber() : null,
-                            cita.getPaciente() != null ? cita.getPaciente().getName() : null,
-                            cita.getDoctor() != null ? cita.getDoctor().getIdNumber() : null,
-                            cita.getDoctor() != null ? cita.getDoctor().getName() : null,
-                            cita.getFechaHora(),
-                            cita.getEstado(),
-                            cita.getPaciente() != null ? cita.getPaciente().getAccount().getEmail() : null,
-                            cita.getPaciente() != null ? cita.getPaciente().getPhoneNumber() : null,
-                            cita.getTipoCita().getId(),
-                            cita.getTipoCita().getNombre(),
-                            cita.getTipoCita().getDuracionMinutos()
-                    ))
-                    .collect(Collectors.toList());
+            Page<CitaDTO> citasDTOPage = citasPage.map(cita -> new CitaDTO(
+                    cita.getId(),
+                    cita.getPaciente() != null ? cita.getPaciente().getIdNumber() : null,
+                    cita.getPaciente() != null ? cita.getPaciente().getName() : null,
+                    cita.getDoctor() != null ? cita.getDoctor().getIdNumber() : null,
+                    cita.getDoctor() != null ? cita.getDoctor().getName() : null,
+                    cita.getFechaHora(),
+                    cita.getEstado(),
+                    cita.getPaciente() != null ? cita.getPaciente().getAccount().getEmail() : null,
+                    cita.getPaciente() != null ? cita.getPaciente().getPhoneNumber() : null,
+                    cita.getTipoCita().getId(),
+                    cita.getTipoCita().getNombre(),
+                    cita.getTipoCita().getDuracionMinutos()
+            ));
 
-            return ResponseEntity.ok(citasDTO);
+            return ResponseEntity.ok(citasDTOPage);
         } catch (Exception e) {
             System.out.println("Error al obtener citas para el paciente " + idPaciente + ": " + e.getMessage());
-            e.printStackTrace(); // Para depuración
-
-            return ResponseEntity
-                    .status(500)
-                    .header("X-Error", "Error procesando la solicitud: " + e.getMessage())
-                    .body(List.of());
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
         }
     }
 
 
     /**
-     * Obtiene todas las citas de un doctor
+     * Obtiene todas las citas de un doctor con paginación
      * @param idDoctor ID del doctor
-     * @return Lista de citas del doctor
+     * @param page Número de página (por defecto 0)
+     * @param size Tamaño de la página (por defecto 10)
+     * @param sort Campo por el cual ordenar (por defecto "fechaHora")
+     * @return Página de citas del doctor
      */
     @GetMapping("/doctor/{idDoctor}")
-    public List<CitaDTO> obtenerCitasPorDoctor(@PathVariable String idDoctor) {
+    public ResponseEntity<Page<CitaDTO>> obtenerCitasPorDoctor(
+            @PathVariable String idDoctor,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "fechaHora") String sort) {
+        
         // Validar parámetros de entrada
         if (idDoctor == null || idDoctor.trim().isEmpty()) {
             System.out.println("ID de doctor inválido: " + idDoctor);
-            throw new IllegalArgumentException("El ID del doctor no puede estar vacío");
+            return ResponseEntity.badRequest().build();
         }
 
-        // Buscar explícitamente solo citas autenticadas
-        List<Cita> citas = citasRepository.findByDoctor_IdNumberAndEsAutenticadaTrue(idDoctor);
-        System.out.println("Se encontraron " + citas.size() + " citas autenticadas para el doctor " + idDoctor);
+        try {
+            // Crear Pageable con ordenamiento
+            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sort));
+            
+            // Buscar explícitamente solo citas autenticadas con paginación
+            Page<Cita> citasPage = citasRepository.findByDoctor_IdNumberAndEsAutenticadaTrue(idDoctor, pageable);
+            System.out.println("Se encontraron " + citasPage.getTotalElements() + " citas autenticadas para el doctor " + idDoctor);
 
-        // Transformar a DTOs y retornar
-        return citas.stream()
-                .map(cita -> new CitaDTO(
-                        cita.getId(),
-                        cita.getPaciente() != null ? cita.getPaciente().getIdNumber() : null,
-                        cita.getPaciente() != null ? cita.getPaciente().getName() : cita.getNombrePacienteNoAutenticado(),
-                        cita.getDoctor() != null ? cita.getDoctor().getIdNumber() : null,
-                        cita.getDoctor() != null ? cita.getDoctor().getName() : null,
-                        cita.getFechaHora(),
-                        cita.getEstado(),
-                        cita.getPaciente() != null ? cita.getPaciente().getAccount().getEmail() : cita.getEmailNoAutenticado(),
-                        cita.getPaciente() != null ? cita.getPaciente().getPhoneNumber() : cita.getTelefonoNoAutenticado(),
-                        cita.getTipoCita().getId(),
-                        cita.getTipoCita().getNombre(),
-                        cita.getTipoCita().getDuracionMinutos()
-                ))
-                .collect(Collectors.toList());
+            // Transformar a DTOs
+            Page<CitaDTO> citasDTOPage = citasPage.map(cita -> new CitaDTO(
+                    cita.getId(),
+                    cita.getPaciente() != null ? cita.getPaciente().getIdNumber() : null,
+                    cita.getPaciente() != null ? cita.getPaciente().getName() : cita.getNombrePacienteNoAutenticado(),
+                    cita.getDoctor() != null ? cita.getDoctor().getIdNumber() : null,
+                    cita.getDoctor() != null ? cita.getDoctor().getName() : null,
+                    cita.getFechaHora(),
+                    cita.getEstado(),
+                    cita.getPaciente() != null ? cita.getPaciente().getAccount().getEmail() : cita.getEmailNoAutenticado(),
+                    cita.getPaciente() != null ? cita.getPaciente().getPhoneNumber() : cita.getTelefonoNoAutenticado(),
+                    cita.getTipoCita().getId(),
+                    cita.getTipoCita().getNombre(),
+                    cita.getTipoCita().getDuracionMinutos()
+            ));
+
+            return ResponseEntity.ok(citasDTOPage);
+        } catch (Exception e) {
+            System.out.println("Error al obtener citas para el doctor " + idDoctor + ": " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
     }
 
 
